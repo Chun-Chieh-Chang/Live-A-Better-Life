@@ -11,8 +11,7 @@ import {
   Check, 
   Copy, 
   Download, 
-  Shield, 
-  Sparkles 
+  BookOpen
 } from 'lucide-react';
 
 interface PersonalOSTabProps {
@@ -36,7 +35,7 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
   const [newAvoidLesson, setNewAvoidLesson] = useState('');
   const [newAvoidTag, setNewAvoidTag] = useState('#避坑指南');
 
-  // Toggle If-Then active state (whether it transcludes to daily morning note)
+  // Toggle If-Then active state
   const toggleIfThenActive = (id: string) => {
     const updated = personalOS.ifThenStrategies.map(s => 
       s.id === id ? { ...s, active: !s.active } : s
@@ -157,15 +156,17 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
   return (
     <div className="space-y-6 pb-12">
       {/* Header banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-stone-900/60 p-5 rounded-2xl border border-stone-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-sky-100 shadow-sm shadow-sky-900/5">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">📖</span>
-            <h2 className="text-xl font-bold text-stone-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-sky-50 text-[#0084ff]">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-extrabold text-[#09223b]">
               個人操作手冊 (Personal Operating System)
             </h2>
           </div>
-          <p className="text-xs text-stone-400 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             這是這套閉環系統的「大腦中樞」。每週復盤時提煉出的有效解法與血淚經驗，
             會自動投影回明天的日記與晨間防禦中，不再重複踩坑，打造專屬的生活操作手冊。
           </p>
@@ -174,16 +175,16 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyMarkdown}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs border border-stone-700 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-[#0070ba] font-semibold text-xs border border-sky-200 transition shadow-xs"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#0084ff]" />}
             <span>{copied ? '已複製手冊 MD' : '複製 Obsidian MD'}</span>
           </button>
           <button
             onClick={handleDownloadMarkdown}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs border border-stone-700 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-700 font-medium text-xs border border-sky-200 transition shadow-xs"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>下載 .md</span>
           </button>
         </div>
@@ -192,47 +193,47 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       {/* Grid: 4 Pillars of Personal OS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 1. ⚡ 本週 If-Then 策略 */}
-        <div className="bg-stone-900/90 rounded-2xl border border-stone-800 p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+        <div className="bg-white rounded-2xl border border-sky-100 p-6 space-y-4 shadow-sm shadow-sky-900/5">
+          <div className="flex items-center justify-between border-b border-sky-50 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
                 <Zap className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-100 text-sm">
+                <h3 className="font-bold text-[#09223b] text-sm">
                   ⚡ 本週 If-Then 策略
                 </h3>
-                <p className="text-[11px] text-stone-400">
+                <p className="text-[11px] text-slate-400">
                   勾選的項目會自動投影至每日晨間日誌中（日間即時干預）
                 </p>
               </div>
             </div>
-            <span className="text-xs text-stone-400 bg-stone-800 px-2 py-0.5 rounded">
+            <span className="text-xs text-[#0070ba] bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full font-semibold">
               {personalOS.ifThenStrategies.filter(s => s.active).length} 啟用中
             </span>
           </div>
 
           {/* Add form */}
-          <form onSubmit={addIfThen} className="space-y-2 bg-stone-950/60 p-3 rounded-xl border border-stone-800">
+          <form onSubmit={addIfThen} className="space-y-2 bg-[#f8fafc] p-3.5 rounded-xl border border-sky-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <input
                 type="text"
                 placeholder="If [觸發情境，例如：開會被打斷]"
                 value={newIf}
                 onChange={(e) => setNewIf(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
               <input
                 type="text"
                 placeholder="Then [微小行動，例如：先喝口水再回應]"
                 value={newThen}
                 onChange={(e) => setNewThen(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-medium transition"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-sky-50 hover:bg-sky-100 text-[#0070ba] border border-sky-200 rounded-lg text-xs font-bold transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增 If-Then 策略</span>
@@ -240,28 +241,28 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
           </form>
 
           {/* List */}
-          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
             {personalOS.ifThenStrategies.map((strat) => (
               <div
                 key={strat.id}
-                className="flex items-start justify-between gap-3 p-3 rounded-xl bg-stone-950/40 border border-stone-800 hover:border-stone-700 transition text-xs"
+                className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-[#f8fafc] border border-sky-100 hover:border-sky-300 transition text-xs shadow-2xs"
               >
                 <div className="flex items-start gap-2.5">
                   <input
                     type="checkbox"
                     checked={strat.active}
                     onChange={() => toggleIfThenActive(strat.id)}
-                    className="mt-0.5 rounded border-stone-700 text-amber-500 focus:ring-0 cursor-pointer"
+                    className="mt-1 rounded border-sky-300 text-[#0084ff] focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <div className="leading-relaxed">
-                      <span className="text-amber-400 font-bold">If</span>{' '}
-                      <span className="text-stone-300">{strat.ifText}，</span>{' '}
-                      <span className="text-emerald-400 font-bold">Then</span>{' '}
-                      <span className="text-stone-100 font-medium">{strat.thenText}</span>
+                      <span className="text-[#0084ff] font-extrabold">If</span>{' '}
+                      <span className="text-slate-700">{strat.ifText}，</span>{' '}
+                      <span className="text-amber-600 font-extrabold">Then</span>{' '}
+                      <span className="text-[#09223b] font-bold">{strat.thenText}</span>
                     </div>
                     {strat.sourceDate && (
-                      <span className="text-[10px] text-stone-500 block mt-1">
+                      <span className="text-[10px] text-slate-400 block mt-1">
                         提煉於：{strat.sourceDate}
                       </span>
                     )}
@@ -270,7 +271,7 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
 
                 <button
                   onClick={() => deleteIfThen(strat.id)}
-                  className="text-stone-600 hover:text-rose-400 transition p-1"
+                  className="text-slate-400 hover:text-rose-600 transition p-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -280,66 +281,66 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
         </div>
 
         {/* 2. 🎯 本週短期外掛提問 */}
-        <div className="bg-stone-900/90 rounded-2xl border border-stone-800 p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-teal-500/20 text-teal-400">
+        <div className="bg-white rounded-2xl border border-sky-100 p-6 space-y-4 shadow-sm shadow-sky-900/5">
+          <div className="flex items-center justify-between border-b border-sky-50 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-teal-50 text-teal-600">
                 <Target className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-100 text-sm">
+                <h3 className="font-bold text-[#09223b] text-sm">
                   🎯 本週短期外掛提問
                 </h3>
-                <p className="text-[11px] text-stone-400">
+                <p className="text-[11px] text-slate-400">
                   針對反覆出現的 bug，進行為期 1~2 週的刻意練習
                 </p>
               </div>
             </div>
-            <span className="text-xs text-stone-400 bg-stone-800 px-2 py-0.5 rounded">
+            <span className="text-xs text-[#0070ba] bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full font-semibold">
               {personalOS.habitQuestions.filter(h => h.active).length} 啟用中
             </span>
           </div>
 
           {/* Add form */}
-          <form onSubmit={addHabit} className="flex gap-2 bg-stone-950/60 p-3 rounded-xl border border-stone-800">
+          <form onSubmit={addHabit} className="flex gap-2 bg-[#f8fafc] p-3.5 rounded-xl border border-sky-100">
             <input
               type="text"
               placeholder="例如：我今天有在 12 點前放下手機睡覺嗎？"
               value={newHabit}
               onChange={(e) => setNewHabit(e.target.value)}
-              className="flex-1 bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-teal-500"
+              className="flex-1 bg-white border border-sky-200 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
             />
             <button
               type="submit"
-              className="flex items-center gap-1 px-3 py-1.5 bg-teal-600/20 hover:bg-teal-600/30 text-teal-300 border border-teal-500/40 rounded-lg text-xs font-medium transition shrink-0"
+              className="flex items-center gap-1 px-4 py-2 bg-[#0084ff] hover:bg-[#0073e6] text-white font-bold rounded-lg text-xs transition shrink-0 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>新增提問</span>
+              <span>新增</span>
             </button>
           </form>
 
           {/* List */}
-          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
             {personalOS.habitQuestions.map((habit) => (
               <div
                 key={habit.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-stone-950/40 border border-stone-800 hover:border-stone-700 transition text-xs"
+                className="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#f8fafc] border border-sky-100 hover:border-sky-300 transition text-xs shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
                   <input
                     type="checkbox"
                     checked={habit.active}
                     onChange={() => toggleHabitActive(habit.id)}
-                    className="rounded border-stone-700 text-teal-500 focus:ring-0 cursor-pointer"
+                    className="rounded border-sky-300 text-[#0084ff] focus:ring-0 cursor-pointer"
                   />
-                  <span className={`${habit.active ? 'text-stone-200 font-medium' : 'text-stone-500 line-through'}`}>
+                  <span className={`${habit.active ? 'text-[#09223b] font-semibold' : 'text-slate-400 line-through'}`}>
                     {habit.text}
                   </span>
                 </div>
 
                 <button
                   onClick={() => deleteHabit(habit.id)}
-                  className="text-stone-600 hover:text-rose-400 transition p-1"
+                  className="text-slate-400 hover:text-rose-600 transition p-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -349,42 +350,42 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
         </div>
 
         {/* 3. 🎁 我的快樂與急救配方庫 */}
-        <div className="bg-stone-900/90 rounded-2xl border border-stone-800 p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+        <div className="bg-white rounded-2xl border border-sky-100 p-6 space-y-4 shadow-sm shadow-sky-900/5">
+          <div className="flex items-center justify-between border-b border-sky-50 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
                 <Heart className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-100 text-sm">
+                <h3 className="font-bold text-[#09223b] text-sm">
                   🎁 我的快樂與急救配方庫
                 </h3>
-                <p className="text-[11px] text-stone-400">
+                <p className="text-[11px] text-slate-400">
                   來自🟢好日子的提煉，遇到情緒低潮時 100% 能回血的動作
                 </p>
               </div>
             </div>
-            <span className="text-xs text-stone-400 bg-stone-800 px-2 py-0.5 rounded">
+            <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
               {personalOS.emergencyRecipes.length} 項配方
             </span>
           </div>
 
           {/* Add form */}
-          <form onSubmit={addRecipe} className="space-y-2 bg-stone-950/60 p-3 rounded-xl border border-stone-800">
+          <form onSubmit={addRecipe} className="space-y-2 bg-[#f8fafc] p-3.5 rounded-xl border border-sky-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <input
                 type="text"
                 placeholder="配方名稱（如：睡滿 8 小時）"
                 value={newRecipeTitle}
                 onChange={(e) => setNewRecipeTitle(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
               <input
                 type="text"
                 placeholder="標籤（如：#睡眠品質）"
                 value={newRecipeTag}
                 onChange={(e) => setNewRecipeTag(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
             </div>
             <input
@@ -392,11 +393,11 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               placeholder="說明/操作方法（如：睡前泡腳，開除濕機...）"
               value={newRecipeDesc}
               onChange={(e) => setNewRecipeDesc(e.target.value)}
-              className="w-full bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-white border border-sky-200 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
             />
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium transition"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增急救配方</span>
@@ -408,23 +409,23 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.emergencyRecipes.map((recipe) => (
               <div
                 key={recipe.id}
-                className="p-3 rounded-xl bg-stone-950/40 border border-stone-800 hover:border-emerald-900/60 transition text-xs space-y-1"
+                className="p-3.5 rounded-xl bg-[#f8fafc] border border-sky-100 hover:border-emerald-300 transition text-xs space-y-1.5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-stone-100">{recipe.title}</span>
-                    <span className="text-[10px] text-emerald-400 bg-emerald-950/70 px-2 py-0.5 rounded border border-emerald-800/40">
+                    <span className="font-bold text-[#09223b]">{recipe.title}</span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-medium">
                       {recipe.tag}
                     </span>
                   </div>
                   <button
                     onClick={() => deleteRecipe(recipe.id)}
-                    className="text-stone-600 hover:text-rose-400 transition"
+                    className="text-slate-400 hover:text-rose-600 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-stone-400 leading-relaxed text-[11px]">
+                <p className="text-slate-500 leading-relaxed text-[11px]">
                   {recipe.description}
                 </p>
               </div>
@@ -433,42 +434,42 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
         </div>
 
         {/* 4. 💣 我的避坑指南 */}
-        <div className="bg-stone-900/90 rounded-2xl border border-stone-800 p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-rose-500/20 text-rose-400">
+        <div className="bg-white rounded-2xl border border-sky-100 p-6 space-y-4 shadow-sm shadow-sky-900/5">
+          <div className="flex items-center justify-between border-b border-sky-50 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
                 <AlertOctagon className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-100 text-sm">
+                <h3 className="font-bold text-[#09223b] text-sm">
                   💣 我的避坑指南
                 </h3>
-                <p className="text-[11px] text-stone-400">
+                <p className="text-[11px] text-slate-400">
                   來自🔴壞日子的血淚教訓，避免重蹈覆轍
                 </p>
               </div>
             </div>
-            <span className="text-xs text-stone-400 bg-stone-800 px-2 py-0.5 rounded">
+            <span className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full font-semibold">
               {personalOS.avoidanceGuides.length} 條指南
             </span>
           </div>
 
           {/* Add form */}
-          <form onSubmit={addAvoidance} className="space-y-2 bg-stone-950/60 p-3 rounded-xl border border-stone-800">
+          <form onSubmit={addAvoidance} className="space-y-2 bg-[#f8fafc] p-3.5 rounded-xl border border-sky-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <input
                 type="text"
                 placeholder="雷區名稱（如：肚子餓時不開會）"
                 value={newAvoidTitle}
                 onChange={(e) => setNewAvoidTitle(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
               <input
                 type="text"
                 placeholder="標籤（如：#生理防禦）"
                 value={newAvoidTag}
                 onChange={(e) => setNewAvoidTag(e.target.value)}
-                className="bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500"
+                className="bg-white border border-sky-200 rounded-lg px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
               />
             </div>
             <input
@@ -476,11 +477,11 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               placeholder="教訓說明（如：血糖低時大腦缺乏葡萄糖，極易失控...）"
               value={newAvoidLesson}
               onChange={(e) => setNewAvoidLesson(e.target.value)}
-              className="w-full bg-stone-900 border border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500"
+              className="w-full bg-white border border-sky-200 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff]"
             />
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-lg text-xs font-medium transition"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增避坑項目</span>
@@ -492,23 +493,23 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.avoidanceGuides.map((avoid) => (
               <div
                 key={avoid.id}
-                className="p-3 rounded-xl bg-stone-950/40 border border-stone-800 hover:border-rose-900/60 transition text-xs space-y-1"
+                className="p-3.5 rounded-xl bg-[#f8fafc] border border-sky-100 hover:border-rose-300 transition text-xs space-y-1.5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-stone-100">{avoid.title}</span>
-                    <span className="text-[10px] text-rose-400 bg-rose-950/70 px-2 py-0.5 rounded border border-rose-800/40">
+                    <span className="font-bold text-[#09223b]">{avoid.title}</span>
+                    <span className="text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 font-medium">
                       {avoid.tag}
                     </span>
                   </div>
                   <button
                     onClick={() => deleteAvoidance(avoid.id)}
-                    className="text-stone-600 hover:text-rose-400 transition"
+                    className="text-slate-400 hover:text-rose-600 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-stone-400 leading-relaxed text-[11px]">
+                <p className="text-slate-500 leading-relaxed text-[11px]">
                   {avoid.lesson}
                 </p>
               </div>

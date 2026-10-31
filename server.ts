@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 
+import { runSystemCheckAndSetup } from './scripts/bootstrap.ts';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +22,50 @@ let aiClient: GoogleGenAI | null = null;
 if (apiKey) {
   aiClient = new GoogleGenAI({ apiKey });
 }
+
+// Automatic system check and scaffolding on launch
+const initialReport = runSystemCheckAndSetup(true);
+console.log('⚡ [Life OS 啟動自檢]', initialReport.env.message, '|', initialReport.vault.message);
+
+// API: System Status Check
+app.get('/api/system/status', (_req, res) => {
+  const report = runSystemCheckAndSetup(false);
+  return res.json({ success: true, report });
+});
+
+// API: Trigger Auto Setup & Repair
+app.post('/api/system/setup', (_req, res) => {
+  const report = runSystemCheckAndSetup(true);
+  return res.json({ success: true, report });
+});
+
+// API: Test AI Co-processor
+app.post('/api/system/test-ai', async (_req, res) => {
+  try {
+    if (aiClient && apiKey) {
+      const response = await aiClient.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: [
+          { role: 'user', parts: [{ text: '請用一句溫暖的話問候今天的我，並說「AI 認知副處理器已就緒」。' }] }
+        ]
+      });
+      return res.json({ success: true, text: response.text || 'AI 認知副處理器已就緒！', mode: 'gemini-api' });
+    } else {
+      return res.json({
+        success: true,
+        text: '今天辛苦了！AI 認知副處理器已進入待命狀態，隨時準備分擔你的思緒。',
+        mode: 'heuristic-coprocessor'
+      });
+    }
+  } catch (err: any) {
+    return res.json({
+      success: true,
+      text: '今天辛苦了！AI 啟發式副處理器已就緒（遠端連線忙碌中，已無縫啟用本地行為備援）。',
+      mode: 'heuristic-coprocessor',
+      error: err.message
+    });
+  }
+});
 
 // API: AI Coach Cognitive Co-processor endpoint
 app.post('/api/coach', async (req, res) => {

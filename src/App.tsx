@@ -12,12 +12,43 @@ import { PersonalOSTab } from './components/PersonalOSTab';
 import { InsightsTab } from './components/InsightsTab';
 import { ObsidianExportTab } from './components/ObsidianExportTab';
 import { TranscriptBlueprintTab } from './components/TranscriptBlueprintTab';
+import { SystemHealthModal, SystemStatusData } from './components/SystemHealthModal';
 
 const LOCAL_STORAGE_ENTRIES_KEY = 'life_os_daily_entries_v1';
 const LOCAL_STORAGE_OS_KEY = 'life_os_personal_manual_v1';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('daily');
+  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<SystemStatusData | null>(null);
+
+  const fetchSystemStatus = async () => {
+    try {
+      const res = await fetch('/api/system/status');
+      const data = await res.json();
+      if (data.success && data.report) {
+        setSystemStatus(data.report);
+      }
+    } catch (e) {
+      console.warn('System status check request failed:', e);
+    }
+  };
+
+  const handleTriggerAutoSetup = async () => {
+    try {
+      const res = await fetch('/api/system/setup', { method: 'POST' });
+      const data = await res.json();
+      if (data.success && data.report) {
+        setSystemStatus(data.report);
+      }
+    } catch (e) {
+      console.error('Auto setup request failed:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchSystemStatus();
+  }, []);
 
   // Load entries from localStorage or fallback to rich initial data
   const [entries, setEntries] = useState<DailyEntry[]>(() => {
@@ -107,12 +138,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col font-sans selection:bg-emerald-900/60 selection:text-emerald-200">
+    <div className="min-h-screen bg-[#f4f9fd] text-slate-800 flex flex-col font-sans selection:bg-sky-200 selection:text-sky-900">
       {/* Navigation */}
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         entries={entries}
+        onOpenSystemHealth={() => setIsHealthModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -154,16 +186,25 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-stone-800/80 bg-stone-950/80 py-6 text-center text-xs text-stone-500">
+      <footer className="border-t border-sky-100 bg-white/80 py-6 text-center text-xs text-slate-500 mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>
+          <p className="font-medium text-slate-600">
             把日子過好 · 個人自我教練與閉環知識庫 (Personal Operating System)
           </p>
-          <p className="text-[11px] text-stone-600">
+          <p className="text-[11px] text-slate-400">
             阿德勒課題分離 · 福格微小行為模型 · Obsidian 雙向連結閉環架構
           </p>
         </div>
       </footer>
+
+      {/* System Health and Auto-Config Modal */}
+      <SystemHealthModal
+        isOpen={isHealthModalOpen}
+        onClose={() => setIsHealthModalOpen(false)}
+        statusData={systemStatus}
+        onRefresh={fetchSystemStatus}
+        onTriggerSetup={handleTriggerAutoSetup}
+      />
     </div>
   );
 }

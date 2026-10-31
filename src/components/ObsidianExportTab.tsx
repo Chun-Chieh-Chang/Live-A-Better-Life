@@ -15,7 +15,6 @@ import {
   Folder, 
   Database, 
   Upload, 
-  Sparkles,
   Info
 } from 'lucide-react';
 
@@ -34,7 +33,6 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
   const [copied, setCopied] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
-  // Compute file content based on selection
   const getFileContent = (path: string): string => {
     if (path === '02_模版/每日自我教練模版.md') {
       return generateTemplateMarkdown();
@@ -85,15 +83,11 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
     downloadFile(filename, currentContent);
   };
 
-  // Download all daily notes sequentially
   const handleDownloadAllNotes = () => {
-    // Download Personal OS
     downloadFile('個人操作手冊.md', generatePersonalOSMarkdown(personalOS));
-    // Download Template
     setTimeout(() => {
       downloadFile('每日自我教練模版.md', generateTemplateMarkdown());
     }, 300);
-    // Download Entries
     entries.forEach((e, idx) => {
       setTimeout(() => {
         downloadFile(`${e.date}.md`, generateDailyNoteMarkdown(e, personalOS));
@@ -101,7 +95,6 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
     });
   };
 
-  // Backup JSON
   const handleExportJSON = () => {
     const backup = {
       version: '1.0',
@@ -112,7 +105,6 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
     downloadFile(`life-os-backup-${new Date().toISOString().split('T')[0]}.json`, JSON.stringify(backup, null, 2), 'application/json');
   };
 
-  // Import JSON
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -137,18 +129,20 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Intro Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-stone-900/60 p-5 rounded-2xl border border-stone-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-sky-100 shadow-sm shadow-sky-900/5">
         <div>
-          <div className="flex items-center gap-2">
-            <FolderTree className="w-5 h-5 text-purple-400" />
-            <h2 className="text-xl font-bold text-stone-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-sky-50 text-[#0084ff]">
+              <FolderTree className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-extrabold text-[#09223b]">
               Obsidian 知識庫無縫整合
             </h2>
           </div>
-          <p className="text-xs text-stone-400 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             系統中所有的反省、策略與配方，皆百分之百遵循 Obsidian 標準 Markdown 格式（含區塊引用 
-            <code className="text-purple-300"> ![[ ]]</code>、雙向連結 
-            <code className="text-purple-300"> [[ ]]</code>、Callout 區塊）。
+            <code className="text-[#0070ba] font-bold"> ![[ ]]</code>、雙向連結 
+            <code className="text-[#0070ba] font-bold"> [[ ]]</code>、Callout 區塊）。
             你可以隨時匯出至電腦的 Obsidian Vault。
           </p>
         </div>
@@ -156,7 +150,7 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownloadAllNotes}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 border border-purple-800 text-purple-200 text-xs font-medium transition"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0084ff] hover:bg-[#0073e6] text-white text-xs font-bold transition shadow-md shadow-sky-500/20"
           >
             <Download className="w-3.5 h-3.5" />
             <span>批次下載全庫 Markdown</span>
@@ -167,17 +161,17 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
       {/* Main File Explorer & Markdown Previewer */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left: Folder Tree */}
-        <div className="bg-stone-900/80 rounded-2xl border border-stone-800 p-4 space-y-4">
-          <h3 className="text-xs font-semibold text-stone-300 uppercase tracking-wider flex items-center gap-2">
-            <Folder className="w-4 h-4 text-stone-400" />
+        <div className="bg-white rounded-2xl border border-sky-100 p-5 space-y-4 shadow-sm shadow-sky-900/5">
+          <h3 className="text-xs font-bold text-[#09223b] uppercase tracking-wider flex items-center gap-2">
+            <Folder className="w-4 h-4 text-[#0084ff]" />
             <span>Obsidian Vault 檔案結構</span>
           </h3>
 
           <div className="space-y-3 text-xs">
             {/* 01_日誌 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-stone-400 font-medium py-1">
-                <Folder className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="flex items-center gap-1.5 text-slate-700 font-semibold py-1">
+                <Folder className="w-3.5 h-3.5 text-emerald-600" />
                 <span>📂 01_日誌 ({entries.length})</span>
               </div>
               <div className="pl-4 space-y-0.5 max-h-40 overflow-y-auto">
@@ -188,13 +182,13 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
                     <button
                       key={e.id}
                       onClick={() => setSelectedFile(path)}
-                      className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded transition ${
+                      className={`w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition font-mono ${
                         isSelected 
-                          ? 'bg-purple-950/80 text-purple-300 font-semibold' 
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                          ? 'bg-sky-50 text-[#0084ff] font-bold border border-sky-200' 
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                       }`}
                     >
-                      <FileText className="w-3 h-3 text-stone-500" />
+                      <FileText className="w-3 h-3 text-slate-400" />
                       <span>{e.date}.md</span>
                     </button>
                   );
@@ -204,20 +198,20 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
 
             {/* 02_模版 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-stone-400 font-medium py-1">
-                <Folder className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center gap-1.5 text-slate-700 font-semibold py-1">
+                <Folder className="w-3.5 h-3.5 text-amber-500" />
                 <span>📂 02_模版</span>
               </div>
               <div className="pl-4">
                 <button
                   onClick={() => setSelectedFile('02_模版/每日自我教練模版.md')}
-                  className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded transition ${
+                  className={`w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition ${
                     selectedFile === '02_模版/每日自我教練模版.md'
-                      ? 'bg-purple-950/80 text-purple-300 font-semibold' 
-                      : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                      ? 'bg-sky-50 text-[#0084ff] font-bold border border-sky-200' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  <FileText className="w-3 h-3 text-amber-500/80" />
+                  <FileText className="w-3 h-3 text-amber-500" />
                   <span>每日自我教練模版.md</span>
                 </button>
               </div>
@@ -225,31 +219,31 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
 
             {/* 03_知識庫 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-stone-400 font-medium py-1">
-                <Folder className="w-3.5 h-3.5 text-teal-400" />
+              <div className="flex items-center gap-1.5 text-slate-700 font-semibold py-1">
+                <Folder className="w-3.5 h-3.5 text-teal-600" />
                 <span>📂 03_知識庫</span>
               </div>
               <div className="pl-4 space-y-0.5">
                 <button
                   onClick={() => setSelectedFile('03_知識庫/個人操作手冊.md')}
-                  className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded transition ${
+                  className={`w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition ${
                     selectedFile === '03_知識庫/個人操作手冊.md'
-                      ? 'bg-purple-950/80 text-purple-300 font-semibold' 
-                      : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                      ? 'bg-sky-50 text-[#0084ff] font-bold border border-sky-200' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  <FileText className="w-3 h-3 text-teal-500/80" />
+                  <FileText className="w-3 h-3 text-teal-600" />
                   <span>個人操作手冊.md</span>
                 </button>
                 <button
                   onClick={() => setSelectedFile('03_知識庫/AI教練行為準則.md')}
-                  className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded transition ${
+                  className={`w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition ${
                     selectedFile === '03_知識庫/AI教練行為準則.md'
-                      ? 'bg-purple-950/80 text-purple-300 font-semibold' 
-                      : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                      ? 'bg-sky-50 text-[#0084ff] font-bold border border-sky-200' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  <FileText className="w-3 h-3 text-teal-500/80" />
+                  <FileText className="w-3 h-3 text-teal-600" />
                   <span>AI教練行為準則.md</span>
                 </button>
               </div>
@@ -257,21 +251,21 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
           </div>
 
           {/* Backup & Restore Box */}
-          <div className="pt-4 border-t border-stone-800 space-y-2">
-            <span className="text-[11px] font-semibold text-stone-400 block">
+          <div className="pt-4 border-t border-sky-100 space-y-2">
+            <span className="text-[11px] font-bold text-slate-500 block">
               資料備份與還原 (JSON)
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportJSON}
-                className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 rounded-lg text-xs text-stone-300 border border-stone-700 transition"
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-sky-50 rounded-xl text-xs font-semibold text-slate-700 border border-sky-200 transition shadow-2xs"
               >
-                <Database className="w-3 h-3 text-emerald-400" />
+                <Database className="w-3.5 h-3.5 text-[#0084ff]" />
                 <span>匯出備份</span>
               </button>
 
-              <label className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 rounded-lg text-xs text-stone-300 border border-stone-700 cursor-pointer transition">
-                <Upload className="w-3 h-3 text-amber-400" />
+              <label className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-sky-50 rounded-xl text-xs font-semibold text-slate-700 border border-sky-200 cursor-pointer transition shadow-2xs">
+                <Upload className="w-3.5 h-3.5 text-amber-500" />
                 <span>匯入備份</span>
                 <input
                   type="file"
@@ -282,19 +276,23 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
               </label>
             </div>
             {importStatus && (
-              <p className="text-[11px] text-stone-300 bg-stone-950 p-2 rounded border border-stone-800">
+              <p className="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200 font-medium">
                 {importStatus}
               </p>
             )}
           </div>
         </div>
 
-        {/* Right: Markdown Content Preview */}
-        <div className="md:col-span-2 bg-stone-900/80 rounded-2xl border border-stone-800 p-5 flex flex-col space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-purple-400" />
-              <span className="font-mono text-xs font-semibold text-stone-200">
+        {/* Right: Markdown Content Preview (Deep Ocean Navy Window matching Screenshots!) */}
+        <div className="md:col-span-2 bg-[#0b3149] rounded-2xl border border-[#0284c7]/40 p-5 flex flex-col space-y-3 shadow-xl shadow-sky-950/20 text-white">
+          <div className="flex items-center justify-between border-b border-[#0d3b5b] pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+              </div>
+              <span className="font-mono text-xs font-bold text-[#7dd3fc]">
                 {selectedFile}
               </span>
             </div>
@@ -302,14 +300,14 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs border border-stone-700 transition"
+                className="flex items-center gap-1.5 px-3 py-1 bg-[#072438] hover:bg-[#0a314d] text-[#7dd3fc] rounded-lg text-xs border border-[#0284c7]/50 transition font-medium"
               >
-                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#38bdf8]" />}
                 <span>{copied ? '已複製' : '複製內容'}</span>
               </button>
               <button
                 onClick={handleDownloadSingle}
-                className="flex items-center gap-1.5 px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs border border-stone-700 transition"
+                className="flex items-center gap-1.5 px-3 py-1 bg-[#0084ff] hover:bg-[#0073e6] text-white rounded-lg text-xs font-semibold transition shadow-xs"
               >
                 <Download className="w-3 h-3" />
                 <span>下載檔案</span>
@@ -317,13 +315,13 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
             </div>
           </div>
 
-          {/* Code Viewer */}
-          <div className="flex-1 min-h-[380px] bg-stone-950 p-4 rounded-xl border border-stone-800/80 font-mono text-xs text-stone-300 leading-relaxed overflow-x-auto whitespace-pre-wrap selection:bg-purple-900/50">
+          {/* Code Viewer in Deep Navy */}
+          <div className="flex-1 min-h-[380px] bg-[#072236] p-4 rounded-xl border border-[#0d3d5f] font-mono text-xs text-slate-200 leading-relaxed overflow-x-auto whitespace-pre-wrap selection:bg-[#0084ff]/40">
             {currentContent}
           </div>
 
-          <div className="flex items-center gap-2 text-stone-500 text-[11px] pt-1">
-            <Info className="w-3.5 h-3.5 shrink-0" />
+          <div className="flex items-center gap-2 text-sky-300/70 text-[11px] pt-1">
+            <Info className="w-3.5 h-3.5 shrink-0 text-[#38bdf8]" />
             <span>
               提示：將上述檔案直接複製貼到 Obsidian 的對應資料夾內，即可完美保有雙向連結與呼叫指令。
             </span>

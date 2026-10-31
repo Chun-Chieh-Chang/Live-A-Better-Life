@@ -12,10 +12,8 @@ import {
   Download, 
   Check, 
   BrainCircuit, 
-  Lightbulb, 
   PlusCircle, 
-  AlertTriangle,
-  ArrowRight
+  Tag
 } from 'lucide-react';
 
 interface DailyReflectionTabProps {
@@ -147,7 +145,6 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
 
   // Push strategy directly to Personal OS (closed-loop feedback)
   const handleAddToPersonalOS = (strat: string) => {
-    // Parse "If ... Then ..." format
     const match = strat.match(/If\s+(.*?),\s*Then\s+(.*)/i);
     if (match) {
       onAddIfThenStrategy(match[1].trim(), match[2].trim(), state === 'bad' ? 'emotion' : 'life');
@@ -300,19 +297,21 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Date Header & Quick Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-stone-900/60 p-4 rounded-2xl border border-stone-800">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-stone-800 text-stone-300">
-            <Calendar className="w-5 h-5 text-emerald-400" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-sky-100 shadow-sm shadow-sky-900/5">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-sky-50 text-[#0084ff]">
+            <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-stone-100 flex items-center gap-2">
-              <span>反省日誌日期</span>
-              <span className="text-xs font-normal text-stone-400 bg-stone-800 px-2 py-0.5 rounded">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-[#09223b]">
+                反省日誌日期
+              </h2>
+              <span className="text-xs font-semibold text-[#0070ba] bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
                 {selectedDate === getTodayString() ? '今天' : selectedDate}
               </span>
-            </h2>
-            <p className="text-xs text-stone-400">
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
               透過直覺式的每日歸零，將日子經營成一本自帶修復力的人生地圖
             </p>
           </div>
@@ -323,77 +322,77 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-stone-800 border border-stone-700 text-stone-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-emerald-500"
+            className="bg-[#f8fafc] border border-sky-200 text-slate-700 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#0084ff] focus:bg-white shadow-xs"
           />
           <button
             onClick={() => setSelectedDate(getTodayString())}
-            className="text-xs px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-lg border border-stone-700 transition"
+            className="text-xs px-3 py-1.5 bg-white hover:bg-sky-50 text-[#0070ba] font-semibold rounded-xl border border-sky-200 transition shadow-xs"
           >
             回今天
           </button>
         </div>
       </div>
 
-      {/* 🛡️ 晨間防禦機制 (Closed-Loop Transclusion from Personal OS) */}
-      <div className="bg-stone-900/90 rounded-2xl border border-emerald-900/50 p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -z-10" />
-        
-        <div className="flex items-center justify-between mb-3 border-b border-stone-800/80 pb-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-semibold text-stone-100 text-sm sm:text-base flex items-center gap-2">
-              <span>🛡️ 今日防禦與策略 (系統自動回饋)</span>
+      {/* 🛡️ 晨間防禦機制 (Signature Deep Ocean Navy Box from Screenshots) */}
+      <div className="bg-[#0b3149] rounded-2xl border border-[#0284c7]/30 p-5 shadow-lg shadow-sky-950/15 text-white relative overflow-hidden">
+        <div className="flex items-center justify-between mb-3.5 border-b border-[#0d3b5b] pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-[#0084ff]/20 text-[#38bdf8]">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-sm sm:text-base tracking-wide">
+              🛡️ 今日防禦與策略 (系統自動回饋)
             </h3>
           </div>
-          <span className="text-xs text-emerald-400/90 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40">
-            Obsidian 區塊引用 ![[個人操作手冊]]
+          <span className="text-xs text-[#7dd3fc] bg-[#072438] px-3 py-0.5 rounded-full border border-[#0284c7]/40 font-mono">
+            ![[個人操作手冊]] 自動投影
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Active If-Then */}
-          <div className="bg-stone-950/60 rounded-xl p-3.5 border border-stone-800/70">
-            <h4 className="text-xs font-semibold text-stone-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <div className="bg-[#072236]/90 rounded-xl p-4 border border-[#0d3d5f]">
+            <h4 className="text-xs font-bold text-[#7dd3fc] uppercase tracking-wider mb-2.5 flex items-center justify-between">
               <span>⚡ 本週 If-Then 策略</span>
-              <span className="text-[10px] text-stone-500 font-normal">（日間即時干預）</span>
+              <span className="text-[10px] text-sky-400/80 font-normal">（日間即時干預）</span>
             </h4>
             {activeStrategies.length > 0 ? (
-              <ul className="space-y-2 text-xs text-stone-300">
+              <ul className="space-y-2 text-xs">
                 {activeStrategies.map((strat) => (
-                  <li key={strat.id} className="flex items-start gap-2 bg-stone-900/50 p-2 rounded-lg border border-stone-800/60">
-                    <span className="text-emerald-400 font-bold shrink-0 mt-0.5">If</span>
-                    <span className="text-stone-300">{strat.ifText}，</span>
-                    <span className="text-amber-400 font-bold shrink-0 mt-0.5">Then</span>
-                    <span className="text-stone-200 font-medium">{strat.thenText}</span>
+                  <li key={strat.id} className="flex items-start gap-2 bg-[#0c2f4a] p-2.5 rounded-lg border border-[#14476e]/60 text-slate-200">
+                    <span className="text-[#38bdf8] font-extrabold shrink-0 mt-0.5">If</span>
+                    <span className="text-slate-200">{strat.ifText}，</span>
+                    <span className="text-amber-300 font-extrabold shrink-0 mt-0.5">Then</span>
+                    <span className="text-white font-semibold">{strat.thenText}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-stone-500 italic py-2">
+              <p className="text-xs text-sky-300/60 italic py-2">
                 尚未啟用任何策略，可在《個人操作手冊》中勾選啟用。
               </p>
             )}
           </div>
 
           {/* Active Habits */}
-          <div className="bg-stone-950/60 rounded-xl p-3.5 border border-stone-800/70">
-            <h4 className="text-xs font-semibold text-stone-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <div className="bg-[#072236]/90 rounded-xl p-4 border border-[#0d3d5f]">
+            <h4 className="text-xs font-bold text-[#7dd3fc] uppercase tracking-wider mb-2.5 flex items-center justify-between">
               <span>🎯 本週短期外掛提問</span>
-              <span className="text-[10px] text-stone-500 font-normal">（刻意練習）</span>
+              <span className="text-[10px] text-sky-400/80 font-normal">（刻意練習）</span>
             </h4>
             {activeHabits.length > 0 ? (
-              <ul className="space-y-2 text-xs text-stone-300">
+              <ul className="space-y-2 text-xs">
                 {activeHabits.map((habit) => (
-                  <li key={habit.id} className="flex items-center gap-2 bg-stone-900/50 p-2 rounded-lg border border-stone-800/60">
-                    <div className="w-3.5 h-3.5 rounded border border-emerald-500/60 flex items-center justify-center text-emerald-400">
+                  <li key={habit.id} className="flex items-center gap-2.5 bg-[#0c2f4a] p-2.5 rounded-lg border border-[#14476e]/60 text-slate-200">
+                    <div className="w-4 h-4 rounded border border-[#38bdf8] flex items-center justify-center text-[#38bdf8] text-xs font-bold">
                       ✓
                     </div>
-                    <span>{habit.text}</span>
+                    <span className="text-white font-medium">{habit.text}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-stone-500 italic py-2">
+              <p className="text-xs text-sky-300/60 italic py-2">
                 尚未啟用任何提問，可在《個人操作手冊》中啟用。
               </p>
             )}
@@ -402,15 +401,15 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
       </div>
 
       {/* 🧭 第一層：狀態檢核：「我今天過得好嗎？」 */}
-      <div className="bg-stone-900/90 rounded-2xl border border-stone-800 p-6 shadow-xl">
+      <div className="bg-white rounded-2xl border border-sky-100 p-6 sm:p-8 shadow-sm shadow-sky-900/5">
         <div className="text-center max-w-xl mx-auto mb-6">
-          <span className="text-xs uppercase tracking-wider text-emerald-400 font-semibold mb-1 block">
+          <span className="text-xs uppercase tracking-wider text-[#0084ff] font-bold mb-1 block">
             極低阻力的睡前啟動點
           </span>
-          <h3 className="text-2xl font-bold text-stone-100 tracking-tight">
+          <h3 className="text-2xl font-extrabold text-[#09223b] tracking-tight">
             我今天過得好嗎？
           </h3>
-          <p className="text-xs text-stone-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             無論今天如何，都只是一筆幫助系統迭代的寶貴數據。
           </p>
         </div>
@@ -421,18 +420,18 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
           <button
             type="button"
             onClick={() => setState('good')}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
               state === 'good'
-                ? 'bg-emerald-950/60 border-emerald-500 text-stone-100 ring-2 ring-emerald-500/30 shadow-lg shadow-emerald-950/50'
-                : 'bg-stone-950/40 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                ? 'bg-emerald-50/90 border-emerald-400 text-emerald-950 ring-2 ring-emerald-400/30 shadow-md shadow-emerald-500/10'
+                : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/30'
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-2">
+            <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-2 shadow-xs">
               🟢
             </div>
-            <span className="font-bold text-base text-stone-100">好！</span>
-            <span className="text-xs text-stone-400 mt-0.5">有成就、順利、能量充沛</span>
-            <span className="text-[11px] text-emerald-400/90 mt-2 font-medium bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
+            <span className="font-bold text-base text-[#09223b]">好！</span>
+            <span className="text-xs text-slate-500 mt-0.5">有成就、順利、能量充沛</span>
+            <span className="text-[11px] text-emerald-700 mt-2 font-semibold bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-300/60">
               提煉成功配方
             </span>
           </button>
@@ -441,18 +440,18 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
           <button
             type="button"
             onClick={() => setState('bad')}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
               state === 'bad'
-                ? 'bg-rose-950/60 border-rose-500 text-stone-100 ring-2 ring-rose-500/30 shadow-lg shadow-rose-950/50'
-                : 'bg-stone-950/40 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                ? 'bg-rose-50/90 border-rose-400 text-rose-950 ring-2 ring-rose-400/30 shadow-md shadow-rose-500/10'
+                : 'bg-white border-slate-200 text-slate-600 hover:border-rose-300 hover:bg-rose-50/30'
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-2">
+            <div className="w-11 h-11 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mb-2 shadow-xs">
               🔴
             </div>
-            <span className="font-bold text-base text-stone-100">不好</span>
-            <span className="text-xs text-stone-400 mt-0.5">內耗、受挫、疲憊、卡關</span>
-            <span className="text-[11px] text-rose-400/90 mt-2 font-medium bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800/40">
+            <span className="font-bold text-base text-[#09223b]">不好</span>
+            <span className="text-xs text-slate-500 mt-0.5">內耗、受挫、疲憊、卡關</span>
+            <span className="text-[11px] text-rose-700 mt-2 font-semibold bg-rose-100/80 px-2.5 py-0.5 rounded-full border border-rose-300/60">
               解題模式 · 課題分離
             </span>
           </button>
@@ -461,18 +460,18 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
           <button
             type="button"
             onClick={() => setState('normal')}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
               state === 'normal'
-                ? 'bg-amber-950/60 border-amber-500 text-stone-100 ring-2 ring-amber-500/30 shadow-lg shadow-amber-950/50'
-                : 'bg-stone-950/40 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                ? 'bg-amber-50/90 border-amber-400 text-amber-950 ring-2 ring-amber-400/30 shadow-md shadow-amber-500/10'
+                : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50/30'
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-2">
+            <div className="w-11 h-11 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xl mb-2 shadow-xs">
               🟡
             </div>
-            <span className="font-bold text-base text-stone-100">普通</span>
-            <span className="text-xs text-stone-400 mt-0.5">平凡如水、說不上好壞</span>
-            <span className="text-[11px] text-amber-400/90 mt-2 font-medium bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800/40">
+            <span className="font-bold text-base text-[#09223b]">普通</span>
+            <span className="text-xs text-slate-500 mt-0.5">平凡如水、說不上好壞</span>
+            <span className="text-[11px] text-amber-800 mt-2 font-semibold bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300/60">
               捕捉微小瞬間
             </span>
           </button>
@@ -482,36 +481,36 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
         <div className="space-y-6 max-w-3xl mx-auto">
           {/* 🟢 IF GOOD */}
           {state === 'good' && (
-            <div className="space-y-4 bg-emerald-950/20 border border-emerald-900/40 p-5 rounded-2xl">
-              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+            <div className="space-y-4 bg-emerald-50/40 border border-emerald-200 p-5 rounded-2xl">
+              <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                 <span>🟢 狀態：好 — 轉化為可複製的成功配方</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1.5">
-                  1. 好在哪裡？ <span className="text-stone-500">（今天完成了什麼？有什麼值得開心的事？）</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  1. 好在哪裡？ <span className="text-slate-400 font-normal">（今天完成了什麼？有什麼值得開心的事？）</span>
                 </label>
                 <textarea
                   rows={2}
                   value={goodWhere}
                   onChange={(e) => setGoodWhere(e.target.value)}
                   placeholder="例如：今天工作效率極高，提早下班，還去公園慢跑了 30 分鐘..."
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff] focus:ring-2 focus:ring-sky-100 transition"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-stone-300">
+                  <label className="text-xs font-semibold text-slate-700">
                     2. 如何保持 / 我的成功配方是什麼？
                   </label>
                   <button
                     type="button"
                     onClick={handleCallAICoach}
                     disabled={isAiLoading}
-                    className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-medium bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-800/60 px-2.5 py-1 rounded-lg transition"
+                    className="flex items-center gap-1.5 text-xs text-[#0070ba] hover:text-[#0084ff] font-semibold bg-white hover:bg-sky-50 border border-sky-300 px-3 py-1 rounded-full transition shadow-xs"
                   >
-                    <BrainCircuit className="w-3.5 h-3.5" />
+                    <BrainCircuit className="w-3.5 h-3.5 text-[#0084ff]" />
                     <span>{isAiLoading ? 'AI 分析中...' : '大腦累了？讓 AI 提煉配方'}</span>
                   </button>
                 </div>
@@ -520,7 +519,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                   value={goodKeep}
                   onChange={(e) => setGoodKeep(e.target.value)}
                   placeholder="例如：昨晚睡滿 7.5 小時，且早上先吃了蛋白質豐富的早餐。➡️ 知識庫提煉：睡眠+蛋白質=高效率"
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff] focus:ring-2 focus:ring-sky-100 transition"
                 />
               </div>
             </div>
@@ -528,71 +527,71 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
 
           {/* 🔴 IF BAD */}
           {state === 'bad' && (
-            <div className="space-y-4 bg-rose-950/20 border border-rose-900/40 p-5 rounded-2xl">
+            <div className="space-y-4 bg-rose-50/40 border border-rose-200 p-5 rounded-2xl">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-rose-400 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
                   <span>🔴 狀態：不好 — 切斷情緒內耗，進入「解題模式」</span>
                 </div>
-                <span className="text-[11px] bg-rose-950/80 text-rose-300 px-2.5 py-0.5 rounded border border-rose-800/50">
+                <span className="text-[11px] bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full border border-rose-300 font-medium">
                   💡 區分「客觀事實」與「主觀情緒」
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-stone-300 mb-1.5 flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
                     <span>1. 不好在哪裡？（客觀事實）</span>
-                    <span className="text-[10px] text-stone-500">攝影機鏡頭拍得到的</span>
+                    <span className="text-[10px] text-slate-400">鏡頭拍得到的</span>
                   </label>
                   <textarea
                     rows={2}
                     value={badFact}
                     onChange={(e) => setBadFact(e.target.value)}
                     placeholder="例如：下午主管退回了我的提案，要求週五前重做..."
-                    className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500 transition"
+                    className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-300 mb-1.5 flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
                     <span>主觀情緒（內心感受）</span>
-                    <span className="text-[10px] text-stone-500">我的大腦附加的劇本</span>
+                    <span className="text-[10px] text-slate-400">大腦附加的劇本</span>
                   </label>
                   <textarea
                     rows={2}
                     value={badEmotion}
                     onChange={(e) => setBadEmotion(e.target.value)}
                     placeholder="例如：覺得委屈、丟臉，覺得自己能力很差，很想擺爛..."
-                    className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500 transition"
+                    className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1.5">
-                  2. 什麼原因？ <span className="text-stone-500">（客觀找出生活中的 bug，不帶自我批判）</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  2. 什麼原因？ <span className="text-slate-400 font-normal">（客觀找出生活中的 bug，不帶自我批判）</span>
                 </label>
                 <textarea
                   rows={2}
                   value={badReason}
                   onChange={(e) => setBadReason(e.target.value)}
                   placeholder="例如：提案前沒有先跟主管對焦核心指標，且今天因為太忙沒吃午餐，血糖低容易情緒失控..."
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-stone-300">
-                    3. 明天有什麼辦法改善？ <span className="text-stone-500">（只要 1% 的微小改變）</span>
+                  <label className="text-xs font-semibold text-slate-700">
+                    3. 明天有什麼辦法改善？ <span className="text-slate-400 font-normal">（只要 1% 的微小改變）</span>
                   </label>
                   <button
                     type="button"
                     onClick={handleCallAICoach}
                     disabled={isAiLoading}
-                    className="flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 font-medium bg-rose-950/80 hover:bg-rose-900/80 border border-rose-800/60 px-2.5 py-1 rounded-lg transition"
+                    className="flex items-center gap-1.5 text-xs text-rose-700 hover:text-rose-800 font-semibold bg-white hover:bg-rose-50 border border-rose-300 px-3 py-1 rounded-full transition shadow-xs"
                   >
-                    <BrainCircuit className="w-3.5 h-3.5" />
+                    <BrainCircuit className="w-3.5 h-3.5 text-rose-600" />
                     <span>{isAiLoading ? 'AI 教練思考中...' : '認知枯竭？讓 AI 教練給予 If-Then 解法'}</span>
                   </button>
                 </div>
@@ -601,7 +600,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                   value={badImprove}
                   onChange={(e) => setBadImprove(e.target.value)}
                   placeholder="例如：If 明天做提案前，Then 先花 5 分鐘寫大綱跟主管口頭確認。If 餓了，Then 先吃顆茶葉蛋。"
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-rose-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition"
                 />
               </div>
             </div>
@@ -609,13 +608,13 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
 
           {/* 🟡 IF NORMAL */}
           {state === 'normal' && (
-            <div className="space-y-4 bg-amber-950/20 border border-amber-900/40 p-5 rounded-2xl">
-              <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+            <div className="space-y-4 bg-amber-50/40 border border-amber-200 p-5 rounded-2xl">
+              <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
                 <span>🟡 狀態：普通 — 在平凡如水中捕捉順利與平靜</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   1. 今天有哪個微小的瞬間，讓我感覺平靜或順利？
                 </label>
                 <textarea
@@ -623,22 +622,22 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                   value={normalMoment}
                   onChange={(e) => setNormalMoment(e.target.value)}
                   placeholder="例如：下班路上微風吹過來很舒服 / 今天的晚餐很熱很香 / 捷運剛好有位子坐..."
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-stone-300">
+                  <label className="text-xs font-semibold text-slate-700">
                     2. 如何把這個瞬間放大或複製？
                   </label>
                   <button
                     type="button"
                     onClick={handleCallAICoach}
                     disabled={isAiLoading}
-                    className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-medium bg-amber-950/80 hover:bg-amber-900/80 border border-amber-800/60 px-2.5 py-1 rounded-lg transition"
+                    className="flex items-center gap-1.5 text-xs text-amber-800 hover:text-amber-900 font-semibold bg-white hover:bg-amber-50 border border-amber-300 px-3 py-1 rounded-full transition shadow-xs"
                   >
-                    <BrainCircuit className="w-3.5 h-3.5" />
+                    <BrainCircuit className="w-3.5 h-3.5 text-amber-600" />
                     <span>{isAiLoading ? 'AI 構思中...' : '讓 AI 設計微小放大儀式'}</span>
                   </button>
                 </div>
@@ -647,65 +646,65 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                   value={normalAmplify}
                   onChange={(e) => setNormalAmplify(e.target.value)}
                   placeholder="例如：把那首歌加入放鬆歌單 / 明天下班也在那個站下車散步 10 分鐘..."
-                  className="w-full bg-stone-950/70 border border-stone-800 rounded-xl p-3 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition"
+                  className="w-full bg-white border border-sky-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition"
                 />
               </div>
             </div>
           )}
 
-          {/* 🤖 AI 認知副處理器建議結果卡片 (Cognitive Co-processor Result Card) */}
+          {/* 🤖 AI 認知副處理器建議結果卡片 (Signature Deep Ocean Navy Box from Screenshots) */}
           {aiAdvice && (
-            <div className="bg-gradient-to-br from-stone-900 to-stone-950 border border-emerald-500/40 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-              <div className="flex items-center justify-between mb-3 border-b border-stone-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+            <div className="bg-[#0b3149] border border-[#0284c7]/40 rounded-2xl p-6 shadow-xl shadow-sky-950/20 text-white relative overflow-hidden">
+              <div className="flex items-center justify-between mb-3.5 border-b border-[#0d3b5b] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[#0084ff]/30 text-[#38bdf8]">
                     <Sparkles className="w-4 h-4" />
                   </div>
-                  <h4 className="font-bold text-stone-100 text-sm">
+                  <h4 className="font-bold text-white text-sm sm:text-base">
                     🤖 AI 認知副處理器 · 解法與心理洞察
                   </h4>
                 </div>
-                <span className="text-xs text-stone-400">
-                  基於阿德勒課題分離 & 福格微小行為
+                <span className="text-xs text-[#7dd3fc] bg-[#072438] px-2.5 py-0.5 rounded-full border border-[#0284c7]/40 font-medium">
+                  阿德勒課題分離 & 福格微小行為
                 </span>
               </div>
 
               {/* Psychological Insight */}
-              <div className="bg-stone-800/40 border border-stone-700/50 rounded-xl p-3 text-xs text-stone-300 mb-3.5 leading-relaxed">
-                <span className="text-emerald-400 font-semibold block mb-1">
+              <div className="bg-[#072438] border border-[#14476e]/70 rounded-xl p-3.5 text-xs text-slate-200 mb-4 leading-relaxed">
+                <span className="text-[#38bdf8] font-bold block mb-1">
                   💡 心理學與思維拆解：
                 </span>
                 {aiAdvice.psychologicalInsight}
               </div>
 
               {/* Strategies */}
-              <div className="space-y-2 mb-4">
-                <div className="text-xs font-semibold text-stone-300 flex items-center justify-between">
+              <div className="space-y-2.5 mb-4">
+                <div className="text-xs font-bold text-[#7dd3fc] flex items-center justify-between">
                   <span>⚡ 建議採用的 If-Then 行為策略：</span>
-                  <span className="text-[11px] text-stone-500 font-normal">
+                  <span className="text-[11px] text-sky-300/70 font-normal">
                     點擊「採用」填入筆記，或「加入手冊」隔天自動投影
                   </span>
                 </div>
                 {aiAdvice.strategies.map((strat, idx) => (
                   <div 
                     key={idx}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-stone-950/80 p-3 rounded-xl border border-stone-800 text-xs"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-[#0c2f4a] p-3 rounded-xl border border-[#14476e] text-xs"
                   >
-                    <span className="text-stone-200 font-mono leading-relaxed">{strat}</span>
+                    <span className="text-white font-mono leading-relaxed">{strat}</span>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
                         onClick={() => handleAdoptStrategy(strat)}
-                        className="px-2.5 py-1 bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-800/50 rounded-lg transition"
+                        className="px-3 py-1 bg-[#0084ff] text-white hover:bg-[#0073e6] font-semibold rounded-lg transition shadow-xs"
                       >
                         採用填入
                       </button>
                       <button
                         type="button"
                         onClick={() => handleAddToPersonalOS(strat)}
-                        className="px-2.5 py-1 bg-stone-800 text-stone-300 hover:bg-stone-700 border border-stone-700 rounded-lg transition flex items-center gap-1"
+                        className="px-3 py-1 bg-[#072438] text-[#7dd3fc] hover:bg-[#0a314d] border border-[#0284c7]/50 rounded-lg transition flex items-center gap-1 font-semibold"
                       >
-                        <PlusCircle className="w-3 h-3 text-emerald-400" />
+                        <PlusCircle className="w-3.5 h-3.5 text-[#38bdf8]" />
                         <span>加入手冊</span>
                       </button>
                     </div>
@@ -714,7 +713,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
               </div>
 
               {strategyAdded && (
-                <div className="text-xs text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 p-2 rounded-lg flex items-center gap-2 mb-3">
+                <div className="text-xs text-emerald-300 bg-emerald-950/80 border border-emerald-700/60 p-2.5 rounded-lg flex items-center gap-2 mb-3">
                   <Check className="w-4 h-4 text-emerald-400" />
                   <span>已成功將策略「{strategyAdded}」加入《個人操作手冊》，明天晨間自動防禦！</span>
                 </div>
@@ -722,8 +721,8 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
 
               {/* Encouragement */}
               {aiAdvice.encouragement && (
-                <div className="text-xs text-stone-400 italic border-t border-stone-800/80 pt-2.5 flex items-center gap-2">
-                  <span className="text-emerald-400">“</span>
+                <div className="text-xs text-sky-200/90 italic border-t border-[#0d3b5b] pt-3 flex items-center gap-2">
+                  <span className="text-[#38bdf8] font-bold">“</span>
                   <span>{aiAdvice.encouragement}</span>
                 </div>
               )}
@@ -731,16 +730,17 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
           )}
 
           {/* 🏷️ 標籤與雙向連結 (Tags & Backlinks) */}
-          <div className="bg-stone-950/40 border border-stone-800/80 rounded-2xl p-5 space-y-4">
-            <h4 className="text-xs font-semibold text-stone-300 uppercase tracking-wider flex items-center gap-2">
-              <span>🏷️ 今日標籤 (Tags) 與 雙向連結 (Backlinks)</span>
-              <span className="text-[10px] text-stone-500 font-normal">（建構知識庫與關係網的核心）</span>
+          <div className="bg-white border border-sky-100 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm shadow-sky-900/5">
+            <h4 className="text-xs font-bold text-[#09223b] uppercase tracking-wider flex items-center gap-2">
+              <Tag className="w-4 h-4 text-[#0084ff]" />
+              <span>今日標籤 (Tags) 與 雙向連結 (Backlinks)</span>
+              <span className="text-[10px] text-slate-400 font-normal">（建構知識庫與關係網的核心）</span>
             </h4>
 
             {/* Tags Selection */}
             <div>
-              <span className="text-xs text-stone-400 block mb-2">常用標籤 #：</span>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <span className="text-xs text-slate-500 block mb-2 font-medium">常用標籤 #：</span>
+              <div className="flex flex-wrap gap-1.5 mb-2.5">
                 {commonTags.map(tag => {
                   const isSelected = selectedTags.includes(tag);
                   return (
@@ -748,10 +748,10 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`text-xs px-2.5 py-1 rounded-lg transition ${
+                      className={`text-xs px-3 py-1 rounded-full transition font-medium ${
                         isSelected
-                          ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 font-medium'
-                          : 'bg-stone-900 text-stone-400 hover:bg-stone-800 border border-stone-800'
+                          ? 'bg-[#0084ff] text-white shadow-xs'
+                          : 'bg-sky-50 text-[#0070ba] hover:bg-sky-100 border border-sky-200/70'
                       }`}
                     >
                       {tag}
@@ -765,14 +765,14 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                 onChange={(e) => setCustomTagInput(e.target.value)}
                 onKeyDown={handleAddCustomTag}
                 placeholder="輸入自訂標籤後按 Enter（例如：#專案卡關）"
-                className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-[#f8fafc] border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff] focus:bg-white"
               />
             </div>
 
             {/* Backlinks [[ ]] Selection */}
             <div>
-              <span className="text-xs text-stone-400 block mb-2">關鍵因素雙向連結 [[ ]]：</span>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <span className="text-xs text-slate-500 block mb-2 font-medium">關鍵因素雙向連結 [[ ]]：</span>
+              <div className="flex flex-wrap gap-1.5 mb-2.5">
                 {commonFactors.map(factor => {
                   const isSelected = selectedFactors.includes(factor);
                   return (
@@ -780,10 +780,10 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                       key={factor}
                       type="button"
                       onClick={() => toggleFactor(factor)}
-                      className={`text-xs px-2.5 py-1 rounded-lg transition ${
+                      className={`text-xs px-3 py-1 rounded-full transition font-mono ${
                         isSelected
-                          ? 'bg-teal-600/30 text-teal-300 border border-teal-500/50 font-medium'
-                          : 'bg-stone-900 text-stone-400 hover:bg-stone-800 border border-stone-800'
+                          ? 'bg-[#0084ff] text-white shadow-xs font-semibold'
+                          : 'bg-white text-[#0070ba] hover:bg-sky-50 border border-sky-300'
                       }`}
                     >
                       {factor}
@@ -797,25 +797,25 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                 onChange={(e) => setCustomFactorInput(e.target.value)}
                 onKeyDown={handleAddCustomFactor}
                 placeholder="輸入自訂關鍵詞後按 Enter（例如：同事A 或 早午餐）"
-                className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-teal-500"
+                className="w-full bg-[#f8fafc] border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0084ff] focus:bg-white"
               />
             </div>
           </div>
 
           {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-stone-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sky-100">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={handleSave}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-stone-950 font-bold text-sm shadow-lg shadow-emerald-950/60 transition cursor-pointer"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#0084ff] hover:bg-[#0073e6] text-white font-bold text-sm shadow-md shadow-sky-500/25 transition cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>儲存今日日誌</span>
               </button>
 
               {saveSuccess && (
-                <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium animate-pulse">
+                <span className="text-xs text-emerald-600 flex items-center gap-1 font-bold animate-pulse">
                   <Check className="w-3.5 h-3.5" /> 已記錄歸檔
                 </span>
               )}
@@ -825,18 +825,18 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
               <button
                 type="button"
                 onClick={handleCopyMarkdown}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs border border-stone-700 transition"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-700 text-xs border border-sky-200 font-medium transition shadow-xs"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
                 <span>{copied ? '已複製 Obsidian 格式' : '複製 Obsidian MD'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadMarkdown}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs border border-stone-700 transition"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-700 text-xs border border-sky-200 font-medium transition shadow-xs"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-slate-500" />
                 <span>下載 .md</span>
               </button>
             </div>
