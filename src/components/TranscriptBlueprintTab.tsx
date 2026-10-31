@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FULL_TRANSCRIPT_MARKDOWN, AI_AGENT_BLUEPRINT_MARKDOWN } from '../data/initialData';
+import { FULL_TRANSCRIPT_MARKDOWN, AI_AGENT_BLUEPRINT_MARKDOWN, README_MARKDOWN } from '../data/initialData';
 import { downloadFile } from '../utils/markdownExporter';
 import { 
   ScrollText, 
@@ -10,12 +10,14 @@ import {
   CheckCircle2, 
   Sparkles, 
   ExternalLink,
-  Bot
+  Bot,
+  BookOpenCheck
 } from 'lucide-react';
 
 export const TranscriptBlueprintTab: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<'blueprint' | 'transcript'>('blueprint');
+  const [activeSection, setActiveSection] = useState<'blueprint' | 'readme' | 'transcript'>('blueprint');
   const [copiedBlueprint, setCopiedBlueprint] = useState(false);
+  const [copiedReadme, setCopiedReadme] = useState(false);
   const [copiedTranscript, setCopiedTranscript] = useState(false);
 
   const handleCopyBlueprint = () => {
@@ -26,6 +28,16 @@ export const TranscriptBlueprintTab: React.FC = () => {
 
   const handleDownloadBlueprint = () => {
     downloadFile('給AI_Agent的系統架設指令.md', AI_AGENT_BLUEPRINT_MARKDOWN);
+  };
+
+  const handleCopyReadme = () => {
+    navigator.clipboard.writeText(README_MARKDOWN);
+    setCopiedReadme(true);
+    setTimeout(() => setCopiedReadme(false), 2000);
+  };
+
+  const handleDownloadReadme = () => {
+    downloadFile('README.md', README_MARKDOWN);
   };
 
   const handleCopyTranscript = () => {
@@ -46,17 +58,16 @@ export const TranscriptBlueprintTab: React.FC = () => {
           <div className="flex items-center gap-2">
             <ScrollText className="w-5 h-5 text-emerald-400" />
             <h2 className="text-xl font-bold text-stone-100">
-              系統架設藍圖與完整對話逐字稿
+              系統架設藍圖、README 與對話逐字稿
             </h2>
           </div>
           <p className="text-xs text-stone-400 mt-1 max-w-2xl leading-relaxed">
-            此處收錄了我們討論「如何把日子過好」的完整思考演進過程，以及經由嚴格審查後、
-            為 AI IDE (Trae, Cline, Cursor, Qoder 等) 量身定制的高精度系統初始化指令。
+            此處收錄了本系統的完整規格架構、給 AI IDE 的初始化指令、專案 README 檔案，以及思考演進的對話逐字稿。
           </p>
         </div>
 
         {/* Section toggles */}
-        <div className="flex items-center gap-2 bg-stone-950 p-1.5 rounded-xl border border-stone-800">
+        <div className="flex flex-wrap items-center gap-1.5 bg-stone-950 p-1.5 rounded-xl border border-stone-800">
           <button
             onClick={() => setActiveSection('blueprint')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
@@ -66,7 +77,18 @@ export const TranscriptBlueprintTab: React.FC = () => {
             }`}
           >
             <Bot className="w-3.5 h-3.5" />
-            <span>🤖 給 AI IDE 的架設藍圖</span>
+            <span>🤖 AI IDE 藍圖</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('readme')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              activeSection === 'readme'
+                ? 'bg-emerald-600 text-stone-950 font-bold'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            <BookOpenCheck className="w-3.5 h-3.5" />
+            <span>📖 README.md</span>
           </button>
           <button
             onClick={() => setActiveSection('transcript')}
@@ -77,7 +99,7 @@ export const TranscriptBlueprintTab: React.FC = () => {
             }`}
           >
             <ScrollText className="w-3.5 h-3.5" />
-            <span>📜 完整對話逐字稿 (.md)</span>
+            <span>📜 逐字稿 (.md)</span>
           </button>
         </div>
       </div>
@@ -129,6 +151,46 @@ export const TranscriptBlueprintTab: React.FC = () => {
             <div className="bg-stone-950 p-4 rounded-xl border border-stone-800 font-mono text-xs text-stone-300 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto selection:bg-emerald-900/50">
               {AI_AGENT_BLUEPRINT_MARKDOWN}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* README.md Section */}
+      {activeSection === 'readme' && (
+        <div className="bg-stone-900/80 rounded-2xl border border-stone-800 p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-stone-800 pb-3">
+            <div className="flex items-center gap-2">
+              <BookOpenCheck className="w-4 h-4 text-emerald-400" />
+              <div>
+                <span className="font-bold text-stone-100 text-sm">
+                  專案 README.md (架構說明、Obsidian 配置與雲端部署)
+                </span>
+                <span className="text-[10px] text-emerald-400 block">
+                  已同步提交至 Git 並部屬至 Cloud Run 雲端服務
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyReadme}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-stone-950 font-bold text-xs transition cursor-pointer shadow-md"
+              >
+                {copiedReadme ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedReadme ? '已複製 README！' : '一鍵複製 README MD'}</span>
+              </button>
+              <button
+                onClick={handleDownloadReadme}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs border border-stone-700 transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>下載 README.md</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-stone-950 p-4 rounded-xl border border-stone-800 font-mono text-xs text-stone-300 whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto selection:bg-emerald-900/50">
+            {README_MARKDOWN}
           </div>
         </div>
       )}
