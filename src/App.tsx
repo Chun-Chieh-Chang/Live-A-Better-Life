@@ -55,7 +55,17 @@ export default function App() {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_ENTRIES_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // If saved has fewer than 20 entries, supplement with INITIAL_ENTRIES to ensure full 30-day data
+          if (parsed.length < 20) {
+            const map = new Map<string, DailyEntry>();
+            INITIAL_ENTRIES.forEach(e => map.set(e.date, e));
+            parsed.forEach(e => map.set(e.date, e));
+            return Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date));
+          }
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('Failed to load entries from localStorage', e);
@@ -138,7 +148,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f9fd] text-slate-800 flex flex-col font-sans selection:bg-sky-200 selection:text-sky-900">
+    <div className="min-h-screen bg-[#fefcf5] text-[#2c332d] flex flex-col font-sans selection:bg-[#dcead9] selection:text-[#1e3020]">
       {/* Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -186,12 +196,12 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-sky-100 bg-white/80 py-6 text-center text-xs text-slate-500 mt-12">
+      <footer className="border-t border-[#e8e5d8] bg-[#fbf9f1]/90 py-6 text-center text-xs text-[#6d756e] mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="font-medium text-slate-600">
+          <p className="font-medium text-[#444d45]">
             把日子過好 · 個人自我教練與閉環知識庫 (Personal Operating System)
           </p>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#868f87]">
             阿德勒課題分離 · 福格微小行為模型 · Obsidian 雙向連結閉環架構
           </p>
         </div>

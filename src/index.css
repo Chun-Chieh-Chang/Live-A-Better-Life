@@ -2,13 +2,13 @@
 
 @layer base {
   body {
-    background-color: #f4f9fd;
-    color: #0f172a;
+    background-color: #fefcf5;
+    color: #2c332d;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   }
 }
 
-/* Custom subtle scrollbars in cyan-slate theme */
+/* Custom subtle scrollbars in warm earthy olive-stone palette */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -19,10 +19,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c5ccc2;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9fa89b;
 }

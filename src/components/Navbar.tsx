@@ -29,24 +29,24 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
   ];
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-sm shadow-sky-900/5">
+    <header className="sticky top-0 z-30 bg-[#fefcf5]/95 backdrop-blur-md border-b border-[#e8e5d8] text-[#2c332d] shadow-xs">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Slogan */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0084ff] to-[#0284c7] flex items-center justify-center shadow-md shadow-sky-500/20 text-white">
-              <Sparkles className="w-5 h-5 fill-current" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#4d6b53] to-[#39523f] flex items-center justify-center shadow-md shadow-[#4d6b53]/20 text-white">
+              <Sparkles className="w-5 h-5 fill-current text-[#eaf2e8]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base tracking-tight text-[#09223b]">
+                <span className="font-extrabold text-base tracking-tight text-[#232724]">
                   把日子過好
                 </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0070ba] border border-sky-200 font-semibold">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#eff4ec] text-[#365239] border border-[#cadac6] font-semibold">
                   個人自我教練閉環系統
                 </span>
               </div>
-              <p className="text-xs text-slate-500 hidden sm:block">
+              <p className="text-xs text-[#717a72] hidden sm:block">
                 直覺條件反省 · 閉環知識庫 · AI 認知副處理器
               </p>
             </div>
@@ -58,21 +58,21 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
               <button
                 type="button"
                 onClick={onOpenSystemHealth}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-50/80 hover:bg-sky-100 border border-sky-300 text-[#0070ba] font-semibold transition cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#eff4ec] hover:bg-[#e2ebd9] border border-[#cadac6] text-[#365239] font-semibold transition cursor-pointer shadow-xs"
                 title="點擊查看系統啟動自檢與自動配置狀態"
               >
-                <span className="w-2 h-2 rounded-full bg-[#0084ff] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#4d6b53] animate-pulse" />
                 <span>系統自檢: 健全</span>
               </button>
             )}
 
             <div className="hidden md:flex items-center gap-2.5">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-sky-200 text-slate-600 shadow-xs">
-                <span className="text-slate-400">已記錄:</span>
-                <span className="font-bold text-[#09223b]">{entries.length} 天</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e2dfd2] text-[#555e56] shadow-2xs">
+                <span className="text-[#889189]">已記錄:</span>
+                <span className="font-bold text-[#232724]">{entries.length} 天</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-xs font-medium">
-                <span className="text-emerald-600/80">好日子率:</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#edf4ea] border border-[#bcd3b6] text-[#2e4c30] shadow-2xs font-medium">
+                <span className="text-[#517554]">好日子率:</span>
                 <span className="font-bold">{goodRatio}%</span>
               </div>
             </div>
@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 -mb-px scrollbar-none border-t border-sky-50">
+        <nav className="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 -mb-px scrollbar-none border-t border-[#f0ede1]">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -89,8 +89,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
                 onClick={() => onTabChange(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#0084ff] text-white shadow-md shadow-sky-500/20'
-                    : 'text-slate-600 hover:text-[#0084ff] hover:bg-sky-50/80 border border-transparent'
+                    ? 'bg-[#4d6b53] text-white shadow-md shadow-[#4d6b53]/25'
+                    : 'text-[#5c655d] hover:text-[#365239] hover:bg-[#f0f4ee] border border-transparent'
                 }`}
               >
                 {tab.icon}
