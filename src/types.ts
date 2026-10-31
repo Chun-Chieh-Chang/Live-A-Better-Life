@@ -72,4 +72,4 @@ export interface PersonalOS {
   avoidanceGuides: AvoidanceGuide[];
 }
 
-export type ActiveTab = 'daily' | 'personalOS' | 'insights' | 'obsidian' | 'transcript';
+export type ActiveTab = 'daily' | 'personalOS' | 'insights' | 'zen3d' | 'architecture' | 'obsidian' | 'transcript';

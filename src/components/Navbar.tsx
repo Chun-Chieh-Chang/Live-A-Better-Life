@@ -6,7 +6,9 @@ import {
   BarChart3, 
   FolderDown, 
   ScrollText, 
-  HeartHandshake
+  HeartHandshake,
+  Compass,
+  Workflow
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -24,6 +26,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
     { id: 'daily', label: '今日反省與實踐', icon: <HeartHandshake className="w-4 h-4" /> },
     { id: 'personalOS', label: '個人操作手冊 (中樞)', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'insights', label: '趨勢與生活洞察', icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'zen3d', label: '3D 心靈空間', icon: <Compass className="w-4 h-4" /> },
+    { id: 'architecture', label: '系統架構藍圖 (Archify)', icon: <Workflow className="w-4 h-4" /> },
     { id: 'obsidian', label: 'Obsidian 整合匯出', icon: <FolderDown className="w-4 h-4" /> },
     { id: 'transcript', label: '系統藍圖與逐字稿', icon: <ScrollText className="w-4 h-4" /> }
   ];
