@@ -6,13 +6,14 @@ $config = Get-LifeOSConfig $ConfigPath
 $resolvedConfig = (Resolve-Path -LiteralPath $ConfigPath).ProviderPath
 $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 $powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-$serverScript = Join-Path $PSScriptRoot 'Start-LifeOS.ps1'
-$backupScript = Join-Path $PSScriptRoot 'Backup.ps1'
-$serverArgs = '-NoProfile -WindowStyle Hidden -File "' + $serverScript + '" -ConfigPath "' + $resolvedConfig + '" -OpenBrowser'
-$backupArgs = '-NoProfile -WindowStyle Hidden -File "' + $backupScript + '" -ConfigPath "' + $resolvedConfig + '"'
+$serverScript = Join-Path $PSScriptRoot 'Run-Task.ps1'
+$backupScript = Join-Path $PSScriptRoot 'Run-Task.ps1'
+$serverArgs = '-NoProfile -WindowStyle Hidden -File "' + $serverScript + '" -ConfigPath "' + $resolvedConfig + '" -Mode Server'
+$backupArgs = '-NoProfile -WindowStyle Hidden -File "' + $backupScript + '" -ConfigPath "' + $resolvedConfig + '" -Mode Backup'
+$legacyConfig = Join-Path (Split-Path -Parent $config.ProjectRoot) 'Live-A-Better-Life-Data\config.json'
 foreach ($name in @('LifeOS-Server','LifeOS-Backup')) {
     $existing = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
-    if ($existing -and @($existing.Actions | Where-Object { $_.Arguments.IndexOf(('"' + $resolvedConfig + '"'), [StringComparison]::OrdinalIgnoreCase) -lt 0 }).Count -gt 0) {
+    if ($existing -and @($existing.Actions | Where-Object { $_.Arguments.IndexOf(('"' + $resolvedConfig + '"'), [StringComparison]::OrdinalIgnoreCase) -lt 0 -and -not ($_.Arguments.Contains(('"' + $legacyConfig + '"')) -and $_.Arguments.Contains(('"' + $serverScript + '"'))) }).Count -gt 0) {
         throw ('Refusing to overwrite an unrelated existing task: ' + $name)
     }
 }

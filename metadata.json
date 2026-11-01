@@ -1,6 +1,0 @@
-{
-  "name": "把日子過好 · 個人自我教練與知識庫",
-  "description": "基於直覺式條件反省、Obsidian 閉環知識庫與 AI 認知副處理器的人生操作系統",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

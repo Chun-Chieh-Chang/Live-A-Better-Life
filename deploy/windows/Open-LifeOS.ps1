@@ -8,7 +8,7 @@ if (-not (Test-LifeOSDesktopReady $config)) {
     $startScript = Join-Path $PSScriptRoot 'Start-LifeOS.ps1'
     $resolvedConfig = (Resolve-Path -LiteralPath $ConfigPath).ProviderPath
     $arguments = '-NoProfile -File "' + $startScript + '" -ConfigPath "' + $resolvedConfig + '"'
-    $process = Start-Process -FilePath $powerShell -ArgumentList $arguments -WorkingDirectory $config.ProjectRoot -PassThru
+    $process = Start-Process -FilePath $powerShell -ArgumentList $arguments -WorkingDirectory $config.ProjectRoot -WindowStyle Hidden -PassThru
     Wait-LifeOSDesktopReady -Config $config -Process $process
 }
 Open-LifeOSBrowser $config

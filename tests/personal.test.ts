@@ -11,7 +11,7 @@ import {
 } from "../server/personal-store";
 import { createApp } from "../server";
 import { emptyData } from "../src/utils/validation";
-import { INITIAL_ENTRIES } from "../src/data/initialData";
+import { INITIAL_ENTRIES } from "./fixtures/lifeData";
 
 // Public, fixed credentials for disposable test databases only. Never configure a real instance with these.
 const password = "test-only-password-123456";
@@ -290,8 +290,9 @@ test("hourly/day AI budgets persist and prevent SDK calls beyond quota", async (
 test("file database survives reopen, bounded backups and failure roll back atomically", async () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "life-os-store-"));
   const file = path.join(dir, "private.sqlite");
+  let s: PersonalStore | undefined;
   try {
-    let s = new PersonalStore(file);
+    s = new PersonalStore(file);
     await s.setPassword(password);
     s.write(data(), 0);
     const token = s.newSession();
@@ -303,14 +304,17 @@ test("file database survives reopen, bounded backups and failure roll back atomi
     s.db.exec(
       "CREATE TRIGGER fail_backup BEFORE INSERT ON backups BEGIN SELECT RAISE(ABORT,'disk failure'); END;",
     );
-    assert.throws(() => s.write(emptyData(), 1));
+    assert.throws(() => s!.write(emptyData(), 1));
     assert.deepEqual(s.read(), before);
     s.db.exec("DROP TRIGGER fail_backup");
     for (let i = 1; i <= 35; i++) s.write(data(), i);
     assert.equal(s.backups().length, 30);
-    assert.equal(statSync(file).mode & 0o777, 0o600);
     s.close();
+    s = undefined;
+    if (process.platform !== "win32")
+      assert.equal(statSync(file).mode & 0o777, 0o600);
   } finally {
+    s?.close();
     rmSync(dir, { recursive: true, force: true });
   }
 });
@@ -335,7 +339,8 @@ test("offline backup restores to a new database without overwriting the source",
         },
       );
     run(["export", backup], source);
-    assert.equal(statSync(backup).mode & 0o777, 0o600);
+    if (process.platform !== "win32")
+      assert.equal(statSync(backup).mode & 0o777, 0o600);
     assert.deepEqual(
       JSON.parse(readFileSync(backup, "utf8")).entries,
       data().entries,

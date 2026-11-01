@@ -1,51 +1,63 @@
-import React, { useState } from 'react';
-import { todayString } from '../utils/validation';
-import { PersonalOS, IfThenStrategy, HabitQuestion, EmergencyRecipe, AvoidanceGuide } from '../types';
-import { generatePersonalOSMarkdown, downloadFile } from '../utils/markdownExporter';
-import { 
-  Zap, 
-  Target, 
-  Heart, 
-  AlertOctagon, 
-  Plus, 
-  Trash2, 
-  Check, 
-  Copy, 
-  Download, 
-  BookOpen
-} from 'lucide-react';
+import React, { useState } from "react";
+import { todayString } from "../utils/validation";
+import {
+  PersonalOS,
+  IfThenStrategy,
+  HabitQuestion,
+  EmergencyRecipe,
+  AvoidanceGuide,
+} from "../types";
+import {
+  generatePersonalOSMarkdown,
+  downloadFile,
+} from "../utils/markdownExporter";
+import {
+  Zap,
+  Target,
+  Heart,
+  AlertOctagon,
+  Plus,
+  Trash2,
+  Check,
+  Copy,
+  Download,
+  BookOpen,
+} from "lucide-react";
 
 interface PersonalOSTabProps {
   personalOS: PersonalOS;
   onUpdatePersonalOS: (updated: PersonalOS) => boolean;
 }
 
-export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpdatePersonalOS }) => {
+export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({
+  personalOS,
+  onUpdatePersonalOS,
+}) => {
   const [copied, setCopied] = useState(false);
 
   // Modal / Input states
-  const [newIf, setNewIf] = useState('');
-  const [newThen, setNewThen] = useState('');
-  const [newHabit, setNewHabit] = useState('');
-  
-  const [newRecipeTitle, setNewRecipeTitle] = useState('');
-  const [newRecipeDesc, setNewRecipeDesc] = useState('');
-  const [newRecipeTag, setNewRecipeTag] = useState('#快樂配方');
+  const [newIf, setNewIf] = useState("");
+  const [newThen, setNewThen] = useState("");
+  const [newHabit, setNewHabit] = useState("");
 
-  const [newAvoidTitle, setNewAvoidTitle] = useState('');
-  const [newAvoidLesson, setNewAvoidLesson] = useState('');
-  const [newAvoidTag, setNewAvoidTag] = useState('#避坑指南');
+  const [newRecipeTitle, setNewRecipeTitle] = useState("");
+  const [newRecipeDesc, setNewRecipeDesc] = useState("");
+  const [newRecipeTag, setNewRecipeTag] = useState("#快樂配方");
 
-  // Toggle If-Then active state
+  const [newAvoidTitle, setNewAvoidTitle] = useState("");
+  const [newAvoidLesson, setNewAvoidLesson] = useState("");
+  const [newAvoidTag, setNewAvoidTag] = useState("#避坑指南");
+
+  // Toggle 小改變 active state
   const toggleIfThenActive = (id: string) => {
-    const updated = personalOS.ifThenStrategies.map(s => 
-      s.id === id ? { ...s, active: !s.active } : s
+    const updated = personalOS.ifThenStrategies.map((s) =>
+      s.id === id ? { ...s, active: !s.active } : s,
     );
     onUpdatePersonalOS({ ...personalOS, ifThenStrategies: updated });
   };
 
   const deleteIfThen = (id: string) => {
-    const updated = personalOS.ifThenStrategies.filter(s => s.id !== id);
+    const updated = personalOS.ifThenStrategies.filter((s) => s.id !== id);
     onUpdatePersonalOS({ ...personalOS, ifThenStrategies: updated });
   };
 
@@ -57,27 +69,30 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       ifText: newIf.trim(),
       thenText: newThen.trim(),
       active: true,
-      category: 'life',
-      sourceDate: todayString()
+      category: "life",
+      sourceDate: todayString(),
     };
-    if (!onUpdatePersonalOS({
-      ...personalOS,
-      ifThenStrategies: [newStrategy, ...personalOS.ifThenStrategies]
-    })) return;
-    setNewIf('');
-    setNewThen('');
+    if (
+      !onUpdatePersonalOS({
+        ...personalOS,
+        ifThenStrategies: [newStrategy, ...personalOS.ifThenStrategies],
+      })
+    )
+      return;
+    setNewIf("");
+    setNewThen("");
   };
 
   // Habit questions
   const toggleHabitActive = (id: string) => {
-    const updated = personalOS.habitQuestions.map(h => 
-      h.id === id ? { ...h, active: !h.active } : h
+    const updated = personalOS.habitQuestions.map((h) =>
+      h.id === id ? { ...h, active: !h.active } : h,
     );
     onUpdatePersonalOS({ ...personalOS, habitQuestions: updated });
   };
 
   const deleteHabit = (id: string) => {
-    const updated = personalOS.habitQuestions.filter(h => h.id !== id);
+    const updated = personalOS.habitQuestions.filter((h) => h.id !== id);
     onUpdatePersonalOS({ ...personalOS, habitQuestions: updated });
   };
 
@@ -87,13 +102,16 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
     const newH: HabitQuestion = {
       id: `habit-${Date.now()}`,
       text: newHabit.trim(),
-      active: true
+      active: true,
     };
-    if (!onUpdatePersonalOS({
-      ...personalOS,
-      habitQuestions: [...personalOS.habitQuestions, newH]
-    })) return;
-    setNewHabit('');
+    if (
+      !onUpdatePersonalOS({
+        ...personalOS,
+        habitQuestions: [...personalOS.habitQuestions, newH],
+      })
+    )
+      return;
+    setNewHabit("");
   };
 
   // Emergency recipes
@@ -104,18 +122,21 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       id: `recipe-${Date.now()}`,
       title: newRecipeTitle.trim(),
       description: newRecipeDesc.trim(),
-      tag: newRecipeTag.trim() || '#快樂配方'
+      tag: newRecipeTag.trim() || "#快樂配方",
     };
-    if (!onUpdatePersonalOS({
-      ...personalOS,
-      emergencyRecipes: [r, ...personalOS.emergencyRecipes]
-    })) return;
-    setNewRecipeTitle('');
-    setNewRecipeDesc('');
+    if (
+      !onUpdatePersonalOS({
+        ...personalOS,
+        emergencyRecipes: [r, ...personalOS.emergencyRecipes],
+      })
+    )
+      return;
+    setNewRecipeTitle("");
+    setNewRecipeDesc("");
   };
 
   const deleteRecipe = (id: string) => {
-    const updated = personalOS.emergencyRecipes.filter(r => r.id !== id);
+    const updated = personalOS.emergencyRecipes.filter((r) => r.id !== id);
     onUpdatePersonalOS({ ...personalOS, emergencyRecipes: updated });
   };
 
@@ -127,18 +148,21 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       id: `avoid-${Date.now()}`,
       title: newAvoidTitle.trim(),
       lesson: newAvoidLesson.trim(),
-      tag: newAvoidTag.trim() || '#避坑指南'
+      tag: newAvoidTag.trim() || "#避坑指南",
     };
-    if (!onUpdatePersonalOS({
-      ...personalOS,
-      avoidanceGuides: [a, ...personalOS.avoidanceGuides]
-    })) return;
-    setNewAvoidTitle('');
-    setNewAvoidLesson('');
+    if (
+      !onUpdatePersonalOS({
+        ...personalOS,
+        avoidanceGuides: [a, ...personalOS.avoidanceGuides],
+      })
+    )
+      return;
+    setNewAvoidTitle("");
+    setNewAvoidLesson("");
   };
 
   const deleteAvoidance = (id: string) => {
-    const updated = personalOS.avoidanceGuides.filter(a => a.id !== id);
+    const updated = personalOS.avoidanceGuides.filter((a) => a.id !== id);
     onUpdatePersonalOS({ ...personalOS, avoidanceGuides: updated });
   };
 
@@ -151,7 +175,7 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
 
   const handleDownloadMarkdown = () => {
     const md = generatePersonalOSMarkdown(personalOS);
-    downloadFile('個人操作手冊.md', md);
+    downloadFile("我的小改變.md", md);
   };
 
   return (
@@ -164,36 +188,40 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               <BookOpen className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-extrabold text-[#222d25]">
-              個人操作手冊 (Personal Operating System)
+              我的小改變
             </h2>
           </div>
-          <p className="text-xs text-[#616c62] mt-1 max-w-2xl leading-relaxed">
-            這是這套閉環系統的「大腦中樞」。每週復盤時提煉出的有效解法與血淚經驗，
-            會自動投影回明天的日記與晨間防禦中，不再重複踩坑，打造專屬的生活操作手冊。
+          <p className="text-sm text-[#616c62] mt-1 max-w-2xl leading-relaxed">
+            把對自己有幫助的做法留在這裡，
+            每天提醒自己，慢慢找到適合的生活方式。
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyMarkdown}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#eff4ec] text-[#3d5942] font-semibold text-xs border border-[#c8d8c3] transition shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#eff4ec] text-[#3d5942] font-semibold text-sm border border-[#c8d8c3] transition shadow-xs cursor-pointer"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#4d6b53]" />}
-            <span>{copied ? '已複製手冊 MD' : '複製 Obsidian MD'}</span>
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+            ) : (
+              <Copy className="w-3.5 h-3.5 text-[#4d6b53]" />
+            )}
+            <span>{copied ? "已複製手冊 MD" : "複製文字"}</span>
           </button>
           <button
             onClick={handleDownloadMarkdown}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#eff4ec] text-[#2c332d] font-medium text-xs border border-[#ded9c8] transition shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#eff4ec] text-[#2c332d] font-medium text-sm border border-[#ded9c8] transition shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-[#616c62]" />
-            <span>下載 .md</span>
+            <span>下載筆記</span>
           </button>
         </div>
       </div>
 
       {/* Grid: 4 Pillars of Personal OS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 1. ⚡ 本週 If-Then 策略 */}
+        {/* 1. 想試試的小改變 */}
         <div className="bg-[#fcfbf7] rounded-2xl border border-[#e8e5d8] p-6 space-y-4 shadow-sm shadow-[#4d6b53]/5">
           <div className="flex items-center justify-between border-b border-[#e8e5d8] pb-3">
             <div className="flex items-center gap-2.5">
@@ -202,31 +230,35 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               </div>
               <div>
                 <h3 className="font-bold text-[#222d25] text-sm">
-                  ⚡ 本週 If-Then 策略
+                  想試試的小改變
                 </h3>
-                <p className="text-[11px] text-[#778378]">
-                  勾選的項目會自動投影至每日晨間日誌中（日間即時干預）
+                <p className="text-sm text-[#778378]">
+                  勾選後，會出現在每天的提醒裡。
                 </p>
               </div>
             </div>
-            <span className="text-xs text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-semibold">
-              {personalOS.ifThenStrategies.filter(s => s.active).length} 啟用中
+            <span className="text-sm text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-semibold">
+              {personalOS.ifThenStrategies.filter((s) => s.active).length}{" "}
+              啟用中
             </span>
           </div>
 
           {/* Add form */}
-          <form onSubmit={addIfThen} className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <form
+            onSubmit={addIfThen}
+            className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <input
                 type="text"
-                placeholder="If [觸發情境，例如：開會被打斷]"
+                placeholder="當什麼事情發生？例如：開會被打斷"
                 value={newIf}
                 onChange={(e) => setNewIf(e.target.value)}
                 className="bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
               />
               <input
                 type="text"
-                placeholder="Then [微小行動，例如：先喝口水再回應]"
+                placeholder="想試著怎麼做？例如：先喝口水再回應"
                 value={newThen}
                 onChange={(e) => setNewThen(e.target.value)}
                 className="bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
@@ -234,10 +266,10 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#eff4ec] hover:bg-[#e4ece0] text-[#3d5942] border border-[#c8d8c3] rounded-lg text-xs font-bold transition cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#eff4ec] hover:bg-[#e4ece0] text-[#3d5942] border border-[#c8d8c3] rounded-lg text-sm font-bold transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>新增 If-Then 策略</span>
+              <span>新增小改變</span>
             </button>
           </form>
 
@@ -246,25 +278,38 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.ifThenStrategies.map((strat) => (
               <div
                 key={strat.id}
-                className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-xs shadow-2xs"
+                className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-sm shadow-2xs"
               >
                 <div className="flex items-start gap-2.5">
                   <input
                     type="checkbox"
                     checked={strat.active}
+                    disabled={strat.autoPaused}
+                    title={
+                      strat.autoPaused
+                        ? "請到「今天」記下嘗試結果，再看看要不要繼續提醒"
+                        : undefined
+                    }
                     onChange={() => toggleIfThenActive(strat.id)}
                     className="mt-1 rounded border-[#ded9c8] accent-[#4d6b53] focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <div className="leading-relaxed">
-                      <span className="text-[#4d6b53] font-extrabold">If</span>{' '}
-                      <span className="text-[#444d45]">{strat.ifText}，</span>{' '}
-                      <span className="text-amber-600 font-extrabold">Then</span>{' '}
-                      <span className="text-[#222d25] font-bold">{strat.thenText}</span>
+                      <span className="text-[#4d6b53] font-extrabold">當</span>{" "}
+                      <span className="text-[#444d45]">{strat.ifText}，</span>{" "}
+                      <span className="text-amber-600 font-extrabold">就</span>{" "}
+                      <span className="text-[#222d25] font-bold">
+                        {strat.thenText}
+                      </span>
                     </div>
+                    {strat.autoPaused && (
+                      <p className="text-sm text-amber-800 mt-2">
+                        最近幾次都沒幫助，先暫停提醒。你可以到「今天」補填或更正嘗試結果。
+                      </p>
+                    )}
                     {strat.sourceDate && (
-                      <span className="text-[10px] text-[#778378] block mt-1">
-                        提煉於：{strat.sourceDate}
+                      <span className="text-sm text-[#778378] block mt-1">
+                        加入日期：{strat.sourceDate}
                       </span>
                     )}
                   </div>
@@ -281,39 +326,26 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
           </div>
         </div>
 
-        {/* 2. 🎯 本週短期外掛提問 */}
-        <div className="bg-[#fcfbf7] rounded-2xl border border-[#e8e5d8] p-6 space-y-4 shadow-sm shadow-[#4d6b53]/5">
-          <div className="flex items-center justify-between border-b border-[#e8e5d8] pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-teal-50 text-teal-600">
-                <Target className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#222d25] text-sm">
-                  🎯 本週短期外掛提問
-                </h3>
-                <p className="text-[11px] text-[#778378]">
-                  針對反覆出現的 bug，進行為期 1~2 週的刻意練習
-                </p>
-              </div>
-            </div>
-            <span className="text-xs text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-semibold">
-              {personalOS.habitQuestions.filter(h => h.active).length} 啟用中
-            </span>
-          </div>
-
-          {/* Add form */}
-          <form onSubmit={addHabit} className="flex gap-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]">
+        {/* 2. 想提醒自己的事 */}
+        <details className="border-t border-[#e8e5d8] py-4">
+          <summary className="font-semibold min-h-11 py-3 cursor-pointer">
+            想提醒自己的事
+          </summary>
+          <p className="text-sm text-[#616c62] mb-4">留一句想常常記得的話。</p>
+          <form
+            onSubmit={addHabit}
+            className="flex flex-col sm:flex-row gap-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]"
+          >
             <input
               type="text"
               placeholder="例如：我今天有在 12 點前放下手機睡覺嗎？"
               value={newHabit}
               onChange={(e) => setNewHabit(e.target.value)}
-              className="flex-1 bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-xs text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
+              className="flex-1 bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-sm text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
             />
             <button
               type="submit"
-              className="flex items-center gap-1 px-4 py-2 bg-[#4d6b53] hover:bg-[#3f5844] text-white font-bold rounded-lg text-xs transition shrink-0 shadow-xs cursor-pointer"
+              className="flex items-center gap-1 px-4 py-2 bg-[#4d6b53] hover:bg-[#3f5844] text-white font-bold rounded-lg text-sm transition shrink-0 shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增</span>
@@ -325,7 +357,7 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.habitQuestions.map((habit) => (
               <div
                 key={habit.id}
-                className="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-xs shadow-2xs"
+                className="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-sm shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
                   <input
@@ -334,7 +366,9 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
                     onChange={() => toggleHabitActive(habit.id)}
                     className="rounded border-[#ded9c8] accent-[#4d6b53] focus:ring-0 cursor-pointer"
                   />
-                  <span className={`${habit.active ? 'text-[#222d25] font-semibold' : 'text-slate-400 line-through'}`}>
+                  <span
+                    className={`${habit.active ? "text-[#222d25] font-semibold" : "text-slate-400 line-through"}`}
+                  >
                     {habit.text}
                   </span>
                 </div>
@@ -348,32 +382,21 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               </div>
             ))}
           </div>
-        </div>
+        </details>
 
         {/* 3. 🎁 我的快樂與急救配方庫 */}
-        <div className="bg-[#fcfbf7] rounded-2xl border border-[#e8e5d8] p-6 space-y-4 shadow-sm shadow-[#4d6b53]/5">
-          <div className="flex items-center justify-between border-b border-[#e8e5d8] pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-emerald-50 text-[#2c5832]">
-                <Heart className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#222d25] text-sm">
-                  🎁 我的快樂與急救配方庫
-                </h3>
-                <p className="text-[11px] text-[#778378]">
-                  來自🟢好日子的提煉，遇到情緒低潮時 100% 能回血的動作
-                </p>
-              </div>
-            </div>
-            <span className="text-xs text-[#2c5832] bg-[#eff7ee] border border-[#b8dab3] px-2.5 py-0.5 rounded-full font-semibold">
-              {personalOS.emergencyRecipes.length} 項配方
-            </span>
-          </div>
-
-          {/* Add form */}
-          <form onSubmit={addRecipe} className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <details className="border-t border-[#e8e5d8] py-4">
+          <summary className="font-semibold min-h-11 py-3 cursor-pointer">
+            讓自己好過一點的方法
+          </summary>
+          <p className="text-sm text-[#616c62] mb-4">
+            記下曾經讓你感覺好一點的事。
+          </p>
+          <form
+            onSubmit={addRecipe}
+            className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <input
                 type="text"
                 placeholder="配方名稱（如：睡滿 8 小時）"
@@ -394,11 +417,11 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               placeholder="說明/操作方法（如：睡前泡腳，開除濕機...）"
               value={newRecipeDesc}
               onChange={(e) => setNewRecipeDesc(e.target.value)}
-              className="w-full bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-xs text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
+              className="w-full bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-sm text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
             />
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#eff7ee] hover:bg-[#e4f2e2] text-[#2c5832] border border-[#b8dab3] rounded-lg text-xs font-bold transition cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#eff7ee] hover:bg-[#e4f2e2] text-[#2c5832] border border-[#b8dab3] rounded-lg text-sm font-bold transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增急救配方</span>
@@ -410,12 +433,14 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.emergencyRecipes.map((recipe) => (
               <div
                 key={recipe.id}
-                className="p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-xs space-y-1.5 shadow-2xs"
+                className="p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-[#b8dab3] transition text-sm space-y-1.5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#222d25]">{recipe.title}</span>
-                    <span className="text-[10px] text-[#2c5832] bg-[#eff7ee] px-2 py-0.5 rounded-full border border-[#b8dab3] font-medium">
+                    <span className="font-bold text-[#222d25]">
+                      {recipe.title}
+                    </span>
+                    <span className="text-sm text-[#2c5832] bg-[#eff7ee] px-2 py-0.5 rounded-full border border-[#b8dab3] font-medium">
                       {recipe.tag}
                     </span>
                   </div>
@@ -426,38 +451,27 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-[#616c62] leading-relaxed text-[11px]">
+                <p className="text-[#616c62] leading-relaxed text-sm">
                   {recipe.description}
                 </p>
               </div>
             ))}
           </div>
-        </div>
+        </details>
 
         {/* 4. 💣 我的避坑指南 */}
-        <div className="bg-[#fcfbf7] rounded-2xl border border-[#e8e5d8] p-6 space-y-4 shadow-sm shadow-[#4d6b53]/5">
-          <div className="flex items-center justify-between border-b border-[#e8e5d8] pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
-                <AlertOctagon className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#222d25] text-sm">
-                  💣 我的避坑指南
-                </h3>
-                <p className="text-[11px] text-[#778378]">
-                  來自🔴壞日子的血淚教訓，避免重蹈覆轍
-                </p>
-              </div>
-            </div>
-            <span className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full font-semibold">
-              {personalOS.avoidanceGuides.length} 條指南
-            </span>
-          </div>
-
-          {/* Add form */}
-          <form onSubmit={addAvoidance} className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <details className="border-t border-[#e8e5d8] py-4">
+          <summary className="font-semibold min-h-11 py-3 cursor-pointer">
+            下次想避開的事
+          </summary>
+          <p className="text-sm text-[#616c62] mb-4">
+            記下經驗，讓下次的自己少一點辛苦。
+          </p>
+          <form
+            onSubmit={addAvoidance}
+            className="space-y-2 bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8]"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <input
                 type="text"
                 placeholder="雷區名稱（如：肚子餓時不開會）"
@@ -478,11 +492,11 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
               placeholder="教訓說明（如：血糖低時大腦缺乏葡萄糖，極易失控...）"
               value={newAvoidLesson}
               onChange={(e) => setNewAvoidLesson(e.target.value)}
-              className="w-full bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-xs text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
+              className="w-full bg-white border border-[#ded9c8] rounded-lg px-3 py-2 text-sm text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53]"
             />
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-1.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-sm font-bold transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>新增避坑項目</span>
@@ -494,12 +508,14 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
             {personalOS.avoidanceGuides.map((avoid) => (
               <div
                 key={avoid.id}
-                className="p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-rose-300 transition text-xs space-y-1.5 shadow-2xs"
+                className="p-3.5 rounded-xl bg-[#f8f7f2] border border-[#ded9c8] hover:border-rose-300 transition text-sm space-y-1.5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#222d25]">{avoid.title}</span>
-                    <span className="text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 font-medium">
+                    <span className="font-bold text-[#222d25]">
+                      {avoid.title}
+                    </span>
+                    <span className="text-sm text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 font-medium">
                       {avoid.tag}
                     </span>
                   </div>
@@ -510,13 +526,13 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-[#616c62] leading-relaxed text-[11px]">
+                <p className="text-[#616c62] leading-relaxed text-sm">
                   {avoid.lesson}
                 </p>
               </div>
             ))}
           </div>
-        </div>
+        </details>
       </div>
     </div>
   );

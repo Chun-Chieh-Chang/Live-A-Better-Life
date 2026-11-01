@@ -760,9 +760,9 @@ export const ZenSanctuary3D: React.FC<ZenSanctuary3DProps> = ({ entries, onSelec
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="text-xs font-extrabold text-[#222d25]">3D 心靈空間 · 互動生態島</h2>
+              <h2 className="text-xs font-extrabold text-[#222d25]">休息一下</h2>
               <span className="text-[10px] bg-[#eff4ec] text-[#3d5942] border border-[#c8d8c3] px-2 py-0.2 rounded-full font-bold">
-                Three.js PBR
+                慢慢呼吸
               </span>
             </div>
             <p className="text-[11px] text-[#616c62]">
@@ -885,7 +885,7 @@ export const ZenSanctuary3D: React.FC<ZenSanctuary3DProps> = ({ entries, onSelec
             className="flex items-center gap-1.5 px-4 py-1 bg-[#fcfbf7] border-t border-x border-[#ded9c8] rounded-t-xl text-[11px] font-bold text-[#4d6b53] shadow-xs cursor-pointer hover:bg-white"
           >
             {isDockCollapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            <span>{isDockCollapsed ? '展開 3D 空間控制列' : '收合控制列 (沉浸模式)'}</span>
+            <span>{isDockCollapsed ? '顯示選項' : '收起選項'}</span>
           </button>
         </div>
 

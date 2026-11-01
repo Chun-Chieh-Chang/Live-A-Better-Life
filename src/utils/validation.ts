@@ -47,7 +47,32 @@ export function isPersonalOS(v: unknown): v is PersonalOS {
         typeof r.active === "boolean" &&
         (r.category === undefined ||
           ["work", "health", "emotion", "life"].includes(r.category)) &&
-        (r.sourceDate === undefined || isDate(r.sourceDate)),
+        (r.sourceDate === undefined || isDate(r.sourceDate)) &&
+        (r.autoPaused === undefined || typeof r.autoPaused === "boolean") &&
+        (r.activeBeforePause === undefined ||
+          typeof r.activeBeforePause === "boolean") &&
+        (r.observations === undefined ||
+          (Array.isArray(r.observations) &&
+            r.observations.length <= 10000 &&
+            r.observations.every(
+              (o: any) =>
+                record(o) &&
+                isDate(o.date) &&
+                ["helpful", "unhelpful", "skipped"].includes(o.outcome),
+            ) &&
+            new Set(r.observations.map((o: any) => o.date)).size ===
+              r.observations.length)) &&
+        (r.decisions === undefined ||
+          (Array.isArray(r.decisions) &&
+            r.decisions.length <= 10000 &&
+            r.decisions.every(
+              (d: any) =>
+                record(d) &&
+                text(d.at) &&
+                Number.isFinite(Date.parse(d.at)) &&
+                ["observing", "validated", "paused"].includes(d.status) &&
+                text(d.reason),
+            ))),
     ) &&
     rows(
       v.habitQuestions,
@@ -104,7 +129,7 @@ export function isDailyEntry(v: unknown): v is DailyEntry {
     (v.aiCoached === undefined || typeof v.aiCoached === "boolean") &&
     (v.aiAdvice === undefined || isCoachResult(v.aiAdvice)) &&
     (v.aiSource === undefined ||
-      ["gemini", "server-fallback", "local-fallback", "unknown"].includes(
+      ["agnes", "gemini", "server-fallback", "local-fallback", "unknown"].includes(
         v.aiSource,
       ))
   );

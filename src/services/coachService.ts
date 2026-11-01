@@ -28,7 +28,7 @@ export async function askAICoach(
   personalOS: PersonalOS,
   customPrompt?: string,
   signal?: AbortSignal
-): Promise<{ result: CoachResponseResult; isFallback: boolean; source: 'gemini' | 'server-fallback' | 'local-fallback' }> {
+): Promise<{ result: CoachResponseResult; isFallback: boolean; source: 'agnes' | 'gemini' | 'server-fallback' | 'local-fallback' }> {
   const controller = new AbortController();
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort, {once:true});
@@ -55,7 +55,8 @@ export async function askAICoach(
 
     const json = await response.json();
     if (json.success !== true || !isCoachResult(json.result) || typeof json.isFallback !== 'boolean') throw new Error('Invalid coach response');
-    return {result:json.result, isFallback:json.isFallback, source:json.isFallback ? 'server-fallback' : 'gemini'};
+    if (json.source !== undefined && !['agnes','gemini','server-fallback'].includes(json.source)) throw new Error('Invalid coach source');
+    return {result:json.result, isFallback:json.isFallback, source:json.isFallback ? 'server-fallback' : json.source === 'agnes' ? 'agnes' : 'gemini'};
   } catch (err) {
     if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
     // Local fallback heuristic

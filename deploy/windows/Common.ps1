@@ -9,7 +9,7 @@ function Assert-LifeOSWindows {
 
 function Get-LifeOSConfig([string]$ConfigPath) {
     $resolved = (Resolve-Path -LiteralPath $ConfigPath).ProviderPath
-    $config = Get-Content -LiteralPath $resolved -Raw | ConvertFrom-Json
+    $config = Get-Content -LiteralPath $resolved -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($config.Version -ne 1 -or -not [IO.Path]::IsPathRooted($config.ProjectRoot) -or
         -not [IO.Path]::IsPathRooted($config.DataRoot) -or -not [IO.Path]::IsPathRooted($config.NodePath) -or
         $config.Port -lt 1024 -or $config.Port -gt 65535) { throw 'Invalid Life OS configuration.' }
@@ -22,6 +22,7 @@ function Set-LifeOSEnvironment($Config) {
     $env:LIFE_OS_MODE = 'personal'
     $env:LIFE_OS_BIND = '127.0.0.1'
     $env:LIFE_OS_ORIGIN = 'http://127.0.0.1:' + $Config.Port
+    $env:LIFE_OS_NOTES_PATH = if ($Config.PSObject.Properties.Name -contains 'NotesRoot') { $Config.NotesRoot } else { Join-Path $Config.DataRoot 'Notes' }
     $env:LIFE_OS_DB_PATH = Join-Path $Config.DataRoot 'owner.sqlite'
     $env:LIFE_OS_BACKUP_DIR = Join-Path $Config.DataRoot 'Backups'
     $env:PORT = [string]$Config.Port
@@ -103,7 +104,7 @@ function Invoke-LifeOSLoggedServer($Config, [switch]$OpenBrowser) {
 
 function Save-LifeOSEnvironment {
     $saved = @{}
-    foreach ($name in @('LIFE_OS_DESKTOP','LIFE_OS_MODE','LIFE_OS_BIND','LIFE_OS_ORIGIN','LIFE_OS_DB_PATH','LIFE_OS_BACKUP_DIR','PORT','NODE_ENV','GEMINI_API_KEY')) {
+    foreach ($name in @('LIFE_OS_DESKTOP','LIFE_OS_MODE','LIFE_OS_BIND','LIFE_OS_ORIGIN','LIFE_OS_DB_PATH','LIFE_OS_NOTES_PATH','LIFE_OS_BACKUP_DIR','PORT','NODE_ENV','GEMINI_API_KEY','AGNES_API_KEY','AI_PROVIDER','AGNES_MODEL','GEMINI_MODEL')) {
         $saved[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
     }
     return $saved
@@ -139,13 +140,26 @@ function Invoke-LifeOSDesktop($Config, [ValidateSet('prepare','grant')][string]$
     } finally { $process.Dispose() }
 }
 
+function Get-LifeOSFileHash([string]$LiteralPath) {
+    $sha = [Security.Cryptography.SHA256]::Create()
+    $stream = $null
+    try {
+        $stream = [IO.File]::OpenRead($LiteralPath)
+        return ([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','').ToLowerInvariant()
+    } finally {
+        if ($stream) { $stream.Dispose() }
+        $sha.Dispose()
+    }
+}
+
 function Get-LifeOSSourceHash([string]$ProjectRoot) {
     $paths = @()
     foreach ($name in @('src','server','scripts','public','deploy')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot $name))) { continue }
         $paths += Get-ChildItem -LiteralPath (Join-Path $ProjectRoot $name) -Recurse -File | Sort-Object FullName
     }
     foreach ($name in @('server.ts','package.json','bun.lock','vite.config.ts','tsconfig.json','index.html')) { $paths += Get-Item -LiteralPath (Join-Path $ProjectRoot $name) }
-    $lines = @($paths | ForEach-Object { $_.FullName.Substring($ProjectRoot.Length) + ':' + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash })
+    $lines = @($paths | ForEach-Object { $_.FullName.Substring($ProjectRoot.Length) + ':' + (Get-LifeOSFileHash -LiteralPath $_.FullName) })
     $sha = [Security.Cryptography.SHA256]::Create()
     try { return ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes(($lines -join "`n"))))).Replace('-','').ToLowerInvariant() }
     finally { $sha.Dispose() }
@@ -179,4 +193,64 @@ function Test-LifeOSProcessRecord($Record, $Process, [string]$ProjectRoot) {
             $Process.StartTime.ToUniversalTime().Ticks -eq ([datetime]$Record.StartedUtc).ToUniversalTime().Ticks -and
             $Record.ProjectRoot -eq $ProjectRoot)
     } catch { return $false }
+}
+
+function Protect-LifeOSDataDirectory([string]$LiteralPath) {
+    $acl = New-Object Security.AccessControl.DirectorySecurity
+    $acl.SetAccessRuleProtection($true, $false)
+    $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
+
+    foreach ($sid in @($owner.Value, 'S-1-5-18', 'S-1-5-32-544')) {
+        $identity = New-Object Security.Principal.SecurityIdentifier($sid)
+        $rule = New-Object Security.AccessControl.FileSystemAccessRule($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow')
+        $acl.AddAccessRule($rule)
+    }
+    $directory = Get-Item -LiteralPath $LiteralPath
+    if ($directory.PSObject.Methods.Name -contains 'SetAccessControl') { $directory.SetAccessControl($acl) }
+    else { [IO.FileSystemAclExtensions]::SetAccessControl($directory, $acl) }
+}
+
+function Get-LifeOSDirectoryAcl([string]$LiteralPath) {
+    $directory = Get-Item -LiteralPath $LiteralPath
+    if ($directory.PSObject.Methods.Name -contains 'GetAccessControl') { return $directory.GetAccessControl() }
+    return [IO.FileSystemAclExtensions]::GetAccessControl($directory)
+}
+
+function Repair-LifeOSApplication([string]$ProjectRoot, [string]$BunPath) {
+    Push-Location $ProjectRoot
+    $freshCache = $null
+    $originalCache = $env:BUN_INSTALL_CACHE_DIR
+    try {
+        for ($attempt = 0; $attempt -lt 2; $attempt++) {
+            try {
+                $installArgs = @('install', '--frozen-lockfile', '--force', '--backend', 'copyfile')
+                if ($attempt -eq 1) {
+                    $freshCache = Join-Path ([IO.Path]::GetTempPath()) ('life-os-package-repair-' + [Guid]::NewGuid().ToString('N'))
+                    [void](New-Item -ItemType Directory -Path $freshCache)
+                    Protect-LifeOSDataDirectory -LiteralPath $freshCache
+                    $env:BUN_INSTALL_CACHE_DIR = $freshCache
+                    $installArgs += @('--cache-dir', $freshCache, '--no-cache')
+                }
+                & $BunPath @installArgs
+                if ($LASTEXITCODE -ne 0) { throw 'Dependency repair failed.' }
+                & $BunPath run lint
+                if ($LASTEXITCODE -ne 0) { throw 'Application check failed.' }
+                & $BunPath run build
+                if ($LASTEXITCODE -ne 0) { throw 'Application build failed.' }
+                return
+            } catch {
+                if ($attempt -eq 1) { throw }
+                Write-Host 'Retrying preparation with a fresh package cache...'
+            }
+        }
+    } finally {
+        Pop-Location
+        $env:BUN_INSTALL_CACHE_DIR = $originalCache
+        if ($freshCache) {
+            $resolvedCache = [IO.Path]::GetFullPath($freshCache)
+            $tempParent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\') + '\'
+            if (-not $resolvedCache.StartsWith($tempParent, [StringComparison]::OrdinalIgnoreCase) -or (Split-Path -Leaf $resolvedCache) -notlike 'life-os-package-repair-*') { throw 'Unsafe repair cache cleanup path.' }
+            Remove-Item -LiteralPath $resolvedCache -Recurse -Force
+        }
+    }
 }

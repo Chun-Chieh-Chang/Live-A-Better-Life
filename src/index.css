@@ -26,3 +26,10 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #9fa89b;
 }
+
+@layer base {
+  button, summary { min-height: 44px; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select { min-height: 44px; }
+  button, input, textarea, select, summary { font-size: 14px; }
+  button:focus-visible, summary:focus-visible { outline: 2px solid #4d6b53; outline-offset: 3px; }
+}

@@ -16,6 +16,8 @@ test(
       ...process.env,
       NODE_ENV: "production",
       GEMINI_API_KEY: "",
+      AGNES_API_KEY: "",
+      AI_PROVIDER: "auto",
       PORT: "3101",
       LIFE_OS_MODE: "personal",
       LIFE_OS_ORIGIN: "http://127.0.0.1:3101",
@@ -74,32 +76,34 @@ test(
         await p.getByLabel("登入密碼").fill(password);
         await p.getByRole("button", { name: "登入", exact: true }).click();
         await p
-          .getByRole("button", { name: "上傳已歸檔資料", exact: true })
+          .getByRole("button", { name: "存到個人空間", exact: true })
           .waitFor();
-        await p.getByText(/伺服器版本 \d+ ·/).waitFor();
+        await p
+          .getByText(/已保存到個人空間|這裡和個人空間的內容不同/)
+          .waitFor();
       };
       await one.goto(base);
       assert.equal(await one.locator("textarea").count(), 0);
       await one.getByLabel("登入密碼").fill(password);
       await one.getByRole("button", { name: "登入", exact: true }).click();
       await one.locator("textarea").first().waitFor();
-      await one.getByText("伺服器版本 0 · 已與伺服器一致").waitFor();
+      await one.getByText("已保存到個人空間", { exact: true }).waitFor();
       await one.locator("input[type=date]").fill("2026-10-12");
       await one.locator("textarea").first().fill("device-one-entry");
       await one
-        .getByRole("button", { name: "儲存今日日誌", exact: true })
+        .getByRole("button", { name: "儲存今天的記錄", exact: true })
         .click();
       await one
-        .getByRole("button", { name: "上傳已歸檔資料", exact: true })
+        .getByRole("button", { name: "存到個人空間", exact: true })
         .click();
-      await one.getByText("已上傳至伺服器。", { exact: true }).waitFor();
+      await one.getByText("已上傳至個人空間。", { exact: true }).waitFor();
       await login(two);
       assert.equal(await two.locator("textarea").first().inputValue(), "");
       await two
-        .getByRole("button", { name: "下載伺服器資料", exact: true })
+        .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await two
-        .getByText("已下載伺服器版本至此裝置。", { exact: true })
+        .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
       await two.locator("input[type=date]").fill("2026-10-12");
       assert.equal(
@@ -108,54 +112,51 @@ test(
       );
       await two.locator("textarea").first().fill("device-two-edit");
       await two
-        .getByRole("button", { name: "儲存今日日誌", exact: true })
+        .getByRole("button", { name: "儲存今天的記錄", exact: true })
         .click();
       await two
-        .getByRole("button", { name: "上傳已歸檔資料", exact: true })
+        .getByRole("button", { name: "存到個人空間", exact: true })
         .click();
-      await two.getByText("已上傳至伺服器。", { exact: true }).waitFor();
+      await two.getByText("已上傳至個人空間。", { exact: true }).waitFor();
       await one
-        .getByRole("button", { name: "上傳已歸檔資料", exact: true })
+        .getByRole("button", { name: "存到個人空間", exact: true })
         .click();
       await one
         .getByText(
-          "其他裝置已更新資料。此次操作未覆蓋伺服器；請重新整理版本後下載並比較。",
+          "其他裝置已更新資料。此次操作未覆蓋個人空間；請重新整理版本後下載並比較。",
           { exact: true },
         )
         .waitFor();
       await one
-        .getByRole("button", { name: "下載伺服器資料", exact: true })
+        .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await one
-        .getByText("已下載伺服器版本至此裝置。", { exact: true })
+        .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
       assert.equal(
         await one.locator("textarea").first().inputValue(),
         "device-two-edit",
       );
+      await one.getByText("備份與其他選項", { exact: true }).click();
       await one
-        .getByRole("button", { name: "重新整理伺服器版本", exact: true })
+        .getByRole("button", { name: "檢查最新記錄", exact: true })
         .click();
+      await one.getByText("已保存到個人空間", { exact: true }).waitFor();
+      await one.getByText("找回之前的記錄", { exact: true }).click();
       await one
-        .getByText("伺服器版本 2 · 已與伺服器一致", { exact: true })
-        .waitFor();
-      await one
-        .getByText("伺服器歷史備份（最近 30 次寫入前版本）", { exact: true })
-        .click();
-      await one
-        .getByRole("button", { name: "還原此伺服器版本", exact: true })
+        .getByRole("button", { name: "還原這份記錄", exact: true })
         .first()
         .click();
       await one
-        .getByText("伺服器已還原；請下載伺服器資料更新此裝置。", {
+        .getByText("個人空間已還原；請取回個人空間的記錄更新此裝置。", {
           exact: true,
         })
         .waitFor();
       await one
-        .getByRole("button", { name: "下載伺服器資料", exact: true })
+        .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await one
-        .getByText("已下載伺服器版本至此裝置。", { exact: true })
+        .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
       assert.equal(
         await one.locator("textarea").first().inputValue(),
@@ -166,12 +167,14 @@ test(
       await start();
       await one.evaluate(() => sessionStorage.clear());
       await one.reload();
-      await one.getByText(/伺服器版本 3 ·/).waitFor();
       await one
-        .getByRole("button", { name: "下載伺服器資料", exact: true })
+        .getByText(/已保存到個人空間|這裡和個人空間的內容不同/)
+        .waitFor();
+      await one
+        .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await one
-        .getByText("已下載伺服器版本至此裝置。", { exact: true })
+        .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
       await one.locator("input[type=date]").fill("2026-10-12");
       assert.equal(
@@ -212,6 +215,8 @@ test(
       ...process.env,
       NODE_ENV: "production",
       GEMINI_API_KEY: "",
+      AGNES_API_KEY: "",
+      AI_PROVIDER: "auto",
       PORT: "3102",
       LIFE_OS_MODE: "personal",
       LIFE_OS_DESKTOP: "1",
@@ -258,10 +263,18 @@ test(
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
+      await page.goto(base);
+      await page
+        .getByRole("button", { name: "開啟我的日記", exact: true })
+        .waitFor();
+      assert.equal(
+        await page.getByText("請雙擊專案中的", { exact: false }).count(),
+        0,
+      );
       const grant = JSON.parse(desktop("grant"));
       await page.goto(base + "/#desktop=" + grant.token);
       await page
-        .getByRole("button", { name: "儲存今日日誌", exact: true })
+        .getByRole("button", { name: "儲存今天的記錄", exact: true })
         .waitFor();
       assert.equal(new URL(page.url()).hash, "");
       assert.equal(await page.getByLabel("登入密碼").count(), 0);
@@ -272,7 +285,7 @@ test(
       await replay.goto(base + "/#desktop=" + grant.token);
       await replay
         .getByRole("alert")
-        .filter({ hasText: "自動登入連結已過期或已使用，請重新雙擊啟動檔。" })
+        .filter({ hasText: "自動登入連結已過期或已使用，請再按一次「開啟我的日記」。" })
         .waitFor();
       assert.equal(
         (await replayContext.request.get(base + "/api/data")).status(),

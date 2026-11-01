@@ -15,9 +15,9 @@ import { DailyReflectionTab } from './components/DailyReflectionTab';
 import { PersonalOSTab } from './components/PersonalOSTab';
 import { InsightsTab } from './components/InsightsTab';
 import { ZenSanctuary3D } from './components/ZenSanctuary3D';
+import { StrategyFeedback } from './components/StrategyFeedback';
 import { ArchifyDiagramTab } from './components/ArchifyDiagramTab';
 import { ObsidianExportTab } from './components/ObsidianExportTab';
-import { TranscriptBlueprintTab } from './components/TranscriptBlueprintTab';
 import { SystemHealthModal, SystemStatusData } from './components/SystemHealthModal';
 
 const LOCAL_STORAGE_ENTRIES_KEY = 'life_os_daily_entries_v1';
@@ -123,7 +123,7 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
       />
 
       <div className="max-w-6xl mx-auto px-4 py-2 text-sm">
-        <p>{personal ? '此裝置使用分頁暫存；請透過上方同步區上傳已歸檔資料。' : '資料僅保存於此瀏覽器，請定期匯出備份。'}Obsidian 提供手動匯出，尚無同步功能。</p>
+        <p>{personal ? '儲存後會自動存到個人空間；請留意下方的保存結果。' : '記錄保存在這個瀏覽器，記得定期備份。'}</p>
         {storageError && <div role="alert" className="text-red-700">{storageError}
           <button onClick={() => {try {downloadFile('life-os-raw-recovery.json', JSON.stringify({v2:storage.getItem('life_os_data_v2'),entries:storage.getItem('life_os_daily_entries_v1'),personalOS:storage.getItem('life_os_personal_manual_v1')}, null, 2), 'application/json');} catch {setStorageError('瀏覽器禁止讀取，請保留目前頁面並檢查瀏覽器儲存權限。');}}}>下載原始資料</button>
         </div>}
@@ -145,6 +145,7 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
             personalOS={personalOS}
             onAddIfThenStrategy={handleAddIfThenStrategy}
           />
+          <StrategyFeedback os={personalOS} date={selectedDate} onSave={updatePersonalOS}/>
         </div>
 
         {activeTab === 'personalOS' && (
@@ -181,19 +182,16 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
           />
         )}
 
-        {activeTab === 'transcript' && (
-          <TranscriptBlueprintTab />
-        )}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-[#e8e5d8] bg-[#fbf9f1]/90 py-6 text-center text-xs text-[#6d756e] mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-medium text-[#444d45]">
-            把日子過好 · 個人自我教練與閉環知識庫 (Personal Operating System)
+            把日子過好，一天一點就好。
           </p>
           <p className="text-[11px] text-[#868f87]">
-            阿德勒課題分離 · 福格微小行為模型 · Obsidian 雙向連結閉環架構
+            
           </p>
         </div>
       </footer>

@@ -16,7 +16,7 @@ import {
 } from "../src/utils/storage";
 import { createApp } from "../server";
 import { askAICoach } from "../src/services/coachService";
-import { INITIAL_ENTRIES, INITIAL_PERSONAL_OS } from "../src/data/initialData";
+import { INITIAL_ENTRIES, INITIAL_PERSONAL_OS } from "./fixtures/lifeData";
 
 class MemoryStorage {
   map = new Map<string, string>();

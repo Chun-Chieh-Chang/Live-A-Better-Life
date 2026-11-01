@@ -78,39 +78,39 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-[#fcfbf7] p-5 rounded-2xl border border-[#e8e5d8] shadow-sm shadow-[#4d6b53]/5">
-          <div className="flex items-center justify-between text-xs text-[#616c62] mb-1 font-medium">
+          <div className="flex items-center justify-between text-sm text-[#616c62] mb-1 font-medium">
             <span>累積反省天數</span>
             <Calendar className="w-4 h-4 text-[#4d6b53]" />
           </div>
           <div className="text-3xl font-extrabold text-[#222d25]">{total} <span className="text-sm font-normal text-slate-400">天</span></div>
-          <div className="text-[11px] text-[#778378] mt-1">持續積累人生數據庫</div>
+          <div className="text-sm text-[#778378] mt-1">持續積累人生數據庫</div>
         </div>
 
         <div className="bg-[#fcfbf7] p-5 rounded-2xl border border-[#b8dab3] shadow-sm shadow-[#4d6b53]/5">
-          <div className="flex items-center justify-between text-xs text-[#2c5832] mb-1 font-medium">
+          <div className="flex items-center justify-between text-sm text-[#2c5832] mb-1 font-medium">
             <span>🟢 好日子率</span>
             <Smile className="w-4 h-4 text-[#2c5832]" />
           </div>
           <div className="text-3xl font-extrabold text-[#2c5832]">{goodRatio}%</div>
-          <div className="text-[11px] text-[#2c5832]/80 mt-1">共 {goodCount} 天好心情</div>
+          <div className="text-sm text-[#2c5832]/80 mt-1">共 {goodCount} 天好心情</div>
         </div>
 
         <div className="bg-[#fcfbf7] p-5 rounded-2xl border border-amber-200 shadow-sm shadow-amber-900/5">
-          <div className="flex items-center justify-between text-xs text-amber-800 mb-1 font-medium">
+          <div className="flex items-center justify-between text-sm text-amber-800 mb-1 font-medium">
             <span>🟡 平凡如水</span>
             <Meh className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-3xl font-extrabold text-amber-700">{normalCount} <span className="text-sm font-normal text-slate-400">天</span></div>
-          <div className="text-[11px] text-amber-700/80 mt-1">捕捉到平靜瞬間</div>
+          <div className="text-sm text-amber-700/80 mt-1">捕捉到平靜瞬間</div>
         </div>
 
         <div className="bg-[#fcfbf7] p-5 rounded-2xl border border-rose-200 shadow-sm shadow-rose-900/5">
-          <div className="flex items-center justify-between text-xs text-rose-800 mb-1 font-medium">
+          <div className="flex items-center justify-between text-sm text-rose-800 mb-1 font-medium">
             <span>🔴 解題卡關</span>
             <Frown className="w-4 h-4 text-rose-600" />
           </div>
           <div className="text-3xl font-extrabold text-rose-700">{badCount} <span className="text-sm font-normal text-slate-400">天</span></div>
-          <div className="text-[11px] text-rose-700/80 mt-1">轉化為避坑指南</div>
+          <div className="text-sm text-rose-700/80 mt-1">轉化為避坑指南</div>
         </div>
       </div>
 
@@ -127,9 +127,9 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
           <div className="flex items-center justify-between border-b border-[#e8e5d8] pb-3">
             <h3 className="font-bold text-[#222d25] text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#4d6b53]" />
-              <span>雙向連結關鍵因素 ([[ ]]) 關聯分析</span>
+              <span>哪些事常和心情有關？</span>
             </h3>
-            <span className="text-xs text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-semibold">
+            <span className="text-sm text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-semibold">
               高頻關聯
             </span>
           </div>
@@ -140,10 +140,10 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                 const goodPct = Math.round((stats.good / stats.total) * 100);
                 const badPct = Math.round((stats.bad / stats.total) * 100);
                 return (
-                  <div key={factor} className="bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8] text-xs space-y-2">
+                  <div key={factor} className="bg-[#f8f7f2] p-3.5 rounded-xl border border-[#ded9c8] text-sm space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-[#222d25] font-mono">{factor}</span>
-                      <span className="text-[#616c62] text-[11px]">出現 {stats.total} 次</span>
+                      <span className="text-[#616c62] text-sm">出現 {stats.total} 次</span>
                     </div>
 
                     <div className="w-full bg-[#ded9c8] h-2.5 rounded-full overflow-hidden flex">
@@ -152,7 +152,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                       <div style={{ width: `${100 - goodPct - badPct}%` }} className="bg-amber-400" title={`普通: ${stats.normal}`} />
                     </div>
 
-                    <div className="flex justify-between text-[11px] text-[#616c62]">
+                    <div className="flex justify-between text-sm text-[#616c62]">
                       <span className="text-[#2c5832] font-medium">🟢 滋養: {stats.good}天</span>
                       <span className="text-amber-700 font-medium">🟡 平凡: {stats.normal}天</span>
                       <span className="text-rose-700 font-medium">🔴 消耗: {stats.bad}天</span>
@@ -161,8 +161,8 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                 );
               })
             ) : (
-              <p className="text-xs text-[#778378] italic py-4 text-center">
-                尚未累積足夠的雙向連結關鍵字
+              <p className="text-sm text-[#778378] italic py-4 text-center">
+                多記錄幾天，就能看看哪些事經常出現。
               </p>
             )}
           </div>
@@ -175,7 +175,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
               <Tag className="w-4 h-4 text-[#4d6b53]" />
               <span>生活標籤雲 (#) 分佈</span>
             </h3>
-            <span className="text-xs text-[#778378]">高頻主題</span>
+            <span className="text-sm text-[#778378]">高頻主題</span>
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2">
@@ -183,30 +183,30 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
               sortedTags.map(([tag, count]) => (
                 <div
                   key={tag}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#eff4ec] border border-[#c8d8c3] text-[#3d5942] text-xs font-semibold"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#eff4ec] border border-[#c8d8c3] text-[#3d5942] text-sm font-semibold"
                 >
                   <span>{tag}</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white text-[#616c62] shadow-2xs">
+                  <span className="text-sm px-1.5 py-0.2 rounded-full bg-white text-[#616c62] shadow-2xs">
                     {count}
                   </span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#778378] italic py-4 text-center w-full">
+              <p className="text-sm text-[#778378] italic py-4 text-center w-full">
                 尚未記錄標籤
               </p>
             )}
           </div>
 
           {/* Signature Forest Green Box */}
-          <div className="bg-[#1a251e] p-4 rounded-xl border border-[#344839]/80 text-[#f3f6f3] mt-4 text-xs space-y-2">
+          <div className="bg-[#1a251e] p-4 rounded-xl border border-[#344839]/80 text-[#f3f6f3] mt-4 text-sm space-y-2">
             <h4 className="font-bold text-[#a8ccaf] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>系統智慧洞察 (Pattern Discovery)</span>
             </h4>
-            <p className="text-[#dbe5dd] text-[11px] leading-relaxed">
+            <p className="text-[#dbe5dd] text-sm leading-relaxed">
               根據近期數據：當包含 <code className="text-[#a8ccaf] font-bold">[[散步]]</code> 與 <code className="text-[#a8ccaf] font-bold">#睡眠品質</code> 時，狀態為 🟢 好的機率高達 80%！
-              這驗證了你的第一層認知「把身體照顧好是底層邏輯」。請繼續保持這套成功配方。
+              這些記錄可能幫你找到適合自己的做法，繼續觀察就好。
             </p>
           </div>
         </div>
@@ -229,12 +229,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜尋日誌關鍵字..."
-                className="w-full bg-[#f8f7f2] border border-[#ded9c8] rounded-xl pl-9 pr-3 py-1.5 text-xs text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53] focus:bg-white"
+                className="w-full bg-[#f8f7f2] border border-[#ded9c8] rounded-xl pl-9 pr-3 py-1.5 text-sm text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53] focus:bg-white"
               />
             </div>
 
             {/* Filter buttons */}
-            <div className="flex items-center gap-1 bg-[#f8f7f2] p-1 rounded-xl border border-[#ded9c8] text-xs">
+            <div className="flex items-center gap-1 bg-[#f8f7f2] p-1 rounded-xl border border-[#ded9c8] text-sm">
               <button
                 onClick={() => setFilterState('all')}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${filterState === 'all' ? 'bg-[#4d6b53] text-white shadow-xs' : 'text-[#616c62] hover:text-[#222d25]'}`}
@@ -280,11 +280,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <span className="font-extrabold text-[#222d25] text-sm font-mono">{entry.date}</span>
-                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${stateBadge.bg}`}>
+                    <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full border ${stateBadge.bg}`}>
                       {stateBadge.text}
                     </span>
                     {entry.aiCoached && (
-                      <span className="text-[10px] bg-[#eff4ec] text-[#3d5942] px-2 py-0.5 rounded-full border border-[#c8d8c3] font-semibold flex items-center gap-1">
+                      <span className="text-sm bg-[#eff4ec] text-[#3d5942] px-2 py-0.5 rounded-full border border-[#c8d8c3] font-semibold flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5 text-[#4d6b53]" /> AI 輔助
                       </span>
                     )}
@@ -292,14 +292,14 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
 
                   <button
                     onClick={() => onSelectDate(entry.date)}
-                    className="text-xs text-[#3d5942] hover:text-[#4d6b53] font-semibold transition cursor-pointer"
+                    className="text-sm text-[#3d5942] hover:text-[#4d6b53] font-semibold transition cursor-pointer"
                   >
-                    前往今日反省檢視 ➔
+                    查看這天的記錄
                   </button>
                 </div>
 
                 {/* Content preview */}
-                <div className="text-xs text-[#2c332d] leading-relaxed space-y-1">
+                <div className="text-sm text-[#2c332d] leading-relaxed space-y-1">
                   {entry.state === 'good' && (
                     <>
                       <p><strong className="text-[#2c5832]">好在哪裡：</strong>{entry.goodWhere}</p>
@@ -324,12 +324,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
                 {/* Tags & Factors */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
                   {entry.tags.map(t => (
-                    <span key={t} className="text-[10px] font-medium text-[#616c62] bg-white border border-[#ded9c8] px-2.5 py-0.5 rounded-full shadow-2xs">
+                    <span key={t} className="text-sm font-medium text-[#616c62] bg-white border border-[#ded9c8] px-2.5 py-0.5 rounded-full shadow-2xs">
                       {t}
                     </span>
                   ))}
                   {entry.factors.map(f => (
-                    <span key={f} className="text-[10px] text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-mono font-semibold">
+                    <span key={f} className="text-sm text-[#3d5942] bg-[#eff4ec] border border-[#c8d8c3] px-2.5 py-0.5 rounded-full font-mono font-semibold">
                       {f}
                     </span>
                   ))}

@@ -1,8 +1,9 @@
-# Portable PowerShell checks. These do not register tasks or modify Windows ACLs.
+# PowerShell checks use disposable directories and verify their private ACLs.
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).ProviderPath
 . (Join-Path $project 'deploy/windows/Common.ps1')
+. (Join-Path $project 'deploy/windows/Obsidian.ps1')
 $parseFailures = @()
 Get-ChildItem (Join-Path $project 'deploy/windows/*.ps1') | ForEach-Object {
     $tokens = $null
@@ -16,6 +17,23 @@ $fixtureProject = Join-Path $PSScriptRoot ('.life-os-fixture-' + [Guid]::NewGuid
 try {
     [void](New-Item -ItemType Directory -Path $root)
     [void](New-Item -ItemType Directory -Path (Join-Path $root 'Logs'))
+    Protect-LifeOSDataDirectory -LiteralPath $root
+    $acl = Get-LifeOSDirectoryAcl -LiteralPath $root
+    $allowed = @([Security.Principal.WindowsIdentity]::GetCurrent().User.Value, 'S-1-5-18', 'S-1-5-32-544')
+    if (-not $acl.AreAccessRulesProtected) { throw 'Private directory still inherits permissions.' }
+    foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+        if ($rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -notin $allowed) { throw 'Unexpected private directory access grant.' }
+    }
+    $vaultSettings = Join-Path $root 'obsidian-settings'
+    $vaultFolder = Join-Path $root 'notes'
+    Register-LifeOSVault -VaultRoot $vaultFolder -SettingsRoot $vaultSettings
+    Register-LifeOSVault -VaultRoot $vaultFolder -SettingsRoot $vaultSettings
+    $vaultConfig = Get-Content -LiteralPath (Join-Path $vaultSettings 'obsidian.json') -Raw | ConvertFrom-Json
+    if (@($vaultConfig.vaults.PSObject.Properties).Count -ne 1) { throw 'Vault registration is not repeatable.' }
+    if (@($vaultConfig.vaults.PSObject.Properties)[0].Value.path -ne $vaultFolder) { throw 'Registered vault path is wrong.' }
+    $hashFixture = Join-Path $root 'hash-fixture.txt'
+    [IO.File]::WriteAllText($hashFixture, 'abc', (New-Object Text.UTF8Encoding($false)))
+    if ((Get-LifeOSFileHash $hashFixture) -ne 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad') { throw 'SHA-256 known vector failed.' }
     $config = [pscustomobject]@{ Version=1; ProjectRoot=$project; DataRoot=$root; NodePath=(Get-Command node).Source; Port=3000 }
     $configPath = Join-Path $root 'config.json'
     $config | ConvertTo-Json | Set-Content -LiteralPath $configPath -Encoding UTF8
@@ -53,7 +71,7 @@ try {
     if ((Get-Content -Raw (Join-Path $root 'Logs/server.stdout.log')) -notlike '*stdout-marker*') { throw 'Stdout logging failed.' }
     if ((Get-Content -Raw (Join-Path $root 'Logs/server.stderr.log')) -notlike '*stderr-marker*') { throw 'Stderr logging failed.' }
     Write-Host 'PASS: PowerShell syntax, config, non-mutating status, stdin provisioning/reset, native stdout/stderr logging.'
-    Write-Host 'Not tested here: Windows Task Scheduler, ACL enforcement, DPAPI and actual D: drive startup.'
+    Write-Host 'Additional host acceptance covers scheduled startup, scheduled backup and D: drive readiness.'
 } finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $fixtureProject -Recurse -Force -ErrorAction SilentlyContinue

@@ -1,4 +1,4 @@
-import { DailyEntry, PersonalOS } from '../types';
+import type { DailyEntry, PersonalOS } from '../types';
 
 export function generateDailyNoteMarkdown(entry: DailyEntry, personalOS: PersonalOS): string {
   // Filter active strategies and habits to transclude
@@ -50,10 +50,10 @@ ${entry.aiAdvice.strategies.map(s => `> - [ ] ${s}`).join('\n')}
   const stateTag = entry.state === 'good' ? '#狀態/🟢好' : entry.state === 'bad' ? '#狀態/🔴不好' : '#狀態/🟡普通';
 
   return `> [!info] 🛡️ 今日防禦與策略 (系統自動回饋)
-> ![[個人操作手冊#⚡ 本週 If-Then 策略]]
+> ![[我的小改變#⚡ 本週 If-Then 策略]]
 ${ifThenLines.split('\n').map(l => `> ${l}`).join('\n')}
 > 
-> ![[個人操作手冊#🎯 本週短期外掛提問]]
+> ![[我的小改變#🎯 本週短期外掛提問]]
 ${habitLines.split('\n').map(l => `> ${l}`).join('\n')}
 
 ---
@@ -70,8 +70,8 @@ ${aiAdviceBlock}
 
 export function generateTemplateMarkdown(): string {
   return `> [!info] 🛡️ 今日防禦與策略 (系統自動回饋)
-> ![[個人操作手冊#⚡ 本週 If-Then 策略]]
-> ![[個人操作手冊#🎯 本週短期外掛提問]]
+> ![[我的小改變#⚡ 本週 If-Then 策略]]
+> ![[我的小改變#🎯 本週短期外掛提問]]
 
 ---
 ### 狀態檢核：我今天過得好嗎？
@@ -122,7 +122,7 @@ export function generatePersonalOSMarkdown(personalOS: PersonalOS): string {
     `### ${a.title} ${a.tag ? `\`${a.tag}\`` : ''}\n${a.lesson}`
   ).join('\n\n');
 
-  return `# 📖 我的個人操作手冊 (Personal Operating System)
+  return `# 📖 我的我的小改變 (Personal Operating System)
 *(這是本系統的資料中樞，請於每週日進行復盤與提煉)*
 
 ## ⚡ 本週 If-Then 策略

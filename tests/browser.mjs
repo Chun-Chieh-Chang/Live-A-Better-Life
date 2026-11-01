@@ -17,6 +17,8 @@ before(async () => {
         PORT: "3100",
         LIFE_OS_MODE: "local",
         GEMINI_API_KEY: "",
+      AGNES_API_KEY: "",
+      AI_PROVIDER: "auto",
         NODE_ENV: process.env.TEST_SERVER_MODE || "production",
       },
       stdio: ["ignore", "pipe", "pipe"],
@@ -73,9 +75,9 @@ async function fresh(run) {
   }
 }
 const daily = (p) =>
-  p.getByRole("button", { name: "今日反省與實踐", exact: true }).click();
+  p.getByRole("button", { name: "今天", exact: true }).click();
 const exportTab = (p) =>
-  p.getByRole("button", { name: "Obsidian 整合匯出", exact: true }).click();
+  p.getByRole("button", { name: "備份", exact: true }).click();
 const getData = (p) =>
   p.evaluate(() => JSON.parse(localStorage.getItem("life_os_data_v2"))?.data);
 const waitText = (p, t) => p.getByText(t, { exact: false }).first().waitFor();
@@ -104,8 +106,8 @@ test("empty startup → AI fallback → adopt → manual → save → reload →
     assert.match(await p.locator("header").innerText(), /0 天/);
     await p.locator("input[type=date]").fill("2026-10-01");
     await p.locator("textarea").first().fill("real-entry");
-    await p.getByRole("button", { name: "大腦累了？讓 AI 提煉配方" }).click();
-    await waitText(p, "伺服器規則備援（非 Gemini）");
+    await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
+    await waitText(p, "預設建議，非 AI 產生");
     await p
       .getByRole("button", { name: "採用填入", exact: true })
       .first()
@@ -118,8 +120,8 @@ test("empty startup → AI fallback → adopt → manual → save → reload →
       await p.locator("textarea").first().inputValue(),
       "real-entry",
     );
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
-    await waitText(p, "已記錄歸檔");
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
+    await waitText(p, "已儲存");
     const saved = await getData(p);
     assert.equal(saved.entries.length, 1);
     assert.equal(saved.personalOS.ifThenStrategies.length, 1);
@@ -129,9 +131,9 @@ test("empty startup → AI fallback → adopt → manual → save → reload →
     await p.locator("textarea").first().waitFor();
     assert.deepEqual(await getData(p), saved);
     await p
-      .getByRole("button", { name: "趨勢與生活洞察", exact: true })
+      .getByRole("button", { name: "生活回顧", exact: true })
       .click();
-    await p.getByRole("button", { name: "前往今日反省檢視 ➔" }).click();
+    await p.getByRole("button", { name: "查看這天的記錄" }).click();
     assert.equal(
       await p.locator("input[type=date]").inputValue(),
       "2026-10-01",
@@ -147,7 +149,7 @@ test("drafts survive tab/date changes and reload without becoming recorded entri
     await p.locator("input[type=date]").fill("2026-10-02");
     await p.locator("textarea").first().fill("draft-A");
     await p
-      .getByRole("button", { name: "個人操作手冊 (中樞)", exact: true })
+      .getByRole("button", { name: "我的小改變", exact: true })
       .click();
     await daily(p);
     assert.equal(await p.locator("textarea").first().inputValue(), "draft-A");
@@ -164,8 +166,8 @@ test("drafts survive tab/date changes and reload without becoming recorded entri
 test("write failure cannot report success or replace saved data; retry works", () =>
   fresh(async (p) => {
     await p.locator("textarea").first().fill("first");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
-    await waitText(p, "已記錄歸檔");
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
+    await waitText(p, "已儲存");
     const before = await getData(p);
     await p.evaluate(() => {
       window.originalSetItem = Storage.prototype.setItem;
@@ -175,27 +177,27 @@ test("write failure cannot report success or replace saved data; retry works", (
       };
     });
     await p.locator("textarea").first().fill("edited");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
     await waitText(p, "日誌未保存");
     assert.deepEqual(await getData(p), before);
-    assert.equal(await p.getByText("已記錄歸檔").count(), 0);
+    assert.equal(await p.getByText("已儲存").count(), 0);
     assert.equal(await p.locator("textarea").first().inputValue(), "edited");
     await p.evaluate(() => {
       Storage.prototype.setItem = window.originalSetItem;
     });
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
-    await waitText(p, "已記錄歸檔");
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
+    await waitText(p, "已儲存");
     assert.equal((await getData(p)).entries[0].goodWhere, "edited");
   }));
 
 test("backup rejects bad schema, cancellation preserves data, restore keeps downloadable recovery", () =>
   fresh(async (p, _ctx, confirm) => {
     await p.locator("textarea").first().fill("backup-me");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
     const before = await getData(p);
     await exportTab(p);
     const download = p.waitForEvent("download");
-    await p.getByRole("button", { name: "匯出備份", exact: true }).click();
+    await p.getByRole("button", { name: "下載完整備份", exact: true }).click();
     const d = await download;
     const stream = await d.createReadStream();
     let raw = "";
@@ -203,7 +205,7 @@ test("backup rejects bad schema, cancellation preserves data, restore keeps down
     const backup = JSON.parse(raw);
     assert.deepEqual(backup.entries, before.entries);
     await upload(p, { version: "1.0", entries: [{}], personalOS: {} });
-    await waitText(p, "備份格式");
+    await waitText(p, "無法還原");
     assert.deepEqual(await getData(p), before);
     confirm(false);
     await upload(p, empty);
@@ -211,7 +213,7 @@ test("backup rejects bad schema, cancellation preserves data, restore keeps down
     assert.deepEqual(await getData(p), before);
     confirm(true);
     await upload(p, empty);
-    await waitText(p, "成功匯入");
+    await waitText(p, "已還原你的記錄");
     assert.equal((await getData(p)).entries.length, 0);
     assert.deepEqual(
       await p.evaluate(
@@ -221,7 +223,7 @@ test("backup rejects bad schema, cancellation preserves data, restore keeps down
       before.entries,
     );
     await upload(p, backup);
-    await waitText(p, "成功匯入");
+    await waitText(p, "已還原你的記錄");
     await daily(p);
     assert.equal(await p.locator("textarea").first().inputValue(), "backup-me");
   }));
@@ -246,16 +248,16 @@ test("delayed AI cannot write into a different date or mood", () =>
         })
         .catch(() => {});
     });
-    await p.getByRole("button", { name: "大腦累了？讓 AI 提煉配方" }).click();
+    await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
     while (!reply) await new Promise((r) => setTimeout(r, 10));
     await p.locator("input[type=date]").fill("2026-10-04");
     reply();
     await p.waitForTimeout(150);
     assert.equal(await p.getByText("stale-marker", { exact: true }).count(), 0);
     reply = undefined;
-    await p.getByRole("button", { name: "大腦累了？讓 AI 提煉配方" }).click();
+    await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
     while (!reply) await new Promise((r) => setTimeout(r, 10));
-    await p.getByRole("button", { name: /不好.*內耗/ }).click();
+    await p.getByRole("button", { name: "不好", exact: true }).click();
     reply();
     await p.waitForTimeout(150);
     assert.equal(await p.getByText("stale-marker", { exact: true }).count(), 0);
@@ -266,8 +268,8 @@ test("malformed/offline AI responses show local fallback instead of crashing", (
     await p.route("**/api/coach", (r) =>
       r.fulfill({ json: { success: true, result: {} } }),
     );
-    await p.getByRole("button", { name: "大腦累了？讓 AI 提煉配方" }).click();
-    await waitText(p, "本地規則備援");
+    await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
+    await waitText(p, "預設建議，非 AI 產生");
     assert.equal(
       await p.getByRole("button", { name: "採用填入", exact: true }).count(),
       3,
@@ -280,10 +282,10 @@ test("another tab changing committed data blocks silent overwrite", () =>
     await other.goto(base);
     await other.locator("textarea").first().waitFor();
     await p.locator("textarea").first().fill("tab-one");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
     await other.locator("textarea").first().fill("tab-two");
     await other
-      .getByRole("button", { name: "儲存今日日誌", exact: true })
+      .getByRole("button", { name: "儲存今天的記錄", exact: true })
       .click();
     await waitText(other, "另一個分頁已修改資料");
     assert.equal((await getData(p)).entries[0].goodWhere, "tab-one");
@@ -296,18 +298,18 @@ test("unreadable committed data stays intact and blocks writes", () =>
     );
     await p.reload();
     await waitText(p, "無法讀取本機資料");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
     assert.equal(
       await p.evaluate(() => localStorage.getItem("life_os_data_v2")),
       "broken-data",
     );
-    assert.equal(await p.getByText("已記錄歸檔").count(), 0);
+    assert.equal(await p.getByText("已儲存").count(), 0);
   }));
 
 test("failed pre-import backup aborts replacement and preserves pending drafts", () =>
   fresh(async (p) => {
     await p.locator("textarea").first().fill("original");
-    await p.getByRole("button", { name: "儲存今日日誌", exact: true }).click();
+    await p.getByRole("button", { name: "儲存今天的記錄", exact: true }).click();
     const before = await getData(p);
     await p.locator("textarea").first().fill("pending-draft");
     await p.evaluate(() => {
@@ -319,13 +321,13 @@ test("failed pre-import backup aborts replacement and preserves pending drafts",
     });
     await exportTab(p);
     await upload(p, empty);
-    await waitText(p, "資料未還原");
+    await waitText(p, "無法還原");
     assert.deepEqual(await getData(p), before);
     await p.evaluate(() => {
       Storage.prototype.setItem = window.originalSetItem;
     });
     await upload(p, empty);
-    await waitText(p, "成功匯入");
+    await waitText(p, "已還原你的記錄");
     await daily(p);
     assert.equal(await p.locator("textarea").first().inputValue(), "");
     assert.ok(
@@ -341,14 +343,14 @@ test('quota-blocked drafts remain in memory across date changes',()=>fresh(async
   await p.evaluate(()=>{window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('quota');};});
   await p.locator('input[type=date]').fill('2026-10-05');await p.locator('textarea').first().fill('memory-only-draft');await waitText(p,'草稿尚未保存');
   await p.locator('input[type=date]').fill('2026-10-06');await p.locator('input[type=date]').fill('2026-10-05');assert.equal(await p.locator('textarea').first().inputValue(),'memory-only-draft');
-  await p.evaluate(()=>{Storage.prototype.setItem=window.originalSetItem;});await p.getByRole('button',{name:'儲存今日日誌',exact:true}).click();await waitText(p,'已記錄歸檔');assert.equal((await getData(p)).entries[0].goodWhere,'memory-only-draft');
+  await p.evaluate(()=>{Storage.prototype.setItem=window.originalSetItem;});await p.getByRole('button',{name:'儲存今天的記錄',exact:true}).click();await waitText(p,'已儲存');assert.equal((await getData(p)).entries[0].goodWhere,'memory-only-draft');
 }));
 
-test('health checks cannot claim remote readiness or successful setup after failures',()=>fresh(async p=>{
-  await p.route('**/api/system/status',r=>r.abort());await p.reload();await waitText(p,'系統自檢: 待確認');
-  await p.getByRole('button',{name:/系統自檢:/}).click();
-  await p.getByRole('button',{name:'發送測試握手',exact:true}).click();await waitText(p,'遠端未就緒');
-  await p.route('**/api/system/setup',r=>r.fulfill({status:503,json:{success:false}}));
-  await p.getByRole('button',{name:'一鍵自動配置',exact:true}).click();await waitText(p,'初始化失敗或尚未就緒');
-  assert.equal(await p.getByText('✅ 系統已完成自動檢查與全目錄配置！',{exact:true}).count(),0);
+test('unavailable service status stays honest and repair failure is visible',()=>fresh(async p=>{
+ await p.route('**/api/system/status',r=>r.abort());await p.reload();
+ await p.getByRole('button',{name:'更多',exact:true}).click();await p.getByRole('button',{name:'使用狀態',exact:true}).click();
+ await waitText(p,'暫時無法確認連線');
+ await p.route('**/api/system/setup',r=>r.fulfill({status:503,json:{success:false}}));
+ await p.getByRole('button',{name:'嘗試修復',exact:true}).click();await waitText(p,'還沒準備好');
+ assert.equal(await p.getByText('已完成檢查。',{exact:true}).count(),0);
 }));

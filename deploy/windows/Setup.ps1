@@ -1,23 +1,26 @@
 [CmdletBinding()]
 param(
-    [string]$ProjectRoot = (Join-Path $PSScriptRoot '..\..'),
+    [string]$ProjectRoot,
     [string]$DataRoot,
     [ValidateRange(1024,65535)][int]$Port = 3000,
-    [switch]$Unattended,
-    [switch]$SkipBuild
+    [switch]$Unattended
 )
+if (-not $ProjectRoot) { $ProjectRoot = Join-Path $PSScriptRoot '..\..' }
 . (Join-Path $PSScriptRoot 'Common.ps1')
+. (Join-Path $PSScriptRoot 'Obsidian.ps1')
 Assert-LifeOSWindows
 $project = (Resolve-Path -LiteralPath $ProjectRoot).ProviderPath.TrimEnd('\')
 if (-not (Test-Path -LiteralPath (Join-Path $project 'bun.lock'))) { throw 'Select the project root containing bun.lock.' }
-if (-not $DataRoot) { $DataRoot = Join-Path (Split-Path -Parent $project) 'Live-A-Better-Life-Data' }
+if (-not $DataRoot) { $DataRoot = Join-Path $project 'Live-A-Better-Life-Data' }
 $data = [IO.Path]::GetFullPath($DataRoot).TrimEnd('\')
-if ($data.StartsWith($project + '\', [StringComparison]::OrdinalIgnoreCase) -or $data -eq $project -or
-    $data -eq [IO.Path]::GetPathRoot($data).TrimEnd('\')) { throw 'Use a dedicated data directory outside the project.' }
+if ($data -eq $project -or $data -eq [IO.Path]::GetPathRoot($data).TrimEnd('\') -or
+    ($data.StartsWith($project + '\', [StringComparison]::OrdinalIgnoreCase) -and $data -ne (Join-Path $project 'Live-A-Better-Life-Data'))) { throw 'Use the dedicated private data folder.' }
 if ($data.StartsWith('\\')) { throw 'SQLite data must use a local disk, not a network share.' }
 $configPath = Join-Path $data 'config.json'
+$notesRoot = Join-Path $data 'Notes'
 if (Test-Path -LiteralPath $configPath) {
     $previous = Get-LifeOSConfig $configPath
+    if ($previous.PSObject.Properties.Name -contains 'NotesRoot') { $notesRoot = $previous.NotesRoot }
     if ($previous.DataRoot -ne $data -or $previous.ProjectRoot -ne $project) { throw 'Existing configuration belongs to a different workspace; preserve it and select a new data directory.' }
 }
 if ((Test-Path -LiteralPath $data) -and -not (Test-Path -LiteralPath $configPath) -and
@@ -31,27 +34,17 @@ $bun = $bunCommand.Source
 $bunVersion = & $bun --version
 if ($LASTEXITCODE -ne 0 -or $bunVersion -ne '1.4.4') { throw 'Bun 1.4.4 is required.' }
 [void](New-Item -ItemType Directory -Path $data -Force)
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-& icacls.exe $data '/inheritance:r' '/grant:r' ($identity + ':(OI)(CI)F') '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'Failed to protect the private data directory.' }
+Protect-LifeOSDataDirectory -LiteralPath $data
 foreach ($name in @('Backups','Logs')) { [void](New-Item -ItemType Directory -Path (Join-Path $data $name) -Force) }
-$config = [ordered]@{ Version=1; ProjectRoot=$project; DataRoot=$data; NodePath=$node; Port=$Port }
+$config = [ordered]@{ Version=1; ProjectRoot=$project; DataRoot=$data; NodePath=$node; Port=$Port; NotesRoot=$notesRoot }
 $config | ConvertTo-Json | Set-Content -LiteralPath $configPath -Encoding UTF8
-Push-Location $project
-try {
-    if (-not $SkipBuild) {
-    & $bun install --frozen-lockfile
-    if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
-    & $bun run lint
-    if ($LASTEXITCODE -ne 0) { throw 'Type check failed.' }
-    & $bun run build
-    if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
-    }
-} finally { Pop-Location }
+Repair-LifeOSApplication -ProjectRoot $project -BunPath $bun
 $config = Get-LifeOSConfig $configPath
+Register-LifeOSVault -VaultRoot $config.NotesRoot
 if ((Invoke-LifeOSAccount -Config $config -Status) -eq 'unconfigured') {
     if ($Unattended) { $null = Invoke-LifeOSDesktop -Config $config -Action prepare }
     else { & (Join-Path $PSScriptRoot 'Set-OwnerPassword.ps1') -ConfigPath $configPath }
 }
+& (Join-Path $PSScriptRoot 'Register-Protocol.ps1') -ConfigPath $configPath
 Write-Host ('Prepared. Configuration: ' + $configPath)
 Write-Host 'Next: run Start-LifeOS.ps1 and Verify.ps1. Tasks are not registered automatically.'

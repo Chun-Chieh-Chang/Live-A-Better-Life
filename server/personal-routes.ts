@@ -1,3 +1,4 @@
+import type {ObsidianMirror} from './obsidian.ts';
 import type { Express, Request, Response, NextFunction } from "express";
 import {
   PersonalStore,
@@ -11,6 +12,9 @@ export interface PersonalConfig {
   store: PersonalStore;
   origin: string;
   desktop?: boolean;
+  obsidian?: ObsidianMirror;
+  chooseNotesFolder?: (initialPath:string)=>Promise<{path:string|null}>;
+  changeNotesFolder?: (root:string)=>Promise<ObsidianMirror>;
   aiHourly?: number;
   aiDaily?: number;
 }
@@ -37,6 +41,9 @@ const token = (req: Request) =>
 export function mountPersonal(app: Express, config: PersonalConfig) {
   const { store } = config;
   const origin = validateOrigin(config.origin);
+  let notesStatus:any={status:'not-configured'};
+  const syncNotes=()=>{if(!config.obsidian)return notesStatus;try{const saved=store.read();notesStatus=config.obsidian.sync(saved.data,saved.revision);}catch{notesStatus={status:'pending',directory:config.obsidian?.root,message:'記錄已保存，但筆記資料夾尚未更新，請重試。'};}return notesStatus;};
+  if(config.obsidian)syncNotes();
   const secure = origin.startsWith("https:");
   if (config.desktop && !/^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin))
     throw new Error("Desktop launch is loopback-only");
@@ -137,6 +144,24 @@ export function mountPersonal(app: Express, config: PersonalConfig) {
     cookie(res, "", true);
     res.json({ success: true });
   });
+  let changingFolder=false;
+  let choosingFolder=false;
+  app.post('/api/obsidian/choose-folder',async(req,res)=>{
+    if(!config.chooseNotesFolder||!config.obsidian)return res.status(400).json({error:'此服務目前不支援選擇資料夾。'});
+    if(choosingFolder)return res.status(429).json({error:'資料夾選擇視窗已開啟，請先完成或取消。'});
+    choosingFolder=true;
+    try{const requested=typeof req.body?.path==='string'&&req.body.path.length<2000?req.body.path:config.obsidian.root;return res.json(await config.chooseNotesFolder(requested));}catch{return res.status(400).json({error:'無法開啟資料夾視窗，請重試或直接輸入路徑。'});}finally{choosingFolder=false;}
+  });
+  app.put('/api/obsidian/location',async(req,res)=>{
+    if(!config.changeNotesFolder||typeof req.body?.path!=='string'||req.body.path.length>2000)return res.status(400).json({error:'請輸入有效的資料夾位置。'});
+    if(changingFolder)return res.status(409).json({error:'目前正在變更資料夾，請稍候。'});
+    changingFolder=true;
+    try{config.obsidian=await config.changeNotesFolder(req.body.path);return res.json(syncNotes());}
+    catch{return res.status(400).json({error:'無法變更資料夾。請確認位置可寫入；若 Obsidian 正在執行，請先關閉後重試。'});}
+    finally{changingFolder=false;}
+  });
+  app.get('/api/obsidian',(_req,res)=>res.json(notesStatus));
+  app.post('/api/obsidian/retry',(_req,res)=>{const status=syncNotes();return res.status(status.status==='pending'?503:200).json(status);});
   app.get("/api/data", (_req, res) => res.json(store.read()));
   app.put("/api/data", (req, res) => {
     if (
@@ -146,7 +171,8 @@ export function mountPersonal(app: Express, config: PersonalConfig) {
     )
       return res.status(400).json({ success: false, error: "Invalid data" });
     try {
-      return res.json(store.write(req.body.data, req.body.expectedRevision));
+      const saved=store.write(req.body.data, req.body.expectedRevision);
+      return res.json({...saved,obsidian:syncNotes()});
     } catch (error) {
       if (error instanceof ConflictError)
         return res.status(409).json({
@@ -179,7 +205,8 @@ export function mountPersonal(app: Express, config: PersonalConfig) {
     const data = store.backup(req.body.backupRevision);
     if (!data) return res.status(404).json({ success: false });
     try {
-      return res.json(store.write(data, req.body.expectedRevision));
+      const saved=store.write(data, req.body.expectedRevision);
+      return res.json({...saved,obsidian:syncNotes()});
     } catch (error) {
       if (error instanceof ConflictError)
         return res

@@ -7,14 +7,16 @@ function Get-LifeOSNativeVersion([string]$Executable) {
 }
 function Ensure-LifeOSRuntime([string]$ToolsRoot, [string]$PreferredNode) {
     [void](New-Item -ItemType Directory -Path $ToolsRoot -Force)
+    Protect-LifeOSDataDirectory -LiteralPath $ToolsRoot
     $node = $PreferredNode
     if (-not $node) { $found = Get-Command node.exe -ErrorAction SilentlyContinue; if ($found) { $node = $found.Source } }
     if ((Get-LifeOSNativeVersion $node) -notmatch '^v24\.') { $node = '' }
+    if ($node -and -not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $node) 'node_modules\npm\bin\npm-cli.js'))) { $node = '' }
     if (-not $node) {
         $cached = Join-Path $ToolsRoot 'node-path.txt'
         if (Test-Path -LiteralPath $cached) {
             $candidate = (Get-Content -LiteralPath $cached -Raw).Trim()
-            if ((Get-LifeOSNativeVersion $candidate) -match '^v24\.') { $node = $candidate }
+            if ((Get-LifeOSNativeVersion $candidate) -match '^v24\.' -and (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $candidate) 'node_modules\npm\bin\npm-cli.js'))) { $node = $candidate }
         }
     }
     if (-not $node) {
@@ -41,10 +43,10 @@ function Ensure-LifeOSRuntime([string]$ToolsRoot, [string]$PreferredNode) {
                 $lines = @(Get-Content -LiteralPath $manifest | Where-Object { $_ -match $pattern })
                 if ($lines.Count -ne 1) { throw 'Missing or ambiguous official Node checksum.' }
                 $expected = ($lines[0] -split '\s+')[0]
-                if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ine $expected) { throw 'Node SHA-256 mismatch. Archive will not be used.' }
+                if ((Get-LifeOSFileHash -LiteralPath $archive) -ine $expected) { throw 'Node SHA-256 mismatch. Archive will not be used.' }
                 Expand-Archive -LiteralPath $archive -DestinationPath $download
                 $target = Join-Path $ToolsRoot $name
-                if (Test-Path -LiteralPath $target) { throw 'Unexpected existing runtime directory; refusing to replace it.' }
+                if (Test-Path -LiteralPath $target) { $target += '-' + [Guid]::NewGuid().ToString('N') }
                 Move-Item -LiteralPath (Join-Path $download $name) -Destination $target
                 $node = Join-Path $target 'node.exe'
                 if ((Get-LifeOSNativeVersion $node) -notmatch '^v24\.') { throw 'Downloaded runtime failed its version check.' }
@@ -56,12 +58,13 @@ function Ensure-LifeOSRuntime([string]$ToolsRoot, [string]$PreferredNode) {
     $bun = ''
     $foundBun = Get-Command bun.exe,bun.cmd,bun -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($foundBun -and (Get-LifeOSNativeVersion $foundBun.Source) -eq '1.4.4') { $bun = $foundBun.Source }
-    $privateBun = Join-Path $ToolsRoot 'bun\node_modules\.bin\bun.cmd'
+    $bunPrefix = Join-Path $ToolsRoot 'bun'
+    $privateBun = Join-Path $bunPrefix 'node_modules\.bin\bun.cmd'
     if (-not $bun -and (Get-LifeOSNativeVersion $privateBun) -eq '1.4.4') { $bun = $privateBun }
     if (-not $bun) {
         $npm = Join-Path (Split-Path -Parent $node) 'node_modules\npm\bin\npm-cli.js'
         if (-not (Test-Path -LiteralPath $npm)) { throw 'The selected Node 24 runtime has no npm CLI.' }
-        & $node $npm install --prefix (Join-Path $ToolsRoot 'bun') --cache (Join-Path $ToolsRoot 'npm-cache') --no-package-lock --no-audit --no-fund bun@1.4.4 | Out-Host
+        & $node $npm install --prefix $bunPrefix --cache (Join-Path $ToolsRoot 'npm-cache') --no-package-lock --no-audit --no-fund bun@1.4.4 | Out-Host
         if ($LASTEXITCODE -ne 0 -or (Get-LifeOSNativeVersion $privateBun) -ne '1.4.4') { throw 'User-scoped Bun installation failed.' }
         $bun = $privateBun
     }

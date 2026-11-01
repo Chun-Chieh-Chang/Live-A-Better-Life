@@ -30,8 +30,9 @@ export class PersonalStore {
       mkdirSync(path.dirname(filename), { recursive: true, mode: 0o700 });
     }
     this.db = new DatabaseSync(filename);
-    if (filename !== ":memory:") chmodSync(filename, 0o600);
-    this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;
+    try {
+      if (filename !== ":memory:") chmodSync(filename, 0o600);
+      this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;
       CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS owner (id INTEGER PRIMARY KEY CHECK(id=1), salt TEXT NOT NULL, hash TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, expires INTEGER NOT NULL);
@@ -40,19 +41,28 @@ export class PersonalStore {
       CREATE TABLE IF NOT EXISTS document (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL, data TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS backups (revision INTEGER PRIMARY KEY, data TEXT NOT NULL, created TEXT NOT NULL);
     `);
-    this.db
-      .prepare("INSERT OR IGNORE INTO meta VALUES (?,?)")
-      .run("workspaceId", randomUUID());
-    this.workspaceId = (
       this.db
-        .prepare("SELECT value FROM meta WHERE key=?")
-        .get("workspaceId") as { value: string }
-    ).value;
-    this.db
-      .prepare("INSERT OR IGNORE INTO document VALUES (1,0,?)")
-      .run(JSON.stringify(emptyData()));
-    // Validate persisted data on opening; never reset a damaged database automatically.
-    this.read();
+        .prepare("INSERT OR IGNORE INTO meta VALUES (?,?)")
+        .run("workspaceId", randomUUID());
+      this.workspaceId = (
+        this.db
+          .prepare("SELECT value FROM meta WHERE key=?")
+          .get("workspaceId") as { value: string }
+      ).value;
+      this.db
+        .prepare("INSERT OR IGNORE INTO document VALUES (1,0,?)")
+        .run(JSON.stringify(emptyData()));
+      // Validate persisted data on opening; never reset a damaged database automatically.
+      this.read();
+    } catch (error) {
+      // A failed constructor has no caller-owned store to close.
+      try {
+        this.db.close();
+      } catch {
+        /* Keep the initialization error. */
+      }
+      throw error;
+    }
   }
   configured() {
     return !!this.db.prepare("SELECT id FROM owner WHERE id=1").get();

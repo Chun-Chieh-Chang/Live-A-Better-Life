@@ -1,3 +1,5 @@
+import {chooseNotesFolder,changeNotesFolder} from './server/obsidian-settings.ts';
+import {ObsidianMirror} from './server/obsidian.ts';
 import express from 'express';
 import { PersonalStore, QuotaError } from './server/personal-store.ts';
 import { mountPersonal, type PersonalConfig } from './server/personal-routes.ts';
@@ -7,7 +9,7 @@ import { accessSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { isCoachRequest, isCoachResult } from './src/utils/validation.ts';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import {selectAI, AI_DEFAULTS, type AIClient, type AIProvider} from './server/ai-provider.ts';
 
 import { runSystemCheckAndSetup } from './scripts/bootstrap.ts';
 
@@ -16,7 +18,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function createApp(options: {client?: Pick<GoogleGenAI, 'models'> | null; timeoutMs?: number; personal?: PersonalConfig; model?: string} = {}) {
+export function createApp(options: {client?: AIClient | null; provider?: AIProvider; timeoutMs?: number; personal?: PersonalConfig; model?: string} = {}) {
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({limit:'10mb'}));
@@ -39,8 +41,8 @@ if (!options.personal) {
 }
 let activeAI = false;
 
-const apiKey = process.env.GEMINI_API_KEY || '';
-const aiClient = options.client !== undefined ? options.client : apiKey && apiKey !== 'MY_GEMINI_API_KEY' ? new GoogleGenAI({apiKey}) : null;
+const selected = options.client !== undefined ? {client:options.client, provider:options.provider||'gemini' as AIProvider, model:options.model||AI_DEFAULTS[options.provider||'gemini'].model} : selectAI();
+const aiClient = selected.client;
 async function generate(contents: string, json = false) {
   if (activeAI) throw new QuotaError('AI request already running');
   reserveAI();
@@ -48,7 +50,7 @@ async function generate(contents: string, json = false) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
-      aiClient!.models.generateContent({model:options.model || process.env.GEMINI_MODEL || 'gemini-3.8-flash', contents,
+      aiClient!.models.generateContent({model:options.model || selected.model, contents,
         config:{maxOutputTokens:2000,httpOptions:{timeout:options.timeoutMs ?? 10000, retryOptions:{attempts:1}}, ...(json ? {responseMimeType:'application/json', temperature:0.7} : {})}}),
       new Promise<never>((_,reject)=> {timer=setTimeout(()=>reject(new Error('AI timeout')), options.timeoutMs ?? 10000);})
     ]);
@@ -60,8 +62,7 @@ const systemReport = (autoFix=false) => {
   if(options.personal) {
     report.isReady=report.dependencies.status==='ok' && options.personal.store.configured();
     report.env.status='ok';
-    report.env.message='個人模式由服務環境變數配置；Gemini 未設定時使用規則備援。';
-    report.vault={status:'ok',message:'個人模式以 SQLite 保存資料；Markdown 由瀏覽器匯出，不需伺服器 Vault。',directories:[],files:[]};
+    report.env.message='個人模式使用後端 AI 設定，未設定時使用預設建議。';
   }
   return report;
 };
@@ -79,14 +80,14 @@ app.post('/api/system/setup', (_req, res) => {
 
 // API: Test AI Co-processor
 app.post('/api/system/test-ai', async (_req, res) => {
-  if (!aiClient) return res.status(503).json({success:false, text:'未設定 Gemini；日誌教練仍可使用規則備援。', mode:'unconfigured'});
+  if (!aiClient) return res.status(503).json({success:false, text:'尚未設定 AI 服務；仍可使用預設建議。', mode:'unconfigured'});
   try {
     const response = await generate('請用一句溫暖的話問候今天的我。');
     if (!response.text?.trim()) throw new Error('Empty AI response');
-    return res.json({success:true, text:response.text, mode:'gemini-api'});
+    return res.json({success:true, text:response.text, mode:selected.provider+'-api'});
   } catch (error) {
     if (error instanceof QuotaError) return res.status(429).json({success:false,text:'AI 使用量已達上限或尚有請求執行中，請稍後重試。',mode:'limited'});
-    return res.status(503).json({success:false, text:'Gemini 測試失敗或逾時；日誌教練仍可使用規則備援。', mode:'unavailable'});
+    return res.status(503).json({success:false, text:'AI 服務暫時無法使用，仍可使用預設建議。', mode:'unavailable'});
   }
 });
 
@@ -136,19 +137,20 @@ ${customPrompt ? `額外提問/需求：${customPrompt}` : ''}
 
     if (aiClient) {
       const response = await generate(`${systemPrompt}\n\n${userPrompt}`, true);
-      const parsed = JSON.parse(response.text || '{}');
+      const rawText = (response.text || '{}').trim();
+      const parsed = JSON.parse(rawText.replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1'));
       if (!isCoachResult(parsed)) throw new Error('Invalid model response');
-      return res.json({success:true, result:parsed, isFallback:false});
+      return res.json({success:true, result:parsed, isFallback:false, source:selected.provider});
     } else {
       // Intelligent fallback when GEMINI_API_KEY is not configured yet
       const fallbackResult = generateFallbackCoachAdvice(state, data);
-      return res.json({ success: true, result: fallbackResult, isFallback: true });
+      return res.json({ success: true, result: fallbackResult, isFallback: true, source: 'server-fallback' });
     }
   } catch (err: any) {
     if (err instanceof QuotaError) return res.status(429).json({success:false,error:'AI 使用量已達上限或尚有請求執行中。'});
     console.warn('Remote coach unavailable; using rule fallback.');
     const fallback = generateFallbackCoachAdvice(req.body.state, req.body.data);
-    return res.json({ success: true, result: fallback, isFallback: true, reason: 'remote_unavailable' });
+    return res.json({ success: true, result: fallback, isFallback: true, source:'server-fallback', reason: 'remote_unavailable' });
   }
 });
 
@@ -206,7 +208,12 @@ async function startServer() {
   let personal: PersonalConfig | undefined;
   if (mode === 'personal') {
     if (!process.env.LIFE_OS_DB_PATH || !process.env.LIFE_OS_ORIGIN) throw new Error('Personal mode requires LIFE_OS_DB_PATH and LIFE_OS_ORIGIN');
-    personal={store:new PersonalStore(process.env.LIFE_OS_DB_PATH),origin:process.env.LIFE_OS_ORIGIN, desktop:process.env.LIFE_OS_DESKTOP==='1'};
+    personal={store:new PersonalStore(process.env.LIFE_OS_DB_PATH),origin:process.env.LIFE_OS_ORIGIN, desktop:process.env.LIFE_OS_DESKTOP==='1', ...(process.env.LIFE_OS_DESKTOP==='1'?{obsidian:new ObsidianMirror(process.env.LIFE_OS_NOTES_PATH || path.join(path.dirname(process.env.LIFE_OS_DB_PATH),'Notes'))}:{})};
+  }
+  if(personal?.desktop){
+    const workspace=personal;
+    personal.chooseNotesFolder=chooseNotesFolder;
+    personal.changeNotesFolder=root=>changeNotesFolder({root,dataRoot:path.dirname(process.env.LIFE_OS_DB_PATH!),projectRoot:__dirname,read:()=>workspace.store.read()});
   }
   const app = createApp({personal});
   const httpServer = createHttpServer(app);

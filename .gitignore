@@ -9,3 +9,10 @@ coverage/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# Local encrypted service credentials
+*.dpapi
+
+# Local records, credentials and runtimes stay on this computer.
+/Live-A-Better-Life-Data/
+/Live-A-Better-Life-Tools/
