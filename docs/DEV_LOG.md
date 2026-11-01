@@ -58,3 +58,17 @@
 
 ### 狀態
 56 項單元測試通過。
+
+## 2026-11-01 建立與更新交接文件 (handoff.md)
+
+需求：建立與更新 `handoff.md`，使接續協作者與 AI 能即時接軌當前最新架構、測試與邊界。
+
+### 做法
+- 彙整當前系統架構（SSOT 邊界、資料流向、Windows 原生與 Obsidian 雙向連動）。
+- 明列已完成之里程碑（專案精簡、雙向回寫、資料夾選擇視窗前景確效）。
+- 列出標準測試與確效清單（`npm run lint`、`npm test`、`test:obsidian-browser`、`test:folder-dialog`）。
+- 載明刻意不回寫之邊界設計與未來建議事項。
+- 同步更新 `PROJECT_STRUCTURE.md`。
+
+### 狀態
+- `handoff.md` 已建立完成，測試維持 56 項綠燈。

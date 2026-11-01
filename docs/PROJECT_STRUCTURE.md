@@ -17,7 +17,7 @@
 | Live-A-Better-Life-Data/ | 私人記錄、設定、備份、輸出與參考資料 | 保留私人 ACL，Git 忽略，禁止 HTTP 存取 |
 | Live-A-Better-Life-Tools/ | 本機工具及安裝快取 | 可修復安裝，Git 忽略，禁止 HTTP 存取 |
 
-根目錄其餘檔案都是現行入口或設定：Start-LifeOS.cmd、README.md、AGENTS.md、package.json、bun.lock、index.html、server.ts、TypeScript/Vite/Git 設定，以及 Git 忽略的私人 .env。不把 .env 或兩個本機目錄提交或推送。
+根目錄其餘檔案都是現行入口、交接或設定：Start-LifeOS.cmd、README.md、handoff.md、AGENTS.md、package.json、bun.lock、index.html、server.ts、TypeScript/Vite/Git 設定，以及 Git 忽略的私人 .env。不把 .env 或兩個本機目錄提交或推送。
 
 ## 權威來源及可重建副本
 
