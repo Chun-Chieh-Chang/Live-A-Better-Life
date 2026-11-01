@@ -131,21 +131,111 @@ export function generateTemplateMarkdown(): string {
 `;
 }
 
-export function generatePersonalOSMarkdown(personalOS: PersonalOS): string {
+export type OsList = 'ifThenStrategies' | 'habitQuestions' | 'emergencyRecipes' | 'avoidanceGuides';
+export type OsItem = { id?: string; fields: Record<string, string> };
+export type OsFields = Record<OsList, OsItem[]>;
+
+// Single source of truth for the manual note: which lists exist, their plain-language names, and their editable fields.
+export const OS_LISTS: Record<OsList, { title: string; fields: Record<string, string> }> = {
+  ifThenStrategies: { title: '每週策略', fields: { ifText: '如果', thenText: '就', active: '啟用' } },
+  habitQuestions: { title: '短期提問', fields: { text: '內容', active: '啟用' } },
+  emergencyRecipes: { title: '急救配方', fields: { title: '標題', description: '內容', tag: '標籤' } },
+  avoidanceGuides: { title: '避坑指南', fields: { title: '標題', lesson: '教訓', tag: '標籤' } },
+};
+const OS_HEADERS: Record<OsList, string> = {
+  ifThenStrategies: '## ⚡ 本週 If-Then 策略',
+  habitQuestions: '## 🎯 本週短期外掛提問',
+  emergencyRecipes: '## 🎁 我的快樂與急救配方庫',
+  avoidanceGuides: '## 💣 我的避坑指南',
+};
+const OS_PLACEHOLDERS = new Set(['- [ ] 尚未新增策略', '- [ ] 尚未新增外掛提問']);
+
+/** Plain-text view of the editable fields of the manual, keyed by item id (used as the sync baseline). */
+export function personalOSFields(os: PersonalOS): OsFields {
+  const take = (list: OsList, items: any[]): OsItem[] =>
+    items.map((item) => ({
+      id: item.id,
+      fields: Object.fromEntries(Object.keys(OS_LISTS[list].fields).map((k) => [k, typeof item[k] === 'boolean' ? String(item[k]) : String(item[k] ?? '').trim()])),
+    }));
+  return {
+    ifThenStrategies: take('ifThenStrategies', os.ifThenStrategies),
+    habitQuestions: take('habitQuestions', os.habitQuestions),
+    emergencyRecipes: take('emergencyRecipes', os.emergencyRecipes),
+    avoidanceGuides: take('avoidanceGuides', os.avoidanceGuides),
+  };
+}
+
+/** Reads the manual note back. Items without an id marker are new; returns null when the structure cannot be read. */
+export function parsePersonalOSNote(markdown: string): OsFields | null {
+  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+  const result: OsFields = { ifThenStrategies: [], habitQuestions: [], emergencyRecipes: [], avoidanceGuides: [] };
+  const split = (line: string): { text: string; id?: string } | null => {
+    const m = / <!-- id:([^ >]+) -->\s*$/.exec(line);
+    if (!m) return { text: line.trimEnd() };
+    try { return { text: line.slice(0, m.index), id: decodeURIComponent(m[1]) }; } catch { return null; }
+  };
+  let list: OsList | null = null;
+  let block: OsItem | null = null;
+  const description: Record<string, string> = { emergencyRecipes: 'description', avoidanceGuides: 'lesson' };
+  const body: string[] = [];
+  const closeBlock = () => {
+    if (block && list) block.fields[description[list]] = body.join('\n').trim();
+    block = null;
+    body.length = 0;
+  };
+  let seen = 0;
+  for (const line of lines) {
+    const header = (Object.keys(OS_HEADERS) as OsList[]).find((k) => line.trimEnd() === OS_HEADERS[k]);
+    if (header) { closeBlock(); list = header; seen++; continue; }
+    if (line.startsWith('## ')) { closeBlock(); list = null; continue; }
+    if (!list) continue;
+    if (list === 'emergencyRecipes' || list === 'avoidanceGuides') {
+      if (line.startsWith('### ')) {
+        closeBlock();
+        const parts = split(line);
+        if (!parts) return null;
+        const m = /^### (.*?)(?: `([^`]*)`)?\s*$/.exec(parts.text);
+        if (!m) return null;
+        block = { id: parts.id, fields: { title: m[1], tag: m[2] ?? '', [description[list]]: '' } };
+        result[list].push(block);
+      } else if (block && !/^\*\(.*\)\*$/.test(line)) body.push(line);
+      continue;
+    }
+    if (!line.startsWith('- [')) continue;
+    const parts = split(line);
+    if (!parts) return null;
+    if (!parts.id && OS_PLACEHOLDERS.has(parts.text)) continue;
+    const check = /^- \[( |x)\] (.*)$/.exec(parts.text);
+    if (!check) continue;
+    const active = String(check[1] === 'x');
+    if (list === 'habitQuestions') result[list].push({ id: parts.id, fields: { text: check[2].trim(), active } });
+    else {
+      const at = check[2].indexOf(', Then ');
+      const head = /^If (.*)$/.exec(at < 0 ? '' : check[2].slice(0, at));
+      if (!head) continue;
+      result[list].push({ id: parts.id, fields: { ifText: head[1].trim(), thenText: check[2].slice(at + 7).trim(), active } });
+    }
+  }
+  closeBlock();
+  return seen === 4 ? result : null;
+}
+
+export function generatePersonalOSMarkdown(personalOS: PersonalOS, withIds = false): string {
+  const mark = (id: string) => (withIds ? ` <!-- id:${encodeURIComponent(id)} -->` : '');
   const ifThenContent = personalOS.ifThenStrategies.map(s => 
-    `- [${s.active ? 'x' : ' '}] If ${s.ifText}, Then ${s.thenText}`
+    `- [${s.active ? 'x' : ' '}] If ${s.ifText}, Then ${s.thenText}${mark(s.id)}`
   ).join('\n');
 
   const habitsContent = personalOS.habitQuestions.map(h => 
-    `- [${h.active ? 'x' : ' '}] ${h.text}`
+    `- [${h.active ? 'x' : ' '}] ${h.text}${mark(h.id)}`
   ).join('\n');
 
   const recipesContent = personalOS.emergencyRecipes.map(r => 
-    `### ${r.title} ${r.tag ? `\`${r.tag}\`` : ''}\n${r.description}`
+    `### ${r.title} ${r.tag ? `\`${r.tag}\`` : ''}${mark(r.id)}\n${r.description}`
   ).join('\n\n');
 
   const avoidsContent = personalOS.avoidanceGuides.map(a => 
-    `### ${a.title} ${a.tag ? `\`${a.tag}\`` : ''}\n${a.lesson}`
+    `### ${a.title} ${a.tag ? `\`${a.tag}\`` : ''}${mark(a.id)}\n${a.lesson}`
   ).join('\n\n');
 
   return `# 📖 我的我的小改變 (Personal Operating System)
@@ -168,7 +258,6 @@ ${recipesContent || '尚未新增配方'}
 ${avoidsContent || '尚未新增避坑項目'}
 `;
 }
-
 export function downloadFile(filename: string, content: string, mimeType = 'text/markdown;charset=utf-8') {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);

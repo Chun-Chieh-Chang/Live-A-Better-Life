@@ -208,7 +208,7 @@ test("an Obsidian edit is detected, survives later saves, and can be imported or
     mirror.sync(data, 1);
     edit(dir, "hello", "hello from notes");
     const [change] = mirror.changes(data);
-    assert.equal(change.date, "2026-11-01");
+    assert.equal(change.key, "2026-11-01");
     assert.deepEqual(change.fields.map((f) => [f.key, f.base, f.notes, f.app, f.conflict]), [["goodWhere", "hello", "hello from notes", "hello", false]]);
     mirror.sync(data, 2);
     assert.match(readFileSync(note(dir), "utf8"), /hello from notes/);
@@ -305,3 +305,94 @@ test("import API merges Obsidian edits, requires a choice on conflicts, and refu
     rmSync(root, { recursive: true, force: true });
   }
 });
+import { applyNoteChange } from "../server/obsidian.ts";
+const manualFixture = () => {
+  const data = fixture();
+  data.personalOS = {
+    ifThenStrategies: [
+      { id: "s1", ifText: "tired", thenText: "rest", active: true },
+      { id: "s2", ifText: "angry", thenText: "walk", active: false },
+    ],
+    habitQuestions: [{ id: "h1", text: "water?", active: true }],
+    emergencyRecipes: [{ id: "r1", title: "Sunny", description: "line1\nline2", tag: "good" }],
+    avoidanceGuides: [{ id: "a1", title: "Late night", lesson: "sleep early", tag: "" }],
+  };
+  return data;
+};
+const manual = (dir: string) => path.join(dir, "我的小改變.md");
+const editManual = (dir: string, from: string, to: string) => {
+  const text = readFileSync(manual(dir), "utf8");
+  assert.ok(text.includes(from), from);
+  writeFileSync(manual(dir), text.replace(from, to));
+};
+const withVault = (run: (dir: string, mirror: ObsidianMirror) => void) => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "life-os-vault-"));
+  try {
+    run(dir, new ObsidianMirror(dir));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+};
+test("manual note: untouched file has no changes; ids stay hidden markers", () =>
+  withVault((dir, mirror) => {
+    const data = manualFixture();
+    mirror.sync(data, 1);
+    assert.match(readFileSync(manual(dir), "utf8"), /<!-- id:s1 -->/);
+    assert.deepEqual(mirror.changes(data), []);
+    writeFileSync(manual(dir), readFileSync(manual(dir), "utf8").replace(/\n/g, "\r\n"));
+    assert.deepEqual(mirror.changes(data), []);
+  }));
+test("manual note: edits, checkbox, additions and deletions are detected and applied exactly once", () =>
+  withVault((dir, mirror) => {
+    const data = manualFixture();
+    mirror.sync(data, 1);
+    editManual(dir, "Then rest", "Then rest well");
+    editManual(dir, "- [ ] If angry", "- [x] If angry");
+    editManual(dir, "- [x] water?", "- [x] water? (2L)");
+    editManual(dir, "line2", "line2 changed");
+    editManual(dir, "\n\n## 🎯", "\n- [ ] If new, Then plan\n\n## 🎯");
+    writeFileSync(manual(dir), readFileSync(manual(dir), "utf8").replace(/### Late night.*\nsleep early\n?/, ""));
+    const [change] = mirror.changes(data);
+    assert.equal(change.key, "os");
+    assert.deepEqual(
+      change.fields.map((f) => f.apply?.op + ":" + f.conflict).sort(),
+      ["add:false", "edit:false", "edit:false", "edit:false", "edit:false", "remove:false"],
+    );
+    mirror.sync(data, 2);
+    assert.equal(mirror.changes(data).length, 1);
+    applyNoteChange(data, change);
+    assert.deepEqual(data.personalOS.ifThenStrategies.map((s) => [s.ifText, s.thenText, s.active]), [["tired", "rest well", true], ["angry", "walk", true], ["new", "plan", false]]);
+    assert.equal(data.personalOS.habitQuestions[0].text, "water? (2L)");
+    assert.equal(data.personalOS.emergencyRecipes[0].description, "line1\nline2 changed");
+    assert.equal(data.personalOS.avoidanceGuides.length, 0);
+    assert.deepEqual(mirror.changes(data), []);
+    mirror.sync(data, 3);
+    assert.equal(existsSync(path.join(dir, "保留的修改")), false);
+    assert.equal(readFileSync(manual(dir), "utf8").match(/If new, Then plan/g)?.length, 1);
+    assert.deepEqual(mirror.changes(data), []);
+  }));
+test("manual note: same field edited on both sides, or deleting an edited item, is a conflict", () =>
+  withVault((dir, mirror) => {
+    const data = manualFixture();
+    mirror.sync(data, 1);
+    editManual(dir, "Then rest", "Then notes");
+    editManual(dir, "- [ ] If angry, Then walk <!-- id:s2 -->\n", "");
+    data.personalOS.ifThenStrategies[0].thenText = "app";
+    data.personalOS.ifThenStrategies[1].thenText = "run";
+    mirror.sync(data, 2);
+    const rows = mirror.changes(data)[0].fields;
+    assert.equal(rows.find((f) => f.apply?.op === "edit")?.conflict, true);
+    assert.equal(rows.find((f) => f.apply?.op === "remove")?.conflict, true);
+    mirror.discard("os");
+    assert.equal(readdirSync(path.join(dir, "保留的修改")).length, 1);
+    mirror.sync(data, 3);
+    assert.deepEqual(mirror.changes(data), []);
+    assert.match(readFileSync(manual(dir), "utf8"), /Then app/);
+  }));
+test("manual note: damaged headings are never imported", () =>
+  withVault((dir, mirror) => {
+    const data = manualFixture();
+    mirror.sync(data, 1);
+    editManual(dir, "## 🎯 本週短期外掛提問", "## 其他");
+    assert.deepEqual(mirror.changes(data), []);
+  }));

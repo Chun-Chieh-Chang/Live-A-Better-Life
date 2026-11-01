@@ -207,13 +207,13 @@ export function CloudSyncPanel({
       )}
       {noteChanges.length > 0 && (
         <div className="space-y-3 border border-[#e8e5d8] rounded-xl p-4" role="region" aria-label="筆記裡的修改">
-          <p className="font-bold">你在筆記裡修改了 {noteChanges.length} 天的內容，還沒有帶回這個工具。</p>
+          <p className="font-bold">你在筆記裡修改了 {noteChanges.length} 份筆記（日記或我的小改變），還沒有帶回這個工具。</p>
           <p>帶回前會先保留目前的版本，可以在「找回之前的記錄」還原。</p>
           {noteChanges.map((change) => {
             const conflict = change.fields.some((f: any) => f.conflict);
             return (
-              <div key={change.date} className="space-y-2 border-t border-[#e8e5d8] pt-3">
-                <p className="font-medium">{change.date}</p>
+              <div key={change.key} className="space-y-2 border-t border-[#e8e5d8] pt-3">
+                <p className="font-medium">{change.title}</p>
                 {change.fields.map((f: any) => (
                   <p key={f.key} className="break-words">
                     {f.label}：<del>{f.conflict ? f.app || "（空白）" : f.base || "（空白）"}</del> → <strong>{f.notes || "（空白）"}</strong>
@@ -226,9 +226,9 @@ export function CloudSyncPanel({
                       <label key={v} className="flex items-center gap-2 min-h-11">
                         <input
                           type="radio"
-                          name={"choice-" + change.date}
-                          checked={choices[change.date] === v}
-                          onChange={() => setChoices({ ...choices, [change.date]: v })}
+                          name={"choice-" + change.key}
+                          checked={choices[change.key] === v}
+                          onChange={() => setChoices({ ...choices, [change.key]: v })}
                         />
                         {v === "notes" ? "用筆記裡的內容" : "保留工具裡的內容"}
                       </label>
@@ -239,7 +239,7 @@ export function CloudSyncPanel({
             );
           })}
           <button
-            disabled={busy || !remote || noteChanges.some((c) => c.fields.some((f: any) => f.conflict) && !choices[c.date])}
+            disabled={busy || !remote || noteChanges.some((c) => c.fields.some((f: any) => f.conflict) && !choices[c.key])}
             onClick={() =>
               void run(async () => {
                 if (!remote) return;
@@ -252,7 +252,7 @@ export function CloudSyncPanel({
                 acceptRemote(result);
                 setChoices({});
                 await loadNoteChanges();
-                setMessage(`已帶回 ${result.imported} 天的修改` + (result.kept ? `，保留工具內容 ${result.kept} 天（筆記版本已另存）。` : "。"));
+                setMessage(`已帶回 ${result.imported} 份筆記的修改` + (result.kept ? `，保留工具內容 ${result.kept} 份（筆記版本已另存）。` : "。"));
               })
             }
           >
