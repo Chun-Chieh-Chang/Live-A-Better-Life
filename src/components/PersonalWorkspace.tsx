@@ -22,6 +22,12 @@ export default function PersonalWorkspace() {
   const load = async () => {
     try {
       const r = await apiFetch("/api/auth/session");
+      if (r.status === 404) {
+        // 純靜態託管環境（如 GitHub Pages），無後端 API，自動降級為純瀏覽器本地模式
+        setSession({ mode: "local", authenticated: false });
+        setError("");
+        return;
+      }
       if (!r.ok) throw new Error();
       const s = await r.json();
       if (!["local", "personal"].includes(s.mode)) throw new Error();
@@ -195,9 +201,27 @@ export default function PersonalWorkspace() {
         loginForm
       )}
       {error && (
-        <div role="alert">
-          {error}
-          <button onClick={() => void load()}>重試連線</button>
+        <div role="alert" className="space-y-3 pt-2">
+          <p className="text-sm text-red-700">{error}</p>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              className="min-h-11 px-3 border border-[#e8e5d8] rounded-xl text-sm"
+              onClick={() => void load()}
+            >
+              重試連線
+            </button>
+            <button
+              type="button"
+              className="min-h-11 px-3 bg-[#4d6b53] text-white rounded-xl text-sm font-medium"
+              onClick={() => {
+                setSession({ mode: "local", authenticated: false });
+                setError("");
+              }}
+            >
+              使用純瀏覽器模式
+            </button>
+          </div>
         </div>
       )}
     </main>

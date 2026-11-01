@@ -114,3 +114,10 @@
 - **現象**：GitHub Actions 在 `Install dependencies` 步驟失敗（npm error ERESOLVE）。
 - **根因**：`package.json` 中手動鎖定過時的 `"esbuild": "^0.25.0"`，與頂層 `"vite": "^8.3.0"` 期望的 `esbuild@"^0.27.0 || ^0.28.0"` peer dependency 衝突。
 - **矯正措施**：將 `package.json` 的 `esbuild` 依賴版本對齊提升至 `"^0.28.0"`；本地 `npm install --dry-run`、`npm run lint`、`npm test` 確效通過。
+
+### GitHub Pages 純靜態代管 404 死鎖 RCA 與修復（2026-11-01）
+- **現象**：在 GitHub Pages 上開啟時，畫面卡在「正在確認服務狀態… 無法確認服務狀態，請重試。 重試連線」。
+- **根因**：GitHub Pages 為純靜態託管無 Node.js 後端服務，前端 `PersonalWorkspace` 於啟動時呼叫 `/api/auth/session` 收到 404 Not Found；原本邏輯在非 200 時拋出錯誤，且未做靜態站點降級處理，導致使用者被鎖在連線錯誤畫面。
+- **矯正措施**：
+  1. `PersonalWorkspace.tsx` 於啟動偵測時，若 `/api/auth/session` 回傳 404，自動判定為純靜態託管環境，立即無縫降級進入「純瀏覽器本地模式 (`mode: 'local'`)」，直接渲染主應用。
+  2. 錯誤提示區塊新增「使用純瀏覽器模式」備援按鈕，即使完全離線或網路連線失敗，使用者也能隨時一鍵進入本地寫作與手冊介面。
