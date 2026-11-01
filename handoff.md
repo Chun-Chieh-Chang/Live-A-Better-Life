@@ -1,7 +1,7 @@
 # 專案交接文件 (handoff.md)
 
 最後更新時間：2026-11-01  
-最新提交基準：`6119de0` (`main`)
+最新工作基準：已完成死碼依賴清理、圖譜無縫嵌入、關閉系統按鈕頂層重構與啟用流程確效 (`main`)
 
 ---
 
@@ -16,6 +16,7 @@
   - 日記與手冊欄位定義與 Markdown 雙向解析：`src/utils/markdownExporter.ts`。
   - 個人模式權威資料庫：`Live-A-Better-Life-Data/owner.sqlite`。
   - Obsidian 輸出目錄：由 `config.json` 的 `NotesRoot` 指定。
+  - 開發日誌 SSOT：根目錄唯一維護 `DEV_LOG.md`。
 - **環境與隱私防護**：
   - `Live-A-Better-Life-Data/` 與 `Live-A-Better-Life-Tools/` 嚴格維持 Git-ignored，禁止透過 HTTP 暴露。
   - 根目錄 `.env` 永不納入版控。
@@ -58,7 +59,22 @@
    - `PersonalWorkspace.tsx` 在偵測到 `/api/auth/session` 回傳 404 時（純靜態代管如 GitHub Pages），自動切換至「純瀏覽器本地模式 (`mode: 'local'`)」，徹底杜絕畫面死鎖在「正在確認服務狀態…」。
    - 新增手動「使用純瀏覽器模式」備援按鈕，提升離線環境魯棒性。
 
+8. **實作「一鍵安全關閉系統與背景服務」** (`6448a3b`, `f785c4b`, `aeb2f56`)：
+   - 點擊「關閉系統與背景服務」後，後端透過 `deploy/windows/Stop-LifeOS.ps1` 停止 `LifeOS-Server` 排程、通知關閉 Obsidian 視窗釋放資源、關閉 SQLite WAL 連線與 HTTP 伺服器。
+   - 頂部導航重構：關閉按鈕提升至 Header 最上層右側，個人桌面模式常駐可見，具備二次確認彈窗與友善安全關閉狀態提示。
 
+9. **三維空間 (zen3d) 徹底移除與依賴精簡** (`0c4768d`)：
+   - 移除「放鬆一下」與 `ZenSanctuary3D.tsx` 組件。
+   - 自 `package.json` 與 `bun.lock` 徹底移除 `three` 與 `@types/three` 依賴，大幅減少構建負擔。
+
+10. **個人模式知識圖譜無縫嵌入** (`8a4e3fa`, `cf1a774`)：
+    - 將全景知識圖譜置於 `public/knowledge-graph.html`，以專用 `KnowledgeGraphTab.tsx` 透過自適應高度 iframe 嵌入系統 UI，並支援「在新分頁獨立全螢幕開啟」。
+
+11. **知識圖譜 JSON 語法迴歸修復與 RSI 自回歸進化防禦** (`5d3c642`)：
+    - 修復 HTML 內嵌資料節點，並在 `tests/evolution.test.ts` 中新增物理剛性測試，確保所有內嵌 JSON 與節點連接拓撲 100% 合法。
+
+12. **Windows 部署流程與 Bun Lockfile 對齊確效**：
+    - 更新 `bun.lock` 對齊 `esbuild` 0.28.2，修復 `--frozen-lockfile` 阻斷問題；Windows `Activate.ps1` 6 階段完整通過。
 
 ---
 
@@ -70,18 +86,18 @@
 # 1. 型別檢查
 npm run lint
 
-# 2. 單元與整合測試 (全 56 項測試)
+# 2. 單元與整合測試 (全 58 項測試)
 npm test
 
-# 3. Obsidian 瀏覽器端驗收測試
+# 3. Windows PowerShell 腳本與 ACL 確效
+npm run test:windows-scripts
+
+# 4. Obsidian 瀏覽器端驗收測試
 npm run test:obsidian-browser
 
-# 4. 原生資料夾選擇視窗實測 (需要在已解鎖桌面互動環境執行)
+# 5. 原生資料夾選擇視窗實測 (需要在已解鎖桌面互動環境執行)
 npm run test:folder-dialog
 ```
-
-> **注意 (測試環境)**：
-> 若在沙盒環境下執行 `npm test`，部分需要本機 127.0.0.1 網路綁定的測試可能出現 `EACCES`，此時需在沙盒外（或正常終端）執行以取得完全綠燈。
 
 ---
 
@@ -98,7 +114,5 @@ npm run test:folder-dialog
 
 ## 5. 接續工作與待辦建議 (Next Steps)
 
-若後續需進一步增強功能，建議方向如下：
-1. **標籤與關鍵因素的筆記端雙向回寫**：若使用者希望在 Obsidian 中直接修改 `#狀態` 或 `[[關鍵因素]]` 並同步回 App，可於 `markdownExporter.ts` 擴充標籤解析器。
-2. **週復盤提煉流程體驗**：目前手冊與日記已可雙向流動，可加強週日復盤時將日記有效策略一鍵提升至「我的小改變」之引導。
-3. **雲端/離線切換穩定性監控**：持續觀察多裝置同步下的 revision conflict 機制在弱網環境的表現。
+1. **版本發布與推送**：在經過本地 58 項單元測試、型別檢查與 Windows 腳本驗收後，依規範向使用者提出推送申請。
+2. **生產環境監控**：關注 GitHub Pages 線上發布後的狀態回報。

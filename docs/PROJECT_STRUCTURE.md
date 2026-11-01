@@ -42,6 +42,8 @@
 | artifacts/、.aistudio/、未使用的 public 圖片與 metadata.json | 已移除舊截圖、暫存及未使用的平台範本。新測試截圖統一寫到私人 Acceptance/browser，覆寫同一組檔名。 |
 | 根目錄 server.*.log | 搬入私人 Logs 並重新啟動開發服務；後續日誌不再寫回根目錄。 |
 | canvas-confetti 及其型別套件 | 正式介面已無使用，已從 package.json 及 bun.lock 移除。 |
+| ZenSanctuary3D.tsx、three 及其型別套件 | 已移除。使用者反映「放鬆一下」為非必要頁面，已完全剔除三維場景代碼與依賴，減輕構建負擔。 |
+| docs/DEV_LOG.md 重複日誌 | 已合併至根目錄 DEV_LOG.md（唯一事實來源 SSOT），消除多重維護歧異。 |
 
 Reference/manifest.json 記錄四份保留文件的原始路徑、新位置及雜湊；Reference/說明.md 解釋讀取方式。保留的是原始來源與歷史證據，不維護第二份產品規格。
 
@@ -50,4 +52,7 @@ Reference/manifest.json 記錄四份保留文件的原始路徑、新位置及�
 - **Obsidian 雙向回寫**：已實作日記（`01_日記/YYYY-MM-DD.md`）與手冊（`我的小改變.md`）之雙向回寫、三方對比快照與衝突選擇機制，單元測試與瀏覽器端到端測試全數通過。
 - **原生資料夾選擇視窗**：已透過 `npm run test:folder-dialog` 於已解鎖桌面實機完成前景狀態、可見度、取消與目錄回傳的全面驗收。
 - **介面架構統整 (方案 A)**：日常各分頁頂部維持微型狀態列，完整控制面板收斂至「備份」頁面。
+- **一鍵關閉系統與背景服務**：實作安全關閉按鈕，並提升至主畫面頂部右側，支援平穩停止排程與關閉 Obsidian。
+- **全景知識圖譜無縫嵌入**：以 iframe 安全隔離嵌入 `public/knowledge-graph.html`，並具備 JSON 語法與雙向拓撲剛性測試。
 - **GitHub Pages 部署**：完成 `.github/workflows/deploy.yml` 門禁確效流水線，線上站點 (`https://chun-chieh-chang.github.io/Live-A-Better-Life/`) 經真實瀏覽器驗收可正確降級為純瀏覽器本地模式運行。
+- **單元測試全數通行**：58 / 58 單元測試、型別檢查與 Windows 腳本確效維持 100% 綠燈。
