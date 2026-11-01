@@ -60,3 +60,34 @@ test("architecture has unique nodes, exclusive layers and resolvable paths", asy
   }
   for (const step of LOOP_STEPS) assert.ok(ids.has(step.node));
 });
+
+
+test("knowledge graph HTML files contain valid JSON data and connected topologies", async () => {
+  const { readFileSync, existsSync } = await import("node:fs");
+  const path = await import("node:path");
+  for (const rel of ["public/knowledge-graph.html", "Live-A-Better-Life.html"]) {
+    const file = path.resolve(rel);
+    if (!existsSync(file)) continue;
+    const content = readFileSync(file, "utf8");
+    for (const tagId of ["data-nodes", "data-categories"]) {
+      const startTag = `<script id="${tagId}" type="application/json">`;
+      const startIdx = content.indexOf(startTag);
+      assert.ok(startIdx !== -1, `${rel} missing ${tagId}`);
+      const jsonStart = startIdx + startTag.length;
+      const endIdx = content.indexOf("</script>", jsonStart);
+      assert.ok(endIdx !== -1, `${rel} unclosed ${tagId}`);
+      const parsed = JSON.parse(content.slice(jsonStart, endIdx).trim());
+      assert.ok(parsed, `${rel} ${tagId} failed to parse`);
+      if (tagId === "data-nodes") {
+        const nodeIds = new Set(parsed.map((n: any) => n.id));
+        for (const node of parsed) {
+          if (Array.isArray(node.connections)) {
+            for (const conn of node.connections) {
+              assert.ok(nodeIds.has(conn), `${rel} connection ${conn} in node ${node.id} not found in nodes`);
+            }
+          }
+        }
+      }
+    }
+  }
+});

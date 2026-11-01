@@ -747,371 +747,414 @@
 
   <!-- Raw Knowledge Data Embedded Inline -->
   <script id="data-nodes" type="application/json">
-  [
-    {
-      "id": "root",
-      "name": "Live-A-Better-Life 核心總攬",
-      "type": "root",
-      "category": "系統總覽",
-      "description": "以第一性原理設計的生活復盤系統，整合微習慣行為設計、阿德勒心理學與本地優先隱私架構。",
-      "layer": "全系統 (Full System)",
-      "tech_stack": "React 19 / TypeScript 7 / Vite 8 / Express 4 / SQLite / Windows DPAPI",
-      "role": "中樞核心",
-      "doc_path": "README.md",
-      "col": 0,
-      "row": 3,
-      "connections": ["ent_workspace", "ent_adler"]
-    },
-    {
-      "id": "ent_adler",
-      "name": "阿德勒心理學（課題分離）",
-      "type": "entity",
-      "category": "認知心理引擎",
-      "description": "區分「別人的課題」與「自己的課題」，將挫折視為產品測試數據而非個人失敗，停止自我批判。",
-      "layer": "心智模型 (Mindset)",
-      "tech_stack": "阿德勒心理學 / 認知行為療法 (CBT)",
-      "role": "心智護城河",
-      "doc_path": "server.ts",
-      "col": 1,
-      "row": 0,
-      "connections": ["ent_daily", "ent_coprocessor"]
-    },
-    {
-      "id": "ent_fogg",
-      "name": "福格行為模型（If-Then）",
-      "type": "entity",
-      "category": "認知心理引擎",
-      "description": "打造接近零意志力阻力的微小行為設計（Tiny Habits），以清晰的觸發情境驅動自動化反應。",
-      "layer": "行為工程 (Behavior)",
-      "tech_stack": "福格行為模型 / If-Then 執行意向",
-      "role": "微習慣引擎",
-      "doc_path": "src/utils/validation.ts",
-      "col": 1,
-      "row": 1,
-      "connections": ["ent_personal_os", "ent_coprocessor"]
-    },
-    {
-      "id": "ent_depletion",
-      "name": "自我損耗緩解機制",
-      "type": "entity",
-      "category": "認知心理引擎",
-      "description": "針對睡前或下班極度疲憊狀態，簡化填寫流程至 3 步驟（心情選擇、幾句話、安全儲存）。",
-      "layer": "UX 心理學 (Psychology)",
-      "tech_stack": "低認知負荷設計 / 情感化設計",
-      "role": "抗疲勞屏障",
-      "doc_path": "AGENTS.md",
-      "col": 1,
-      "row": 2,
-      "connections": ["ent_daily"]
-    },
-    {
-      "id": "ent_coprocessor",
-      "name": "AI 認知副處理器",
-      "type": "entity",
-      "category": "認知心理引擎",
-      "description": "作為大腦外掛，智慧剖析每日數據並提供溫暖且可落地的 If-Then 行動方案與心理拆解。",
-      "layer": "智慧代理 (AI Co-processor)",
-      "tech_stack": "Gemini 2.5 Flash / Agnes Bearer API / 本地規則 Fallback",
-      "role": "生活教練",
-      "doc_path": "server/ai-provider.ts",
-      "col": 1,
-      "row": 3,
-      "connections": ["ent_ai_service"]
-    },
-    {
-      "id": "ent_workspace",
-      "name": "安全工作區（PersonalWorkspace）",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "前端整體容器，管理個人 Session、桌面 Token 喚醒兌換與無痕 sessionStorage 隔離快取。",
-      "layer": "前端中樞 (App Container)",
-      "tech_stack": "React 19 / SessionStorage / Auth Context",
-      "role": "工作區總管",
-      "doc_path": "src/components/PersonalWorkspace.tsx",
-      "col": 2,
-      "row": 0,
-      "connections": ["ent_daily", "ent_personal_os", "ent_insights", "ent_obsidian_tab", "ent_shutdown_modal"]
-    },
-    {
-      "id": "ent_daily",
-      "name": "今天（復盤紀錄 Tab）",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "每日情感反省入口，提供好在哪、不好原因、微小平靜瞬間三路徑引導與 AI 教練分析。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "React 19 / Tailwind CSS 4 / Motion",
-      "role": "每日核心交互",
-      "doc_path": "src/components/DailyReflectionTab.tsx",
-      "col": 2,
-      "row": 1,
-      "connections": ["ent_coprocessor", "ent_personal_routes"]
-    },
-    {
-      "id": "ent_personal_os",
-      "name": "我的小改變（個人手冊）",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "匯聚本週 If-Then 策略、快樂與急救配方、避坑指南，打造專屬於個人的防禦操作系統。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "React 19 / TypeScript 7",
-      "role": "個人生活 OS",
-      "doc_path": "src/components/PersonalOSTab.tsx",
-      "col": 2,
-      "row": 2,
-      "connections": ["ent_personal_routes"]
-    },
-    {
-      "id": "ent_insights",
-      "name": "生活回顧（趨勢圖表）",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "視覺化呈現情緒趨勢、高頻因子統計與歷史熱力圖，輔助使用者從宏觀維度洞察生活脈絡。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "Recharts 3 / SVG Visualization",
-      "role": "資料洞察儀表板",
-      "doc_path": "src/components/InsightsTab.tsx",
-      "col": 2,
-      "row": 3,
-      "connections": ["ent_personal_routes"]
-    },
-    {
-      "id": "ent_obsidian_tab",
-      "name": "備份與筆記匯入 Tab",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "提供手動與自動雙向筆記衝突解決器、快照備份下載、本地復原及資料庫狀態檢視。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "React 19 / Markdown Exporter",
-      "role": "資料樞紐入口",
-      "doc_path": "src/components/ObsidianExportTab.tsx",
-      "col": 2,
-      "row": 4,
-      "connections": ["ent_obsidian_mirror"]
-    },
-    {
-      "id": "name": "放鬆一下 3D 禪境空間",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "基於 Three.js 打造的沉浸式星空與水面 3D 空間，結合環境音效協助使用者睡前平穩情緒。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "Three.js 0.187 / WebGL Shader",
-      "role": "正念舒壓儀式",
-      "doc_path": "src/components/ZenSanctuary3D.tsx",
-      "col": 2,
-      "row": 5,
-      "connections": []
-    },
-    {
-      "id": "ent_shutdown_modal",
-      "name": "一鍵關閉系統與服務 Modal",
-      "type": "entity",
-      "category": "前端使用者體驗",
-      "description": "日常繁體中文二次防誤觸確認，平穩關閉背景服務、排程守護並提示 Obsidian 自動存檔機制。",
-      "layer": "展示層 (Presentation)",
-      "tech_stack": "React 19 / Lucide Icons",
-      "role": "退出防護閘門",
-      "doc_path": "src/components/ShutdownModal.tsx",
-      "col": 2,
-      "row": 6,
-      "connections": ["ent_shutdown_svc"]
-    },
-    {
-      "id": "ent_express",
-      "name": "Express 核心應用伺服器",
-      "type": "entity",
-      "category": "後端服務與中繼",
-      "description": "綁定本機 Loopback 127.0.0.1，隔離公網存取，集成 Vite 中間件並負責請求路由分發。",
-      "layer": "後端應用層 (Backend Server)",
-      "tech_stack": "Express 4 / Node.js 24 / Vite 8",
-      "role": "API 核心守門員",
-      "doc_path": "server.ts",
-      "col": 3,
-      "row": 0,
-      "connections": ["ent_personal_routes", "ent_ai_service"]
-    },
-    {
-      "id": "ent_personal_routes",
-      "name": "個人專屬路由（Personal Routes）",
-      "type": "entity",
-      "category": "後端服務與中繼",
-      "description": "保護日記資料讀寫、SQLite 版本比對、Origin 與 CSRF 防護標頭檢驗、登入配額限制。",
-      "layer": "後端路由 (API Endpoint)",
-      "tech_stack": "Express Router / Custom Auth Guard",
-      "role": "安全認證代理",
-      "doc_path": "server/personal-routes.ts",
-      "col": 3,
-      "row": 1,
-      "connections": ["ent_sqlite", "ent_obsidian_mirror", "ent_backup_engine"]
-    },
-    {
-      "id": "ent_ai_service",
-      "name": "AI 智慧代理選配路由",
-      "type": "entity",
-      "category": "後端服務與中繼",
-      "description": "優先選用企業級 Agnes Bearer 認證，無設定時平滑切換至 Gemini 2.5 或離線 Fallback 認知規則。",
-      "layer": "智慧中繼 (AI Gateway)",
-      "tech_stack": "@google/genai / Agnes Bearer Client",
-      "role": "模型適配器",
-      "doc_path": "server/ai-provider.ts",
-      "col": 3,
-      "row": 2,
-      "connections": ["ent_dpapi"]
-    },
-    {
-      "id": "ent_obsidian_mirror",
-      "name": "ObsidianMirror 雙向鏡像引擎",
-      "type": "entity",
-      "category": "後端服務與中繼",
-      "description": "即時將 SQLite 資料對稱鏡像為 Markdown 筆記，檢測外部檔案修改並計算 AST 差異以供匯入。",
-      "layer": "資料同步 (Data Sync)",
-      "tech_stack": "Node.js fs / SHA-256 Digest / AST Parser",
-      "role": "筆記雙向鏡像",
-      "doc_path": "server/obsidian.ts",
-      "col": 3,
-      "row": 3,
-      "connections": ["ent_obsidian_vault"]
-    },
-    {
-      "id": "ent_shutdown_svc",
-      "name": "系統優雅停機引擎（Shutdown Pipeline）",
-      "type": "entity",
-      "category": "後端服務與中繼",
-      "description": "非同步停止排程任務、平穩關閉 Obsidian 視窗、flush WAL 資料庫、終止進程並切換前端全螢幕卡片。",
-      "layer": "系統控制 (System Control)",
-      "tech_stack": "Node.js child_process / PowerShell / SQLite Checkpoint",
-      "role": "資源安全釋放",
-      "doc_path": "deploy/windows/Stop-LifeOS.ps1",
-      "col": 3,
-      "row": 4,
-      "connections": ["ent_task_server", "ent_sqlite"]
-    },
-    {
-      "id": "ent_sqlite",
-      "name": "SQLite 核心本機資料庫 (WAL)",
-      "type": "entity",
-      "category": "本機儲存與安全",
-      "description": "單一擁有者架構，儲存全部日記、歷史修訂版本與密碼雜湊，啟用 WAL 模式保障極致併發完整性。",
-      "layer": "資料持久化 (Persistence)",
-      "tech_stack": "better-sqlite3 / SQLite WAL Mode",
-      "role": "權威真相來源 (SSOT)",
-      "doc_path": "server/personal-store.ts",
-      "col": 4,
-      "row": 0,
-      "connections": []
-    },
-    {
-      "id": "ent_obsidian_vault",
-      "name": "Obsidian 本地筆記庫 (Vault)",
-      "type": "entity",
-      "category": "本機儲存與安全",
-      "description": "以純文字 Markdown 格式存放於本機硬碟，支援雙向連結、標籤語意、離線永久掌握。",
-      "layer": "開放檔案 (Open Format)",
-      "tech_stack": "Markdown / Frontmatter / WikiLinks",
-      "role": "知識本體儲存",
-      "doc_path": "server/obsidian-settings.ts",
-      "col": 4,
-      "row": 1,
-      "connections": []
-    },
-    {
-      "id": "ent_dpapi",
-      "name": "Windows DPAPI 金鑰隔離層",
-      "type": "entity",
-      "category": "本機儲存與安全",
-      "description": "利用 Windows 使用者憑證加密保護 Gemini / Agnes API 金鑰，記憶體解密後立即抹除 byte 陣列。",
-      "layer": "硬體安全 (OS Security)",
-      "tech_stack": "System.Security.Cryptography.ProtectedData",
-      "role": "憑證保險庫",
-      "doc_path": "deploy/windows/Start-LifeOS.ps1",
-      "col": 4,
-      "row": 2,
-      "connections": []
-    },
-    {
-      "id": "ent_backup_engine",
-      "name": "滾動備份與復原引擎",
-      "type": "entity",
-      "category": "本機儲存與安全",
-      "description": "每次資料變更前建立歷史版本快照，支援還原點時光回溯、修訂號樂觀鎖與孤立備份清理。",
-      "layer": "容災防禦 (Disaster Recovery)",
-      "tech_stack": "PersonalStore / Rolling Snapshot",
-      "role": "資料保險防線",
-      "doc_path": "scripts/backup.ts",
-      "col": 4,
-      "row": 3,
-      "connections": []
-    },
-    {
-      "id": "ent_task_server",
-      "name": "Windows 排程器：LifeOS-Server",
-      "type": "entity",
-      "category": "Windows 原生運維",
-      "description": "登入時自動啟動本地守護程序，無黑視窗背景常駐，失敗時具備 3 次自動修復機制。",
-      "layer": "操作系統排程 (OS Daemon)",
-      "tech_stack": "Windows Task Scheduler / PowerShell",
-      "role": "守護進程管理器",
-      "doc_path": "deploy/windows/Install-Tasks.ps1",
-      "col": 5,
-      "row": 0,
-      "connections": ["ent_express"]
-    },
-    {
-      "id": "ent_task_backup",
-      "name": "Windows 排程器：LifeOS-Backup",
-      "type": "entity",
-      "category": "Windows 原生運維",
-      "description": "每日凌晨 03:15 自動喚醒執行完整資料庫快照與冷備份，定期釋放過期檔案。",
-      "layer": "操作系統排程 (OS Daemon)",
-      "tech_stack": "Windows Task Scheduler / PowerShell",
-      "role": "自動無感備份",
-      "doc_path": "deploy/windows/Install-Tasks.ps1",
-      "col": 5,
-      "row": 1,
-      "connections": ["ent_backup_engine"]
-    },
-    {
-      "id": "ent_protocol",
-      "name": "自定義協議喚醒 (lifeos://)",
-      "type": "entity",
-      "category": "Windows 原生運維",
-      "description": "註冊 Windows 原生 protocol handler，點擊網頁一鍵免密喚醒本機環境並自動登入日記。",
-      "layer": "原生協議 (OS Protocol)",
-      "tech_stack": "Windows Registry / URI Scheme",
-      "role": "流暢喚醒橋樑",
-      "doc_path": "deploy/windows/Register-Protocol.ps1",
-      "col": 5,
-      "row": 2,
-      "connections": ["ent_workspace"]
-    },
-    {
-      "id": "ent_ps_scripts",
-      "name": "PowerShell 自動化運維套裝",
-      "type": "entity",
-      "category": "Windows 原生運維",
-      "description": "包含 Activate、Setup、Stop、Verify、Runtime 等腳本，私有 Node/Bun 執行時自動隔離。",
-      "layer": "維維自動化 (DevOps Automation)",
-      "tech_stack": "PowerShell 5.1+ / Windows ACL",
-      "role": "環境準備管線",
-      "doc_path": "deploy/windows/Common.ps1",
-      "col": 5,
-      "row": 3,
-      "connections": ["ent_task_server", "ent_task_backup", "ent_protocol"]
-    },
-    {
-      "id": "ent_github_ci",
-      "name": "GitHub Actions 軟體確效 CI/CD",
-      "type": "entity",
-      "category": "Windows 原生運維",
-      "description": "每次推送前執行 57+ 項單元測試、PowerShell AST 檢查、瀏覽器端對端確效與 Pages 自動部署。",
-      "layer": "持續整合 (CI/CD Pipeline)",
-      "tech_stack": "GitHub Actions / Playwright / Node Test Runner",
-      "role": "品質防禦網",
-      "doc_path": ".github/workflows/deploy.yml",
-      "col": 5,
-      "row": 4,
-      "connections": ["ent_ps_scripts"]
-    }
-  ]
+[
+  {
+    "id": "root",
+    "name": "Live-A-Better-Life 核心總攬",
+    "type": "root",
+    "category": "系統總覽",
+    "description": "以第一性原理設計的生活復盤系統，整合微習慣行為設計、阿德勒心理學與本地優先隱私架構。",
+    "layer": "全系統 (Full System)",
+    "tech_stack": "React 19 / TypeScript 7 / Vite 8 / Express 4 / SQLite / Windows DPAPI",
+    "role": "中樞核心",
+    "doc_path": "README.md",
+    "col": 0,
+    "row": 3,
+    "connections": [
+      "ent_workspace",
+      "ent_adler"
+    ]
+  },
+  {
+    "id": "ent_adler",
+    "name": "阿德勒心理學（課題分離）",
+    "type": "entity",
+    "category": "認知心理引擎",
+    "description": "區分「別人的課題」與「自己的課題」，將挫折視為產品測試數據而非個人失敗，停止自我批判。",
+    "layer": "心智模型 (Mindset)",
+    "tech_stack": "阿德勒心理學 / 認知行為療法 (CBT)",
+    "role": "心智護城河",
+    "doc_path": "server.ts",
+    "col": 1,
+    "row": 0,
+    "connections": [
+      "ent_daily",
+      "ent_coprocessor"
+    ]
+  },
+  {
+    "id": "ent_fogg",
+    "name": "福格行為模型（If-Then）",
+    "type": "entity",
+    "category": "認知心理引擎",
+    "description": "打造接近零意志力阻力的微小行為設計（Tiny Habits），以清晰的觸發情境驅動自動化反應。",
+    "layer": "行為工程 (Behavior)",
+    "tech_stack": "福格行為模型 / If-Then 執行意向",
+    "role": "微習慣引擎",
+    "doc_path": "src/utils/validation.ts",
+    "col": 1,
+    "row": 1,
+    "connections": [
+      "ent_personal_os",
+      "ent_coprocessor"
+    ]
+  },
+  {
+    "id": "ent_depletion",
+    "name": "自我損耗緩解機制",
+    "type": "entity",
+    "category": "認知心理引擎",
+    "description": "針對睡前或下班極度疲憊狀態，簡化填寫流程至 3 步驟（心情選擇、幾句話、安全儲存）。",
+    "layer": "UX 心理學 (Psychology)",
+    "tech_stack": "低認知負荷設計 / 情感化設計",
+    "role": "抗疲勞屏障",
+    "doc_path": "AGENTS.md",
+    "col": 1,
+    "row": 2,
+    "connections": [
+      "ent_daily"
+    ]
+  },
+  {
+    "id": "ent_coprocessor",
+    "name": "AI 認知副處理器",
+    "type": "entity",
+    "category": "認知心理引擎",
+    "description": "作為大腦外掛，智慧剖析每日數據並提供溫暖且可落地的 If-Then 行動方案與心理拆解。",
+    "layer": "智慧代理 (AI Co-processor)",
+    "tech_stack": "Gemini 2.5 Flash / Agnes Bearer API / 本地規則 Fallback",
+    "role": "生活教練",
+    "doc_path": "server/ai-provider.ts",
+    "col": 1,
+    "row": 3,
+    "connections": [
+      "ent_ai_service"
+    ]
+  },
+  {
+    "id": "ent_workspace",
+    "name": "安全工作區（PersonalWorkspace）",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "前端整體容器，管理個人 Session、桌面 Token 喚醒兌換與無痕 sessionStorage 隔離快取。",
+    "layer": "前端中樞 (App Container)",
+    "tech_stack": "React 19 / SessionStorage / Auth Context",
+    "role": "工作區總管",
+    "doc_path": "src/components/PersonalWorkspace.tsx",
+    "col": 2,
+    "row": 0,
+    "connections": [
+      "ent_daily",
+      "ent_personal_os",
+      "ent_insights",
+      "ent_obsidian_tab",
+      "ent_shutdown_modal"
+    ]
+  },
+  {
+    "id": "ent_daily",
+    "name": "今天（復盤紀錄 Tab）",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "每日情感反省入口，提供好在哪、不好原因、微小平靜瞬間三路徑引導與 AI 教練分析。",
+    "layer": "展示層 (Presentation)",
+    "tech_stack": "React 19 / Tailwind CSS 4 / Motion",
+    "role": "每日核心交互",
+    "doc_path": "src/components/DailyReflectionTab.tsx",
+    "col": 2,
+    "row": 1,
+    "connections": [
+      "ent_coprocessor",
+      "ent_personal_routes"
+    ]
+  },
+  {
+    "id": "ent_personal_os",
+    "name": "我的小改變（個人手冊）",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "匯聚本週 If-Then 策略、快樂與急救配方、避坑指南，打造專屬於個人的防禦操作系統。",
+    "layer": "展示層 (Presentation)",
+    "tech_stack": "React 19 / TypeScript 7",
+    "role": "個人生活 OS",
+    "doc_path": "src/components/PersonalOSTab.tsx",
+    "col": 2,
+    "row": 2,
+    "connections": [
+      "ent_personal_routes"
+    ]
+  },
+  {
+    "id": "ent_insights",
+    "name": "生活回顧（趨勢圖表）",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "視覺化呈現情緒趨勢、高頻因子統計與歷史熱力圖，輔助使用者從宏觀維度洞察生活脈絡。",
+    "layer": "展示層 (Presentation)",
+    "tech_stack": "Recharts 3 / SVG Visualization",
+    "role": "資料洞察儀表板",
+    "doc_path": "src/components/InsightsTab.tsx",
+    "col": 2,
+    "row": 3,
+    "connections": [
+      "ent_personal_routes"
+    ]
+  },
+  {
+    "id": "ent_obsidian_tab",
+    "name": "備份與筆記匯入 Tab",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "提供手動與自動雙向筆記衝突解決器、快照備份下載、本地復原及資料庫狀態檢視。",
+    "layer": "展示層 (Presentation)",
+    "tech_stack": "React 19 / Markdown Exporter",
+    "role": "資料樞紐入口",
+    "doc_path": "src/components/ObsidianExportTab.tsx",
+    "col": 2,
+    "row": 4,
+    "connections": [
+      "ent_obsidian_mirror"
+    ]
+  },
+  {
+    "id": "ent_shutdown_modal",
+    "name": "一鍵關閉系統與服務 Modal",
+    "type": "entity",
+    "category": "前端使用者體驗",
+    "description": "日常繁體中文二次防誤觸確認，平穩關閉背景服務、排程守護並提示 Obsidian 自動存檔機制。",
+    "layer": "展示層 (Presentation)",
+    "tech_stack": "React 19 / Lucide Icons",
+    "role": "退出防護閘門",
+    "doc_path": "src/components/ShutdownModal.tsx",
+    "col": 2,
+    "row": 6,
+    "connections": [
+      "ent_shutdown_svc"
+    ]
+  },
+  {
+    "id": "ent_express",
+    "name": "Express 核心應用伺服器",
+    "type": "entity",
+    "category": "後端服務與中繼",
+    "description": "綁定本機 Loopback 127.0.0.1，隔離公網存取，集成 Vite 中間件並負責請求路由分發。",
+    "layer": "後端應用層 (Backend Server)",
+    "tech_stack": "Express 4 / Node.js 24 / Vite 8",
+    "role": "API 核心守門員",
+    "doc_path": "server.ts",
+    "col": 3,
+    "row": 0,
+    "connections": [
+      "ent_personal_routes",
+      "ent_ai_service"
+    ]
+  },
+  {
+    "id": "ent_personal_routes",
+    "name": "個人專屬路由（Personal Routes）",
+    "type": "entity",
+    "category": "後端服務與中繼",
+    "description": "保護日記資料讀寫、SQLite 版本比對、Origin 與 CSRF 防護標頭檢驗、登入配額限制。",
+    "layer": "後端路由 (API Endpoint)",
+    "tech_stack": "Express Router / Custom Auth Guard",
+    "role": "安全認證代理",
+    "doc_path": "server/personal-routes.ts",
+    "col": 3,
+    "row": 1,
+    "connections": [
+      "ent_sqlite",
+      "ent_obsidian_mirror",
+      "ent_backup_engine"
+    ]
+  },
+  {
+    "id": "ent_ai_service",
+    "name": "AI 智慧代理選配路由",
+    "type": "entity",
+    "category": "後端服務與中繼",
+    "description": "優先選用企業級 Agnes Bearer 認證，無設定時平滑切換至 Gemini 2.5 或離線 Fallback 認知規則。",
+    "layer": "智慧中繼 (AI Gateway)",
+    "tech_stack": "@google/genai / Agnes Bearer Client",
+    "role": "模型適配器",
+    "doc_path": "server/ai-provider.ts",
+    "col": 3,
+    "row": 2,
+    "connections": [
+      "ent_dpapi"
+    ]
+  },
+  {
+    "id": "ent_obsidian_mirror",
+    "name": "ObsidianMirror 雙向鏡像引擎",
+    "type": "entity",
+    "category": "後端服務與中繼",
+    "description": "即時將 SQLite 資料對稱鏡像為 Markdown 筆記，檢測外部檔案修改並計算 AST 差異以供匯入。",
+    "layer": "資料同步 (Data Sync)",
+    "tech_stack": "Node.js fs / SHA-256 Digest / AST Parser",
+    "role": "筆記雙向鏡像",
+    "doc_path": "server/obsidian.ts",
+    "col": 3,
+    "row": 3,
+    "connections": [
+      "ent_obsidian_vault"
+    ]
+  },
+  {
+    "id": "ent_shutdown_svc",
+    "name": "系統優雅停機引擎（Shutdown Pipeline）",
+    "type": "entity",
+    "category": "後端服務與中繼",
+    "description": "非同步停止排程任務、平穩關閉 Obsidian 視窗、flush WAL 資料庫、終止進程並切換前端全螢幕卡片。",
+    "layer": "系統控制 (System Control)",
+    "tech_stack": "Node.js child_process / PowerShell / SQLite Checkpoint",
+    "role": "資源安全釋放",
+    "doc_path": "deploy/windows/Stop-LifeOS.ps1",
+    "col": 3,
+    "row": 4,
+    "connections": [
+      "ent_task_server",
+      "ent_sqlite"
+    ]
+  },
+  {
+    "id": "ent_sqlite",
+    "name": "SQLite 核心本機資料庫 (WAL)",
+    "type": "entity",
+    "category": "本機儲存與安全",
+    "description": "單一擁有者架構，儲存全部日記、歷史修訂版本與密碼雜湊，啟用 WAL 模式保障極致併發完整性。",
+    "layer": "資料持久化 (Persistence)",
+    "tech_stack": "better-sqlite3 / SQLite WAL Mode",
+    "role": "權威真相來源 (SSOT)",
+    "doc_path": "server/personal-store.ts",
+    "col": 4,
+    "row": 0,
+    "connections": []
+  },
+  {
+    "id": "ent_obsidian_vault",
+    "name": "Obsidian 本地筆記庫 (Vault)",
+    "type": "entity",
+    "category": "本機儲存與安全",
+    "description": "以純文字 Markdown 格式存放於本機硬碟，支援雙向連結、標籤語意、離線永久掌握。",
+    "layer": "開放檔案 (Open Format)",
+    "tech_stack": "Markdown / Frontmatter / WikiLinks",
+    "role": "知識本體儲存",
+    "doc_path": "server/obsidian-settings.ts",
+    "col": 4,
+    "row": 1,
+    "connections": []
+  },
+  {
+    "id": "ent_dpapi",
+    "name": "Windows DPAPI 金鑰隔離層",
+    "type": "entity",
+    "category": "本機儲存與安全",
+    "description": "利用 Windows 使用者憑證加密保護 Gemini / Agnes API 金鑰，記憶體解密後立即抹除 byte 陣列。",
+    "layer": "硬體安全 (OS Security)",
+    "tech_stack": "System.Security.Cryptography.ProtectedData",
+    "role": "憑證保險庫",
+    "doc_path": "deploy/windows/Start-LifeOS.ps1",
+    "col": 4,
+    "row": 2,
+    "connections": []
+  },
+  {
+    "id": "ent_backup_engine",
+    "name": "滾動備份與復原引擎",
+    "type": "entity",
+    "category": "本機儲存與安全",
+    "description": "每次資料變更前建立歷史版本快照，支援還原點時光回溯、修訂號樂觀鎖與孤立備份清理。",
+    "layer": "容災防禦 (Disaster Recovery)",
+    "tech_stack": "PersonalStore / Rolling Snapshot",
+    "role": "資料保險防線",
+    "doc_path": "scripts/backup.ts",
+    "col": 4,
+    "row": 3,
+    "connections": []
+  },
+  {
+    "id": "ent_task_server",
+    "name": "Windows 排程器：LifeOS-Server",
+    "type": "entity",
+    "category": "Windows 原生運維",
+    "description": "登入時自動啟動本地守護程序，無黑視窗背景常駐，失敗時具備 3 次自動修復機制。",
+    "layer": "操作系統排程 (OS Daemon)",
+    "tech_stack": "Windows Task Scheduler / PowerShell",
+    "role": "守護進程管理器",
+    "doc_path": "deploy/windows/Install-Tasks.ps1",
+    "col": 5,
+    "row": 0,
+    "connections": [
+      "ent_express"
+    ]
+  },
+  {
+    "id": "ent_task_backup",
+    "name": "Windows 排程器：LifeOS-Backup",
+    "type": "entity",
+    "category": "Windows 原生運維",
+    "description": "每日凌晨 03:15 自動喚醒執行完整資料庫快照與冷備份，定期釋放過期檔案。",
+    "layer": "操作系統排程 (OS Daemon)",
+    "tech_stack": "Windows Task Scheduler / PowerShell",
+    "role": "自動無感備份",
+    "doc_path": "deploy/windows/Install-Tasks.ps1",
+    "col": 5,
+    "row": 1,
+    "connections": [
+      "ent_backup_engine"
+    ]
+  },
+  {
+    "id": "ent_protocol",
+    "name": "自定義協議喚醒 (lifeos://)",
+    "type": "entity",
+    "category": "Windows 原生運維",
+    "description": "註冊 Windows 原生 protocol handler，點擊網頁一鍵免密喚醒本機環境並自動登入日記。",
+    "layer": "原生協議 (OS Protocol)",
+    "tech_stack": "Windows Registry / URI Scheme",
+    "role": "流暢喚醒橋樑",
+    "doc_path": "deploy/windows/Register-Protocol.ps1",
+    "col": 5,
+    "row": 2,
+    "connections": [
+      "ent_workspace"
+    ]
+  },
+  {
+    "id": "ent_ps_scripts",
+    "name": "PowerShell 自動化運維套裝",
+    "type": "entity",
+    "category": "Windows 原生運維",
+    "description": "包含 Activate、Setup、Stop、Verify、Runtime 等腳本，私有 Node/Bun 執行時自動隔離。",
+    "layer": "維維自動化 (DevOps Automation)",
+    "tech_stack": "PowerShell 5.1+ / Windows ACL",
+    "role": "環境準備管線",
+    "doc_path": "deploy/windows/Common.ps1",
+    "col": 5,
+    "row": 3,
+    "connections": [
+      "ent_task_server",
+      "ent_task_backup",
+      "ent_protocol"
+    ]
+  },
+  {
+    "id": "ent_github_ci",
+    "name": "GitHub Actions 軟體確效 CI/CD",
+    "type": "entity",
+    "category": "Windows 原生運維",
+    "description": "每次推送前執行 57+ 項單元測試、PowerShell AST 檢查、瀏覽器端對端確效與 Pages 自動部署。",
+    "layer": "持續整合 (CI/CD Pipeline)",
+    "tech_stack": "GitHub Actions / Playwright / Node Test Runner",
+    "role": "品質防禦網",
+    "doc_path": ".github/workflows/deploy.yml",
+    "col": 5,
+    "row": 4,
+    "connections": [
+      "ent_ps_scripts"
+    ]
+  }
+]
   </script>
 
   <!-- Application Logic & SVG Pipeline -->

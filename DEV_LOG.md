@@ -130,3 +130,60 @@
 - `npm run build`：Vite 生產構建成功，JS 體積顯著縮減。
 
 ---
+
+
+## 2026-11-01 - 疑難排解：esbuild 升級遺漏同步 bun.lock 導致啟用程序凍結鎖定失敗
+
+### 1. 問題現象 (Symptom)
+使用者執行 `Start-LifeOS.cmd` 時於 `[2/6] Preparing application and protected data...` 階段中斷，拋出以下錯誤：
+```text
+bun install v1.4.4 (38afee6c8)
+error: lockfile had changes, but lockfile is frozen
+note: dependencies in package.json changed since bun.lock was saved: esbuild changed from ^0.25.0 to ^0.28.0
+note: try re-running without --frozen-lockfile and commit the updated lockfile
+Dependency repair failed.
+```
+
+### 2. 根因分析 (RCA - Root Cause Analysis)
+1. **依賴鎖定脫鉤**：
+   - 稍早為了解決 GitHub Actions CI 中 npm 對 esbuild 的 peer dependency 衝突，在 commit `481193c` 中將 `package.json` 的 `esbuild` 從 `^0.25.0` 調整為 `^0.28.0`。
+   - 當時僅透過 npm 進行了依賴驗證，未同步使用專案私有的 Bun 1.4.4 重新產生並提交 `bun.lock`。
+2. **防禦性凍結機制作動**：
+   - Windows 部署流程（`deploy/windows/Common.ps1` 中的 `Repair-LifeOSApplication`）強制使用 `--frozen-lockfile` 參數以確保完全可重現性與防止隨意聯網篡改。
+   - 當 Bun 偵測到 `package.json` 與 `bun.lock` 宣告版本不一致時，依規範拒絕靜默更新鎖定檔，直接拋出例外終止啟用。
+
+### 3. 矯正與預防措施 (CAPA)
+1. **矯正措施 (Corrective Action)**：
+   - 使用本機私有 Bun 執行工具重新生成並同步 `bun.lock`（將 `esbuild` 完整更新至 `0.28.2`）。
+   - 本地驗證 `bun install --frozen-lockfile --force --backend copyfile` 通過（227 個套件成功安裝，退出代碼為 0）。
+2. **預防措施 (Preventive Action)**：
+   - 凡是修改 `package.json` 中的依賴版本，必須同時同步更新並提交 `bun.lock`，並於本地端執行 `bun install --frozen-lockfile` 模擬部署確效。
+
+---
+
+
+## 2026-11-01 - 迴歸問題修復：知識圖譜 HTML 內嵌 JSON 語法損毀與自動化測試防禦
+
+### 1. 問題現象 (Symptom)
+瀏覽器開啟或載入知識圖譜時 Console 拋出迴歸語法錯誤：
+```text
+VM66:144 Uncaught SyntaxError: Expected ',' or '}' after property value in JSON at position 4465 (line 144 column 19)
+    at JSON.parse (<anonymous>)
+    at knowledge-graph.html:1121:30
+```
+
+### 2. 根因分析 (RCA - Root Cause Analysis)
+1. **正規表達式盲目替換缺陷**：
+   - 稍早在進行「放鬆一下」（`ent_zen3d`）組件清理時，對 `public/knowledge-graph.html` 與 `Live-A-Better-Life.html` 採用了正則字串替換。
+   - 由於物件結構匹配邊界不夠嚴謹，僅替換了 `"id": "ent_zen3d",` 前綴，遺留了 `"id": "name": "放鬆一下 3D 禪境空間"` 等破裂語法，破壞了 `<script id="data-nodes">` 內的合法 JSON 格式。
+2. **缺乏靜態 HTML 內嵌資料的測試覆蓋 (Test Blind Spot)**：
+   - 先前的單元測試涵蓋了 TypeScript 與 Express 路由，但未對 HTML 內嵌的 `<script type="application/json">` 進行靜態解析檢驗，導致損毀代碼被漏過。
+
+### 3. 矯正與預防措施 (CAPA)
+1. **矯正措施 (Corrective Action)**：
+   - 透過標準 `JSON.parse` 確效與重整，徹底移除破裂的 `ent_zen3d` 物件，並驗證 `data-nodes`（25 個節點）與 `data-categories` 全部解析正確。
+2. **預防措施 (Preventive Action - Code-Crystallization)**：
+   - 依據 RSI 自回歸進化協議，於 `tests/evolution.test.ts` 中新增物理剛性測試 `knowledge graph HTML files contain valid JSON data and connected topologies`。
+   - 強制每次執行 `npm test` 時，自動檢查所有 HTML 檔案中的 `data-nodes` 與 `data-categories` 之 JSON 合法性，並斷言所有 `connections` 節點參照皆 100% 存在於拓撲中，杜絕再次發生 JSON 語法迴歸。
+
+---
