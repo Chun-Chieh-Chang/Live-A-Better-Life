@@ -250,6 +250,30 @@ async function startServer() {
       finally{clearTimeout(forced);}
     });
   };
+  if(personal?.desktop){
+    personal.shutdown = async () => {
+      const scriptPath = path.resolve(__dirname, 'deploy/windows/Stop-LifeOS.ps1');
+      const dataRoot = path.dirname(process.env.LIFE_OS_DB_PATH!);
+      const configPath = path.join(dataRoot, 'config.json');
+      try {
+        const { spawn } = await import('node:child_process');
+        await new Promise<void>((resolve) => {
+          const proc = spawn('powershell.exe', [
+            '-NoProfile',
+            '-ExecutionPolicy', 'Bypass',
+            '-File', scriptPath,
+            '-ConfigPath', configPath,
+            '-CloseObsidian'
+          ], { stdio: 'ignore' });
+          proc.once('exit', () => resolve());
+          proc.once('error', () => resolve());
+        });
+      } catch (err) {
+        console.error('Stop-LifeOS execution error:', err);
+      }
+      shutdown();
+    };
+  }
   process.once('SIGTERM',shutdown);process.once('SIGINT',shutdown);
   httpServer.listen(PORT,bind,()=>console.log(`Life OS server listening on ${bind}:${PORT}`));
 }

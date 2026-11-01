@@ -17,6 +17,7 @@ export interface PersonalConfig {
   changeNotesFolder?: (root:string)=>Promise<ObsidianMirror>;
   aiHourly?: number;
   aiDaily?: number;
+  shutdown?: () => Promise<void>;
 }
 export function validateOrigin(origin: string) {
   const url = new URL(origin);
@@ -143,6 +144,17 @@ export function mountPersonal(app: Express, config: PersonalConfig) {
     store.logout(token(req));
     cookie(res, "", true);
     res.json({ success: true });
+  });
+  app.post("/api/system/shutdown", (_req, res) => {
+    if (!config.desktop) {
+      return res.status(403).json({ success: false, error: "Only desktop mode supports shutdown" });
+    }
+    res.json({ success: true, message: "System is shutting down" });
+    if (config.shutdown) {
+      setTimeout(() => {
+        config.shutdown!().catch((err) => console.error("Shutdown error:", err));
+      }, 100);
+    }
   });
   let changingFolder=false;
   let choosingFolder=false;

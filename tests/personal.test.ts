@@ -406,3 +406,84 @@ test("concurrent AI calls are rejected before reaching the model", async () => {
     },
   );
 });
+
+
+test("desktop shutdown endpoint requires authentication, desktop mode, and triggers shutdown hook", async () => {
+  let shutdownTriggered = false;
+  const store = new PersonalStore(":memory:");
+  await store.setPassword(password);
+  const { createServer } = await import("node:net");
+  const probe = createServer();
+  probe.listen(0, "127.0.0.1");
+  await new Promise<void>((r) => probe.once("listening", r));
+  const port = (probe.address() as { port: number }).port;
+  await new Promise<void>((r) => probe.close(() => r()));
+  const base = `http://127.0.0.1:${port}`;
+
+  const nonDesktopServer = createApp({
+    personal: { store, origin: base, desktop: false },
+  }).listen(port, "127.0.0.1");
+  await new Promise<void>((r) => nonDesktopServer.once("listening", r));
+  const headers = {
+    "Content-Type": "application/json",
+    Origin: base,
+    "X-Requested-With": "life-os",
+  };
+  const auth = await login(base, headers);
+  try {
+    const res = await fetch(base + "/api/system/shutdown", {
+      method: "POST",
+      headers: auth,
+    });
+    assert.equal(res.status, 403);
+  } finally {
+    nonDesktopServer.closeAllConnections();
+    await new Promise<void>((r) => nonDesktopServer.close(() => r()));
+  }
+
+  const probe2 = createServer();
+  probe2.listen(0, "127.0.0.1");
+  await new Promise<void>((r) => probe2.once("listening", r));
+  const port2 = (probe2.address() as { port: number }).port;
+  await new Promise<void>((r) => probe2.close(() => r()));
+  const base2 = `http://127.0.0.1:${port2}`;
+
+  const desktopServer = createApp({
+    personal: {
+      store,
+      origin: base2,
+      desktop: true,
+      shutdown: async () => {
+        shutdownTriggered = true;
+      },
+    },
+  }).listen(port2, "127.0.0.1");
+  await new Promise<void>((r) => desktopServer.once("listening", r));
+  const headers2 = {
+    "Content-Type": "application/json",
+    Origin: base2,
+    "X-Requested-With": "life-os",
+  };
+  const auth2 = await login(base2, headers2);
+  try {
+    const unauthenticatedRes = await fetch(base2 + "/api/system/shutdown", {
+      method: "POST",
+      headers: headers2,
+    });
+    assert.equal(unauthenticatedRes.status, 401);
+
+    const res = await fetch(base2 + "/api/system/shutdown", {
+      method: "POST",
+      headers: auth2,
+    });
+    assert.equal(res.status, 200);
+    const json = (await res.json()) as { success: boolean };
+    assert.equal(json.success, true);
+    await new Promise((r) => setTimeout(r, 200));
+    assert.equal(shutdownTriggered, true);
+  } finally {
+    desktopServer.closeAllConnections();
+    await new Promise<void>((r) => desktopServer.close(() => r()));
+    store.close();
+  }
+});

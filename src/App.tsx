@@ -19,13 +19,25 @@ import { StrategyFeedback } from './components/StrategyFeedback';
 import { ArchifyDiagramTab } from './components/ArchifyDiagramTab';
 import { ObsidianExportTab } from './components/ObsidianExportTab';
 import { SystemHealthModal, SystemStatusData } from './components/SystemHealthModal';
+import { ShutdownModal } from './components/ShutdownModal';
+import { CheckCircle2 } from 'lucide-react';
 
 const LOCAL_STORAGE_ENTRIES_KEY = 'life_os_daily_entries_v1';
 const LOCAL_STORAGE_OS_KEY = 'life_os_personal_manual_v1';
 
-export default function App({storage=localStorage, personal}: {storage?:Storage;personal?:{workspaceId:string;onLogout:()=>Promise<void>}} = {}) {
+export default function App({storage=localStorage, personal}: {storage?:Storage;personal?:{workspaceId:string;desktop?:boolean;onLogout:()=>Promise<void>;onShutdown?:()=>Promise<void>}} = {}) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('daily');
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const [isShutdownModalOpen, setIsShutdownModalOpen] = useState(false);
+  const [isShutdown, setIsShutdown] = useState(false);
+
+  const handleConfirmShutdown = async () => {
+    if (personal?.onShutdown) {
+      await personal.onShutdown();
+    }
+    setIsShutdownModalOpen(false);
+    setIsShutdown(true);
+  };
   const [systemStatus, setSystemStatus] = useState<SystemStatusData | null>(null);
 
   const fetchSystemStatus = async () => {
@@ -111,6 +123,41 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
     setActiveTab('daily');
   };
 
+  if (isShutdown) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] text-[#111827] flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-gray-200 shadow-sm text-center space-y-6">
+          <div className="w-16 h-16 bg-[#10B981]/10 text-[#10B981] rounded-2xl flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-[#111827]">系統已安全關閉</h1>
+            <p className="text-sm text-[#6B7280] leading-relaxed">
+              您的日記與所有資料均已妥善保存，背景服務與相關視窗已全數停止。您可以安心關閉此瀏覽器分頁。
+            </p>
+          </div>
+          <div className="p-4 bg-[#F9FAFB] rounded-2xl border border-gray-100 text-xs text-[#6B7280]">
+            下次想記錄生活時，點擊電腦上的<strong>「Start-LifeOS」</strong>啟動捷徑即可再次開啟。
+          </div>
+          <div className="pt-2 space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                window.close();
+              }}
+              className="w-full min-h-11 px-5 py-3 bg-[#4d6b53] hover:bg-[#3f5744] text-white font-medium rounded-xl transition-colors cursor-pointer"
+            >
+              關閉此分頁
+            </button>
+            <p className="text-[11px] text-[#9CA3AF]">
+              若瀏覽器限制無法自動關閉，請直接關閉此分頁標籤。
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#fefcf5] text-[#2c332d] flex flex-col font-sans selection:bg-[#dcead9] selection:text-[#1e3020]">
       {/* Navigation */}
@@ -120,6 +167,8 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
         entries={entries}
         onOpenSystemHealth={() => setIsHealthModalOpen(true)}
         systemReady={systemStatus?.isReady}
+        isDesktop={personal?.desktop === true && !!personal?.onShutdown}
+        onOpenShutdown={() => setIsShutdownModalOpen(true)}
       />
 
       {!personal && (
@@ -240,6 +289,12 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
         statusData={systemStatus}
         onRefresh={fetchSystemStatus}
         onTriggerSetup={handleTriggerAutoSetup}
+      />
+
+      <ShutdownModal
+        isOpen={isShutdownModalOpen}
+        onClose={() => setIsShutdownModalOpen(false)}
+        onConfirm={handleConfirmShutdown}
       />
     </div>
   );

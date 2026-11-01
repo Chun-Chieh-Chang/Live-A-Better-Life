@@ -125,6 +125,12 @@ export default function PersonalWorkspace() {
       setError("登出未完成，請保持頁面並重試。");
     }
   };
+  const shutdown = async () => {
+    const r = await apiFetch("/api/system/shutdown", { method: "POST" });
+    if (!r.ok) {
+      throw new Error("關閉請求發送失敗");
+    }
+  };
   const loginForm = (
     <form onSubmit={login} className="space-y-4">
       <label className="block">
@@ -152,7 +158,12 @@ export default function PersonalWorkspace() {
         <p role="alert">{error}</p>
         <App
           storage={cache}
-          personal={{ workspaceId: session.workspaceId!, onLogout: logout }}
+          personal={{
+            workspaceId: session.workspaceId!,
+            desktop: session.desktop === true,
+            onLogout: logout,
+            onShutdown: shutdown,
+          }}
         />
       </>
     );

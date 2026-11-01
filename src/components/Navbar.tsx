@@ -1,17 +1,23 @@
 import React, { useState } from "react";
 import type { ActiveTab, DailyEntry } from "../types";
+
 interface NavbarProps {
   systemReady?: boolean;
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   entries: DailyEntry[];
   onOpenSystemHealth?: () => void;
+  isDesktop?: boolean;
+  onOpenShutdown?: () => void;
 }
+
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onTabChange,
   entries,
   onOpenSystemHealth,
+  isDesktop,
+  onOpenShutdown,
 }) => {
   const [more, setMore] = useState(false);
   const primary: [ActiveTab, string][] = [
@@ -64,7 +70,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         {more && (
           <div
             id="more-navigation"
-            className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-[#e8e5d8] py-3 text-sm"
+            className={`grid grid-cols-1 ${
+              isDesktop && onOpenShutdown ? "sm:grid-cols-4" : "sm:grid-cols-3"
+            } gap-2 border-t border-[#e8e5d8] py-3 text-sm`}
           >
             <button
               className="min-h-11 rounded-xl hover:bg-[#eff4ec]"
@@ -87,6 +95,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               使用狀態
             </button>
+            {isDesktop && onOpenShutdown && (
+              <button
+                className="min-h-11 rounded-xl text-red-700 hover:bg-red-50 font-medium"
+                onClick={() => {
+                  setMore(false);
+                  onOpenShutdown();
+                }}
+              >
+                關閉系統與背景服務
+              </button>
+            )}
           </div>
         )}
       </div>
