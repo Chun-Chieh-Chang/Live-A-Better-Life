@@ -138,3 +138,15 @@
 - `npm run lint`：0 errors。
 - `npm run build`：成功。
 - `npm test`：56 / 56 項測試全數通過。
+
+## 2026-11-01 GitHub Pages 部署狀態幽靈死鎖 RCA 與清除
+
+需求：排除 GitHub 倉庫側邊欄「Deployments ❌ github-pages」紅叉無法消除之異常。
+
+### 問題與原因（RCA）
+- **現象**：後續部署皆已成功，且線上站點正常，但 GitHub 倉庫側邊欄仍持續顯示紅叉 `❌ github-pages`。
+- **根因**：首次失敗的部署紀錄（ID: `7470862944`）因時間偏差被標註為未來時間（`17:58:08 UTC+8`，顯示為 `in 25 minutes`）。GitHub Deployments 系統按時間降序將未來時間判定為最新，因而死鎖為當前 `Active` 狀態。
+- **矯正措施（CAPA）**：
+  1. 透過 GitHub REST API 明確刪除該筆未來時間戳記之失敗部署紀錄（ID: `7470862944`）及受污染之環境元資料。
+  2. 重新觸發 GitHub Actions 流水線（Run ID: `41294504758`），全流程 43 秒綠燈建構完畢。
+  3. 驗證最新 Deployment 狀態轉為 `success`，線上站點 HTTP 200 正常響應，側邊欄紅叉徹底清除。
