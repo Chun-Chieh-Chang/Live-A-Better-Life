@@ -1,7 +1,7 @@
 # 專案交接文件 (handoff.md)
 
 最後更新時間：2026-11-01  
-最新提交基準：`6a3fc11` (`main`)
+最新提交基準：`6119de0` (`main`)
 
 ---
 
@@ -52,7 +52,11 @@
 6. **GitHub Pages 自動化確效部署**：
    - 設定 `vite.config.ts` 使用相對基底路徑 (`base: './'`)，預防 404 資源載入失敗。
    - 建立 `.github/workflows/deploy.yml` 自動化工作流（CI 必須通過 `lint`、`test` 與 `build` 確效才進行 Pages 部署）。
-   - 線上站點：`https://chun-chieh-chang.github.io/Live-A-Better-Life/`。
+   - 線上站點：[https://chun-chieh-chang.github.io/Live-A-Better-Life/](https://chun-chieh-chang.github.io/Live-A-Better-Life/)。
+
+7. **純靜態託管 404 優雅降級 (`6119de0`)**：
+   - `PersonalWorkspace.tsx` 在偵測到 `/api/auth/session` 回傳 404 時（純靜態代管如 GitHub Pages），自動切換至「純瀏覽器本地模式 (`mode: 'local'`)」，徹底杜絕畫面死鎖在「正在確認服務狀態…」。
+   - 新增手動「使用純瀏覽器模式」備援按鈕，提升離線環境魯棒性。
 
 
 

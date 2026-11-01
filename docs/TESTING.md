@@ -31,9 +31,15 @@ node tests/closed-loop-browser.mjs
 
 Windows 服務實機檢查使用 deploy/windows/Verify.ps1，備份使用 Backup.ps1，設定檔位置見 WINDOWS_LOCAL.md。文件連結、舊路徑引用、Git 忽略與目錄現況另以此次清理報告記錄。
 
-## 驗證限制
+## 已完成之實機與整合驗收 (2026-11-01 更新)
 
-- 原生資料夾視窗的前景顯示仍待完成；筆記瀏覽器測試只驗證選擇結果、取消與套用的網頁行為。
-- Obsidian 雙向回寫未完成。
-- Gemini 真實金鑰與公開部署未驗收；Agnes 曾通過實際後端請求，但此次清理不發出真實 AI 請求。
-- 此次清理的新結果見 PROJECT_STRUCTURE.md；歷史計畫中的舊測試數字不作為現況證據。
+- **原生資料夾視窗**：已透過 `npm run test:folder-dialog` 於已解鎖桌面實機完成真實對話框之可見度、取消、選擇與前景置頂驗收。
+- **Obsidian 雙向回寫**：已實作日記與「我的小改變」手冊之雙向回寫，並通過 `tests/obsidian.test.ts` 與 `npm run test:obsidian-browser` 驗收。
+- **個人空間同步與介面**：已通過 `npm run test:personal-browser` 驗收多裝置隔離、CAS 衝突阻止、歷史版本還原與方案 A 微型狀態列。
+- **GitHub Pages 線上站點**：已透過 `.github/workflows/deploy.yml` 門禁確效發布，並於真實 Chromium 探針實測通過（零 404、自動進入純瀏覽器模式）。
+
+## 驗證限制與環境提醒
+
+- 執行 `npm run test:folder-dialog` 時桌面需處於已解鎖狀態（Win32 API 要求實體前景站台）。
+- 本地沙盒 (Sandbox) 環境因本機連接埠隔離可能限制 127.0.0.1 網路綁定測試，單元測試需於正常本機環境執行。
+- Gemini 真實金鑰與公開部署未驗收；Agnes 曾通過實際後端請求，常態確效不消耗真實 AI 配額。
