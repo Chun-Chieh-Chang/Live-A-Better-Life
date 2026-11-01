@@ -258,12 +258,12 @@ export function runSystemCheckAndSetup(autoFix = true): SystemCheckReport {
     status: allDirsOk && allFilesOk ? 'ok' : 'warning',
     message: allDirsOk && allFilesOk
       ? 'Obsidian 知識庫結構健全（3 個目錄與 3 個核心模版檔案已全部就緒）'
-      : 'Obsidian 知識庫結構不完整，已執行自動補齊',
+      : 'Obsidian 知識庫結構不完整，請執行初始化',
     directories: dirCheckResults,
     files: fileCheckResults
   };
 
-  const isReady = depReport.status !== 'error' && envReport.status !== 'error';
+  const isReady = depReport.status !== 'error' && envReport.status !== 'error' && allDirsOk && allFilesOk;
 
   return {
     timestamp: new Date().toISOString(),

@@ -10,7 +10,14 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:browser": "npm run build && node tests/browser.mjs",
+    "account:setup": "node --import tsx scripts/account.ts",
+    "backup": "node --import tsx scripts/backup.ts",
+    "test:personal-browser": "npm run build && node tests/personal-browser.mjs",
+    "backup:scheduled": "node --import tsx scripts/scheduled-backup.ts",
+    "test:windows-scripts": "powershell.exe -NoProfile -File tests/windows-scripts.ps1"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -36,6 +43,7 @@
     "@types/three": "^0.187.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "playwright": "1.57.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2"

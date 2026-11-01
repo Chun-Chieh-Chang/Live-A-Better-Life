@@ -1,3 +1,6 @@
+import { storageKeys } from '../utils/personalStorage';
+import { parseBackup } from '../utils/validation';
+import { RECOVERY_KEY } from '../utils/storage';
 import React, { useState } from 'react';
 import { DailyEntry, PersonalOS } from '../types';
 import { 
@@ -19,13 +22,14 @@ import {
 } from 'lucide-react';
 
 interface ObsidianExportTabProps {
+  storage?: Storage;
   entries: DailyEntry[];
   personalOS: PersonalOS;
-  onImportData: (entries: DailyEntry[], personalOS: PersonalOS) => void;
+  onImportData: (entries: DailyEntry[], personalOS: PersonalOS) => boolean;
 }
 
 export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
-  entries,
+  storage=localStorage, entries,
   personalOS,
   onImportData
 }) => {
@@ -108,18 +112,17 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = '';
+    if (file.size > 10 * 1024 * 1024) {setImportStatus('❌ 備份超過 10 MB，未匯入'); return;}
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
-        if (json.entries && json.personalOS) {
-          onImportData(json.entries, json.personalOS);
-          setImportStatus('✅ 備份資料已成功匯入！');
-        } else {
-          setImportStatus('❌ 檔案格式不符合規範');
-        }
+        const backup = parseBackup(event.target?.result as string);
+        if (!window.confirm(`將以 ${backup.entries.length} 篇日誌覆蓋目前資料。系統會先保留覆蓋前備份；未歸檔草稿不會套用到還原資料，請先儲存或下載。確定還原？`)) {setImportStatus('已取消，資料未變更'); return;}
+        if (!onImportData(backup.entries, backup.personalOS)) {setImportStatus('❌ 儲存失敗，資料未還原'); return;}
+        setImportStatus('✅ 備份資料已成功匯入！覆蓋前備份可在下方下載。');
       } catch (err) {
-        setImportStatus('❌ JSON 解析失敗');
+        setImportStatus(`❌ ${err instanceof Error ? err.message : '備份格式不正確'}`);
       }
       setTimeout(() => setImportStatus(null), 4000);
     };
@@ -128,6 +131,8 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
+      <button className="text-sm underline mr-4" onClick={() => {try {const drafts = Object.fromEntries(storageKeys(storage).filter(k=>k.startsWith('life_os_draft_v1_')).map(k=>[k,storage.getItem(k)])); downloadFile('life-os-raw-drafts.json', JSON.stringify(drafts, null, 2), 'application/json');} catch {setImportStatus('無法讀取草稿');}}}>下載草稿原始資料（供復原）</button>
+      <button className="text-sm underline" onClick={() => {try {const raw = storage.getItem(RECOVERY_KEY); if (!raw) {setImportStatus('尚無覆蓋前備份'); return;} downloadFile('life-os-before-import.json', raw, 'application/json');} catch {setImportStatus('無法讀取覆蓋前備份');}}}>下載覆蓋前備份</button>
       {/* Intro Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#fcfbf7] p-6 rounded-2xl border border-[#e8e5d8] shadow-sm shadow-[#4d6b53]/5">
         <div>
@@ -136,7 +141,7 @@ export const ObsidianExportTab: React.FC<ObsidianExportTabProps> = ({
               <FolderTree className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-extrabold text-[#222d25]">
-              Obsidian 知識庫無縫整合
+              Obsidian Markdown 手動匯出
             </h2>
           </div>
           <p className="text-xs text-[#616c62] mt-1 max-w-2xl leading-relaxed">

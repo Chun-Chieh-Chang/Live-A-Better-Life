@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DailyEntry, DayState, PersonalOS } from '../types';
 import { askAICoach, CoachResponseResult } from '../services/coachService';
 import { generateDailyNoteMarkdown, downloadFile } from '../utils/markdownExporter';
+import { isDailyEntry, todayString } from '../utils/validation';
 import confetti from 'canvas-confetti';
 import { 
   Sparkles, 
@@ -16,120 +17,100 @@ import {
   Tag
 } from 'lucide-react';
 
+// Keep failed-to-persist drafts across date changes within this page session.
+const memoryDrafts = new Map<string, DailyEntry>();
+const failedDrafts = new Set<string>();
+
 interface DailyReflectionTabProps {
+  storage?: Storage;
+  cacheNamespace?: string;
+  draftScope: string;
+  selectedDate: string;
+  onSelectDate: (date: string) => void;
+  readOnly?: boolean;
   entries: DailyEntry[];
-  onSaveEntry: (entry: DailyEntry) => void;
+  onSaveEntry: (entry: DailyEntry) => boolean;
   personalOS: PersonalOS;
-  onAddIfThenStrategy: (ifText: string, thenText: string, category?: 'work' | 'health' | 'emotion' | 'life') => void;
+  onAddIfThenStrategy: (ifText: string, thenText: string, category?: 'work' | 'health' | 'emotion' | 'life') => boolean;
 }
 
 export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
-  entries,
+  storage=localStorage, cacheNamespace, draftScope, selectedDate, onSelectDate: setSelectedDate, readOnly, entries,
   onSaveEntry,
   personalOS,
   onAddIfThenStrategy
 }) => {
-  const getTodayString = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+  const getTodayString = todayString;
+  const draftKey = `life_os_draft_v1_${cacheNamespace ? cacheNamespace+'_' : ''}${draftScope}_${selectedDate}`;
+  const [loaded, setLoaded] = useState(() => {
+    const existing = entries.find(e => e.date === selectedDate);
+    const now = new Date().toISOString();
+    const fallback: DailyEntry = existing || {id:`entry-${selectedDate}`, date:selectedDate, state:'good', tags:['#日常生活'], factors:[], createdAt:now, updatedAt:now};
+    const cached = memoryDrafts.get(draftKey);
+    if (cached) return {draft:cached, error:'', warning:failedDrafts.has(draftKey) ? '草稿僅保留在記憶體，離開前請下載 Markdown 或重試儲存。' : '', isDraft:true};
+    try {
+      const raw = storage.getItem(draftKey);
+      if (raw !== null) {
+        const parsed = JSON.parse(raw);
+        if (!isDailyEntry(parsed) || parsed.date !== selectedDate) throw new Error('invalid draft');
+        if (existing && existing.updatedAt > parsed.updatedAt) return {draft:fallback, error:'', isDraft:false};
+        return {draft:parsed, error:'', isDraft:true};
+      }
+      return {draft:fallback, error:'', isDraft:false};
+    } catch {return {draft:fallback, error:'無法讀取此日草稿，已停止覆寫。請先下載原始草稿。'};}
+  });
+  const [draft, setDraft] = useState<DailyEntry>(loaded.draft);
+  const draftRef = useRef(draft);
+  const [draftError, setDraftError] = useState(loaded.error || loaded.warning || '');
+  const [dirty, setDirty] = useState(!!loaded.isDraft);
+  const requestRef = useRef<AbortController | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [strategyAdded, setStrategyAdded] = useState<string | null>(null);
-
-  // Active form state
-  const [state, setState] = useState<DayState>('good');
-  const [goodWhere, setGoodWhere] = useState('');
-  const [goodKeep, setGoodKeep] = useState('');
-  const [badFact, setBadFact] = useState('');
-  const [badEmotion, setBadEmotion] = useState('');
-  const [badReason, setBadReason] = useState('');
-  const [badImprove, setBadImprove] = useState('');
-  const [normalMoment, setNormalMoment] = useState('');
-  const [normalAmplify, setNormalAmplify] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>(['#日常生活']);
-  const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [customTagInput, setCustomTagInput] = useState('');
   const [customFactorInput, setCustomFactorInput] = useState('');
-
-  // AI Coach state
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiAdvice, setAiAdvice] = useState<CoachResponseResult | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Load existing entry when date changes
+  const {state, goodWhere='', goodKeep='', badFact='', badEmotion='', badReason='', badImprove='', normalMoment='', normalAmplify='', tags:selectedTags, factors:selectedFactors, aiAdvice=null} = draft;
+  const updateDraft = (next: DailyEntry) => {
+    if (readOnly || loaded.error) return;
+    next = {...next, updatedAt:new Date().toISOString()};
+    memoryDrafts.set(draftKey, next);
+    requestRef.current?.abort(); setIsAiLoading(false);
+    draftRef.current = next; setDraft(next); setDirty(true); setSaveSuccess(false);
+    try {storage.setItem(draftKey, JSON.stringify(next)); failedDrafts.delete(draftKey); setDraftError('');}
+    catch {failedDrafts.add(draftKey); setDraftError('草稿尚未保存：瀏覽器儲存失敗。離開前請下載 Markdown 或重試儲存。');}
+  };
+  const field = <K extends keyof DailyEntry>(key: K) => (value: React.SetStateAction<DailyEntry[K]>) => {
+    const prev = draftRef.current;
+    const resolved = typeof value === 'function' ? (value as (v:DailyEntry[K])=>DailyEntry[K])(prev[key]) : value;
+    updateDraft({...prev, [key]:resolved, ...(key === 'state' ? {aiAdvice:undefined, aiSource:undefined} : {})});
+  };
+  const setState = field('state');
+  const setGoodWhere = field('goodWhere'), setGoodKeep = field('goodKeep');
+  const setBadFact = field('badFact'), setBadEmotion = field('badEmotion'), setBadReason = field('badReason'), setBadImprove = field('badImprove');
+  const setNormalMoment = field('normalMoment'), setNormalAmplify = field('normalAmplify');
+  const setSelectedTags = field('tags'), setSelectedFactors = field('factors');
+  useEffect(() => () => {requestRef.current?.abort();}, []);
   useEffect(() => {
-    const existing = entries.find(e => e.date === selectedDate);
-    if (existing) {
-      setState(existing.state);
-      setGoodWhere(existing.goodWhere || '');
-      setGoodKeep(existing.goodKeep || '');
-      setBadFact(existing.badFact || '');
-      setBadEmotion(existing.badEmotion || '');
-      setBadReason(existing.badReason || '');
-      setBadImprove(existing.badImprove || '');
-      setNormalMoment(existing.normalMoment || '');
-      setNormalAmplify(existing.normalAmplify || '');
-      setSelectedTags(existing.tags || []);
-      setSelectedFactors(existing.factors || []);
-      setAiAdvice(existing.aiAdvice || null);
-    } else {
-      // Defaults for a new entry
-      setState('good');
-      setGoodWhere('');
-      setGoodKeep('');
-      setBadFact('');
-      setBadEmotion('');
-      setBadReason('');
-      setBadImprove('');
-      setNormalMoment('');
-      setNormalAmplify('');
-      setSelectedTags(['#日常生活']);
-      setSelectedFactors([]);
-      setAiAdvice(null);
-    }
-  }, [selectedDate, entries]);
-
-  // Handle calling the AI Coach
+    const warn = (e: BeforeUnloadEvent) => {if (dirty) {e.preventDefault(); e.returnValue='';}};
+    window.addEventListener('beforeunload',warn);
+    return () => window.removeEventListener('beforeunload',warn);
+  }, [dirty]);
   const handleCallAICoach = async () => {
+    requestRef.current?.abort();
+    const controller = new AbortController(); requestRef.current = controller;
+    const snapshot = draftRef.current;
     setIsAiLoading(true);
-    const data = {
-      goodWhere,
-      goodKeep,
-      badFact,
-      badEmotion,
-      badReason,
-      badImprove,
-      normalMoment,
-      normalAmplify,
-      tags: selectedTags.join(', '),
-      factors: selectedFactors.join(', ')
-    };
-
     try {
-      const response = await askAICoach(state, data, personalOS);
-      setAiAdvice(response.result);
-
-      // Auto add suggested tag if available
-      if (response.result.suggestedTag) {
-        const parts = response.result.suggestedTag.split(' ');
-        parts.forEach(p => {
-          if (p.startsWith('#') && !selectedTags.includes(p)) {
-            setSelectedTags(prev => [...prev, p]);
-          } else if (p.startsWith('[[') && !selectedFactors.includes(p)) {
-            setSelectedFactors(prev => [...prev, p]);
-          }
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsAiLoading(false);
-    }
+      const response = await askAICoach(snapshot.state, {...snapshot, tags:snapshot.tags.join(', '), factors:snapshot.factors.join(', ')}, personalOS, undefined, controller.signal);
+      if (controller.signal.aborted || draftRef.current !== snapshot) return;
+      const parts = (response.result.suggestedTag || '').split(/\s+/);
+      updateDraft({...snapshot, aiAdvice:response.result, aiSource:response.source,
+        tags:[...new Set([...snapshot.tags, ...parts.filter(p=>p.startsWith('#'))])],
+        factors:[...new Set([...snapshot.factors, ...parts.filter(p=>p.startsWith('[['))])]});
+    } catch (e) {if (!controller.signal.aborted) setSaveError('教練請求未完成，請重試。');}
+    finally {if (requestRef.current === controller) setIsAiLoading(false);}
   };
 
   // Adopt AI strategy into the form field
@@ -146,11 +127,8 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
   // Push strategy directly to Personal OS (closed-loop feedback)
   const handleAddToPersonalOS = (strat: string) => {
     const match = strat.match(/If\s+(.*?),\s*Then\s+(.*)/i);
-    if (match) {
-      onAddIfThenStrategy(match[1].trim(), match[2].trim(), state === 'bad' ? 'emotion' : 'life');
-    } else {
-      onAddIfThenStrategy('遇到此情境', strat, 'life');
-    }
+    const saved = match ? onAddIfThenStrategy(match[1].trim(), match[2].trim(), state === 'bad' ? 'emotion' : 'life') : onAddIfThenStrategy('遇到此情境', strat, 'life');
+    if (!saved) {setSaveError('手冊未保存，請排除儲存問題後重試。'); return;}
     setStrategyAdded(strat);
     setTimeout(() => setStrategyAdded(null), 3000);
   };
@@ -158,7 +136,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
   // Save the entry
   const handleSave = () => {
     const entry: DailyEntry = {
-      id: `entry-${selectedDate}`,
+      id: draft.id,
       date: selectedDate,
       state,
       goodWhere: state === 'good' ? goodWhere : undefined,
@@ -173,11 +151,16 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
       factors: selectedFactors,
       aiCoached: !!aiAdvice,
       aiAdvice: aiAdvice || undefined,
-      createdAt: new Date().toISOString(),
+      aiSource: draft.aiSource,
+      createdAt: draft.createdAt,
       updatedAt: new Date().toISOString()
     };
 
-    onSaveEntry(entry);
+    if (readOnly || loaded.error || !onSaveEntry(entry)) {setSaveError('日誌未保存，請保留目前內容並重試。'); return;}
+    setSaveError(''); setDraftError(''); setDirty(false);
+    draftRef.current = entry; setDraft(entry);
+    memoryDrafts.delete(draftKey); failedDrafts.delete(draftKey);
+    try {storage.removeItem(draftKey);} catch { /* saved data remains authoritative */ }
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
 
@@ -296,6 +279,15 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
+      {(draftError || saveError || readOnly) && <div role="alert" className="text-red-700 p-3">{draftError || saveError || '資料唯讀：請先復原本機資料。'}
+        {loaded.error && <button onClick={() => {try {downloadFile(`draft-${selectedDate}.json`, storage.getItem(draftKey) || '', 'application/json');} catch {setSaveError('無法讀取草稿');}}}>下載原始草稿</button>}
+        {loaded.error && <button onClick={() => {
+          if (!window.confirm('請先下載原始草稿。重設後將使用已儲存日誌，確定捨棄損壞草稿？')) return;
+          try {storage.removeItem(draftKey); setLoaded({...loaded, error:''}); setDraftError('');}
+          catch {setSaveError('無法重設草稿，請檢查瀏覽器儲存權限。');}
+        }}>重設損壞草稿</button>}
+      </div>}
+      <p className="text-sm text-[#616c62]">{dirty ? '草稿編輯中，請儲存完成日誌。' : '日誌尚未變更。'}</p>
       {/* Date Header & Quick Selector */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#fcfbf7] p-5 rounded-2xl border border-[#e8e5d8] shadow-sm shadow-[#4d6b53]/5">
         <div className="flex items-center gap-3.5">
@@ -321,7 +313,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
             className="bg-[#f8f7f2] border border-[#ded9c8] text-[#2c332d] text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#4d6b53] focus:bg-white shadow-xs"
           />
           <button
@@ -661,7 +653,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <h4 className="font-bold text-white text-sm sm:text-base">
-                    🤖 AI 認知副處理器 · 解法與心理洞察
+                    🤖 教練建議 · {draft.aiSource === 'gemini' ? 'Gemini 生成' : draft.aiSource === 'server-fallback' ? '伺服器規則備援（非 Gemini）' : draft.aiSource === 'local-fallback' ? '本地規則備援（網路或遠端回應異常）' : '來源未記錄'}
                   </h4>
                 </div>
                 <span className="text-xs text-[#a8ccaf] bg-[#121c15] px-2.5 py-0.5 rounded-full border border-[#344839] font-medium">

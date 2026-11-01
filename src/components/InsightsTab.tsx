@@ -30,7 +30,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
   const goodRatio = total > 0 ? Math.round((goodCount / total) * 100) : 0;
 
   // Factor frequency mapping
-  const factorMap: Record<string, { good: number; bad: number; normal: number; total: number }> = {};
+  const factorMap: Record<string, { good: number; bad: number; normal: number; total: number }> = Object.create(null);
   entries.forEach(e => {
     (e.factors || []).forEach(f => {
       if (!factorMap[f]) {
@@ -46,7 +46,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ entries, onSelectDate 
     .slice(0, 10);
 
   // Tag frequency
-  const tagMap: Record<string, number> = {};
+  const tagMap: Record<string, number> = Object.create(null);
   entries.forEach(e => {
     (e.tags || []).forEach(t => {
       tagMap[t] = (tagMap[t] || 0) + 1;

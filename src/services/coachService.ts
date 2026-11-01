@@ -1,4 +1,6 @@
+import { apiFetch } from '../utils/api';
 import { DayState, PersonalOS } from '../types';
+import { isCoachResult } from '../utils/validation';
 
 export interface CoachRequestData {
   goodWhere?: string;
@@ -24,10 +26,17 @@ export async function askAICoach(
   state: DayState,
   data: CoachRequestData,
   personalOS: PersonalOS,
-  customPrompt?: string
-): Promise<{ result: CoachResponseResult; isFallback?: boolean }> {
+  customPrompt?: string,
+  signal?: AbortSignal
+): Promise<{ result: CoachResponseResult; isFallback: boolean; source: 'gemini' | 'server-fallback' | 'local-fallback' }> {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  signal?.addEventListener('abort', abort, {once:true});
+  if (signal?.aborted) controller.abort();
+  const timer = setTimeout(abort, 12000);
   try {
-    const response = await fetch('/api/coach', {
+    const response = await apiFetch('/api/coach', {
+      signal: controller.signal,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -45,18 +54,17 @@ export async function askAICoach(
     }
 
     const json = await response.json();
-    return {
-      result: json.result,
-      isFallback: json.isFallback
-    };
+    if (json.success !== true || !isCoachResult(json.result) || typeof json.isFallback !== 'boolean') throw new Error('Invalid coach response');
+    return {result:json.result, isFallback:json.isFallback, source:json.isFallback ? 'server-fallback' : 'gemini'};
   } catch (err) {
-    console.warn('Network call to /api/coach failed, using local heuristic co-processor:', err);
+    if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
     // Local fallback heuristic
     return {
       result: getLocalFallbackAdvice(state, data),
-      isFallback: true
+      isFallback: true,
+      source: 'local-fallback'
     };
-  }
+  } finally {clearTimeout(timer); signal?.removeEventListener('abort', abort);}
 }
 
 function getLocalFallbackAdvice(state: DayState, data: CoachRequestData): CoachResponseResult {

@@ -25,6 +25,7 @@ export interface DailyEntry {
   
   // AI 輔助與回饋
   aiCoached?: boolean;
+  aiSource?: 'gemini' | 'server-fallback' | 'local-fallback' | 'unknown';
   aiAdvice?: {
     strategies: string[];
     psychologicalInsight: string;

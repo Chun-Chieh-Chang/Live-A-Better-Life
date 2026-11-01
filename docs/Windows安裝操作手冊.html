@@ -1,0 +1,158 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="把日子過好 Windows 本機安裝、啟動、備份與驗收操作手冊。可離線閱讀與列印。"><title>把日子過好｜Windows 安裝操作手冊</title><style>
+:root{--bg:#f6f7f3;--paper:#fff;--ink:#24352d;--muted:#5a6b61;--green:#275a44;--line:#dce5dc;--soft:#edf4ed;--amber:#fff5df}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:28px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 "Segoe UI","Microsoft JhengHei","PingFang TC",sans-serif}a{color:var(--green);text-underline-offset:4px}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #dcaa43;outline-offset:3px}.sidebar{position:fixed;inset:0 auto 0 0;width:270px;padding:30px 22px;overflow:auto;background:#193d2d;color:#f1f7ef}.brand{font-size:22px;font-weight:750;letter-spacing:1px}.sidebar small{display:block;color:#b6cbbb;margin:6px 0 22px}.sidebar nav a{display:flex;gap:12px;color:#e3ede3;text-decoration:none;border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.6}.sidebar nav a:hover{background:#2b503d}.sidebar nav a span{color:#9cbea5;font-variant-numeric:tabular-nums}.sidebar .footer-note{margin-top:25px;font-size:12px;color:#b6cbbb}.layout{margin-left:270px;padding:36px 5vw 70px;max-width:1450px}.topbar{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-bottom:24px}.pill{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:40px;padding:4px 12px;color:var(--green);font-size:13px}.secondary{background:white;border:1px solid var(--line);border-radius:8px;padding:7px 14px;color:var(--ink)}.hero{padding:36px 42px;background:linear-gradient(125deg,#e9f1e5,#f6f4e9);border:1px solid var(--line);border-radius:18px;margin-bottom:28px}.eyebrow{font-size:13px;letter-spacing:2px;color:var(--green);font-weight:700}h1{font-size:clamp(30px,4vw,44px);line-height:1.3;margin:10px 0 18px;letter-spacing:-1px}.hero p{max-width:700px;margin:10px 0;color:var(--muted)}.meta{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:20px}section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px 36px;margin:22px 0}.section-title{display:flex;align-items:baseline;gap:14px;margin-bottom:16px}.section-title>span{font:700 15px/1.5 ui-monospace,monospace;color:#6f8a76}h2{font-size:25px;line-height:1.5;margin:0}h3{font-size:18px;margin:25px 0 9px}p{margin:12px 0}ul,ol{padding-left:24px}li{margin:8px 0}code{font:0.88em/1.65 Consolas,"Cascadia Code",monospace;overflow-wrap:anywhere;background:#f0f3ee;padding:2px 5px;border-radius:4px}pre{margin:0;padding:17px 20px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font-size:13px;line-height:1.7}pre code{background:transparent;padding:0;color:inherit;font:inherit}.codebox{border:1px solid #d5dfd5;border-radius:9px;overflow:hidden;margin:16px 0;background:#f7f9f5}.codebar{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#edf2e9;border-bottom:1px solid #d5dfd5;color:var(--muted);font-size:12px}.copy{border:1px solid #c9d7c8;border-radius:6px;background:white;color:var(--green);padding:3px 10px;font-size:12px}.notice{padding:15px 18px;background:var(--soft);border-left:4px solid #7e9d83;border-radius:6px;margin:18px 0}.notice.important{background:var(--amber);border-left-color:#d5a548}.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.facts>div{border:1px solid var(--line);border-radius:9px;padding:12px 15px;min-width:0}.facts small{display:block;color:var(--muted);margin-bottom:5px}.facts code{background:none;padding:0;font-size:12px}.facts strong{font-size:14px}.flow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:22px 0}.flow span{background:#eaf0e7;border-radius:8px;padding:9px 12px;font-size:14px}.flow b{color:#77917c}table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;table-layout:fixed}th,td{text-align:left;vertical-align:top;border:1px solid var(--line);padding:11px 13px;overflow-wrap:anywhere}th{background:#f0f4ed;font-weight:650}th:first-child{width:26%}kbd{border:1px solid #cfd9ce;border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#f7f8f5}.checklist label{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--line);align-items:flex-start}.checklist input{margin-top:7px;width:18px;height:18px;accent-color:var(--green);flex-shrink:0}.checklist label:has(input:checked){background:#f0f5ed}.endnote{text-align:center;color:var(--muted);font-size:13px;padding:20px}#menu{display:none}.copy-status{position:fixed;bottom:20px;right:20px;background:#193d2d;color:white;padding:10px 18px;border-radius:8px;box-shadow:0 3px 12px #0002;max-width:80vw}.copy-status:empty{display:none}
+@media(max-width:950px){.sidebar{width:230px;padding:24px 14px}.layout{margin-left:230px;padding:26px 24px}section{padding:24px}.hero{padding:28px}.facts{grid-template-columns:1fr}}@media(max-width:700px){.sidebar{position:static;width:auto;padding:18px 20px}.sidebar small{margin:3px 0 10px}.sidebar nav{display:none;columns:1}.sidebar nav.open{display:block}.sidebar .footer-note{display:none}#menu{display:inline-block;margin-top:8px;border:1px solid #72917a;color:white;background:transparent;border-radius:6px;padding:4px 12px}.layout{margin-left:0;padding:18px 14px 40px}.hero{padding:24px 20px}section{padding:23px 18px}.topbar{font-size:12px;gap:8px}h2{font-size:22px}th,td{padding:9px 8px}table{font-size:13px}pre{padding:14px;font-size:12px}.meta{gap:8px}.flow{gap:7px}.flow span{padding:7px 8px;font-size:12px}}
+@media print{body{background:white;color:#000;font-size:11pt}.sidebar,.topbar,.copy,#reset-checks,.copy-status{display:none!important}.layout{margin:0;padding:0;max-width:none}.hero{background:none;border:0;border-bottom:2px solid #333;border-radius:0;padding:0 0 20px}.hero h1{font-size:28pt}section{border:0;border-bottom:1px solid #aaa;border-radius:0;padding:14px 0;margin:14px 0;break-inside:auto}h2,h3,.section-title{break-after:avoid}pre,.notice,.facts>div,tr{break-inside:avoid}.codebox{background:white}a{color:inherit;text-decoration:none}p,li{orphans:3;widows:3}.facts{grid-template-columns:1fr 1fr}.endnote{font-size:9pt}@page{size:A4;margin:16mm}}
+</style></head><body>
+<aside class="sidebar"><div class="brand">把日子過好</div><small>Windows 本機個人服務 · 操作手冊</small><button id="menu" type="button" aria-expanded="false" aria-controls="contents">顯示／收合目錄</button><nav id="contents" aria-label="手冊目錄"><a href="#automation"><span>★</span>一鍵啟用（建議）</a><a href="#overview"><span>01</span>先了解這個版本</a><a href="#requirements"><span>02</span>準備工具與程式</a><a href="#setup"><span>03</span>第一次安裝與設定密碼</a><a href="#files"><span>04</span>認識資料夾與保存位置</a><a href="#start"><span>05</span>啟動與第一輪驗證</a><a href="#daily"><span>06</span>日常記錄與資料同步</a><a href="#tasks"><span>07</span>設定登入啟動與每日備份</a><a href="#backup"><span>08</span>立即備份與保留策略</a><a href="#restore"><span>09</span>備份還原與密碼管理</a><a href="#gemini"><span>10</span>啟用 Gemini（選用）</a><a href="#maintenance"><span>11</span>更新程式與故障排除</a><a href="#acceptance"><span>12</span>安裝完成檢核表</a></nav><div class="footer-note">單一帳號 · SQLite 持久保存<br>僅供本機 · 不開放外網<br>手冊修訂 2026-11-01</div></aside>
+<main class="layout"><div class="topbar"><span class="pill">單檔 HTML · 離線可用</span><button id="print" class="secondary" type="button">列印／另存 PDF</button></div><header class="hero"><div class="eyebrow">PERSONAL WORKSPACE / WINDOWS</div><h1>安裝與操作手冊</h1><p>雙擊啟動檔，自動準備環境、啟動服務並登入前端。手冊同時保留備份、資料復原與進階維護說明。</p><div class="meta"><span>修訂日期：2026-11-01（台北）</span><span>適用：Node 24 / Bun 1.4.4</span><span>狀態：Windows 實機待驗收</span></div></header><section id="automation"><div class="section-title"><span>AUTO</span><h2>一鍵啟用：不用人工貼指令</h2></div><p>將程式解壓並同步到專案後，直接雙擊根目錄的 <strong><code>Start-LifeOS.cmd</code></strong>。正常流程不需要開 PowerShell、不需要逐段執行指令，也不需要輸入登入密碼。</p><div class="flow"><span>雙擊啟動</span><b>→</b><span>自動準備工具／建置</span><b>→</b><span>登記排程／啟動</span><b>→</b><span>驗證／備份／自動開頁</span></div><ul><li>自動重用 Node 24 與 Bun 1.4.4；缺少時安裝在目前使用者的 LOCALAPPDATA。Node 下載核對官方 SHA-256，Bun 使用 npm 正常完整性驗證，不停用 TLS。</li><li>自動初始化本機帳號，新帳號使用高強度隨機憑證；既有帳號與日誌不重設。登入信任目前 Windows 使用者對私有資料夾的存取權。</li><li>瀏覽器使用 60 秒、單次有效的登入連結，兌換後立即從網址移除。只在 127.0.0.1 運行，不是公開免密碼登入。</li><li>來源沒有變動時跳過重複建置；登入 Windows 後由排程自動啟動並開頁。關機、休眠或未登入時不保證服務持續運行。</li><li>系統政策、排程權限或網路受阻時會停止並顯示原因；不會自動降級保護。真正的 Gemini 金鑰仍需安全配置，不會自動捏造。</li></ul><div class="notice important">下方手動安裝與維護指令保留供診斷參考。一般使用只需雙擊 Start-LifeOS.cmd，不用按章節逐項操作。</div></section><section id="overview"><div class="section-title"><span>01</span><h2>先了解這個版本</h2></div>
+<p>本手冊適用於在你的 Windows 電腦上運行「把日子過好」，先供自己使用。採用單一擁有者帳號與 SQLite 資料庫，服務只監聽本機 <code>127.0.0.1</code>，不會自動開啟防火牆、區網或網際網路存取。</p>
+<div class="facts"><div><small>程式位置</small><code>D:\Self-developed_Apps\G3\Live-A-Better-Life</code></div><div><small>私有資料位置</small><code>D:\Self-developed_Apps\G3\Live-A-Better-Life-Data</code></div><div><small>瀏覽器輸入位址</small><code>http://127.0.0.1:3000</code></div><div><small>每日備份目標時間</small><strong>03:15（台北時間 UTC+08:00）</strong></div></div>
+<div class="notice important"><strong>保存有兩步：</strong>先「儲存今日日誌」，再「上傳已歸檔資料」。只有上傳成功，才代表已寫入這台電腦的 SQLite 資料庫；草稿不會自動上傳。</div>
+<div class="flow" aria-label="資料保存流程"><span>填寫／草稿</span><b>→</b><span>儲存日誌</span><b>→</b><span>上傳至本機服務</span><b>→</b><span>SQLite＋備份</span></div>
+<p>個人模式的瀏覽器暫存使用 <code>sessionStorage</code>。登出或關閉分頁前，請先上傳或匯出未保存內容。程式升級時保留獨立資料目錄。</p>
+<div class="notice info"><strong>驗證範圍：</strong>雲端已通過 23 項資料／服務測試、11 項既有瀏覽器流程及個人模式端到端流程。PowerShell 語法與共用流程在 PowerShell 7.5.4／Linux 上通過；Windows PowerShell 5.1、工作排程器、ACL、DPAPI 與你的 D: 磁碟，仍須依本手冊在實機驗收。</div>
+</section><section id="requirements"><div class="section-title"><span>02</span><h2>準備工具與程式</h2></div>
+<table><thead><tr><th>項目</th><th>需求與檢查方式</th></tr></thead><tbody>
+<tr><td>Windows / PowerShell</td><td>Windows 電腦；Windows PowerShell 5.1 或更新版本。通常可由開始功能表開啟「Windows PowerShell」。</td></tr>
+<tr><td>Node.js</td><td><strong>24.x</strong>，從 <a href="https://nodejs.org/en/download/" rel="noopener noreferrer">Node.js 官方網站</a>選擇 24.x 安裝。不要直接選其他主要版本。</td></tr>
+<tr><td>Bun</td><td><strong>1.4.4</strong>。安裝 Node 後，可使用下方 npm 指令安裝。</td></tr>
+<tr><td>程式檔案</td><td>根目錄須有 <code>package.json</code>、<code>bun.lock</code>、<code>server.ts</code> 與 <code>deploy\windows\Setup.ps1</code>。</td></tr>
+<tr><td>磁碟與網路</td><td>使用本機持久磁碟保存 SQLite；第一次安裝需連網下載依賴。未啟用 Gemini 時可使用規則備援。</td></tr></tbody></table>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>$PSVersionTable.PSVersion
+node --version
+npm --version
+npm install --global bun@1.4.4
+bun --version</code></pre></div>
+<p><strong>預期：</strong>Node 顯示 <code>v24...</code>，Bun 顯示 <code>1.4.4</code>。工具剛安裝完若找不到指令，關閉並重開 PowerShell 後再檢查。</p>
+<h3>同步程式前，先保留原資料</h3>
+<ul><li>先備份本機未提交修改、既有 <code>.env</code> 與日誌 JSON。ZIP 先解壓到新資料夾比對，再同步到指定專案路徑。</li><li>不要搬移雲端的 <code>node_modules</code> 到 Windows；Setup 會重新安裝適合 Windows 的相依套件。</li><li>若原本使用 <code>localhost</code> 或不同連接埠，先從舊版匯出 JSON；瀏覽器儲存空間會依來源分開，不會自動轉移。</li></ul>
+<div class="notice info">如果組織的 PowerShell 執行政策阻擋腳本，依組織規範簽署或核准。不要為了安裝而關閉 TLS／簽章驗證；本手冊不要求調降執行政策。</div>
+</section><section id="setup"><div class="section-title"><span>03</span><h2>手動安裝與密碼設定（進階）</h2></div><div class="notice">一鍵啟用使用無人值守模式，不會要求以下密碼輸入；本節僅供手動維護。</div>
+<p>使用一般使用者 PowerShell，進入專案根目錄並執行：</p>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Setup.ps1</code></pre></div>
+<h3>Setup 會依序做什麼</h3>
+<ol><li>檢查 Node 24、Bun 1.4.4 與專案檔案。</li><li>建立專案外的私有資料夾，設定目前使用者、SYSTEM 與管理員的存取權限。</li><li>以鎖定檔安裝依賴，執行 TypeScript 檢查及正式建置。</li><li>若尚無帳號，隱藏輸入提示會要求設定並確認 <strong>14–256 字元</strong>的擁有者密碼。</li></ol>
+<p>密碼透過子程序 stdin 傳入，資料庫只保存雜湊，不寫入命令列或 <code>config.json</code>。<strong>重跑 Setup 不會自動重設既有密碼，也不會自動登記排程。</strong></p>
+<p><strong>成功訊息：</strong>顯示 <code>Prepared. Configuration:</code> 與設定檔位置。若任何安裝、型別檢查或建置失敗，先處理錯誤，再重跑。</p>
+<h3>自訂資料目錄或連接埠（選用）</h3>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>.\deploy\windows\Setup.ps1 -DataRoot &#x27;E:\LifeOS-Private&#x27; -Port 3001</code></pre></div>
+<div class="notice info">使用自訂值時，下文所有 <code>ConfigPath</code> 與瀏覽器位址都要改成實際設定。資料目錄必須在專案外，不用網路磁碟；Setup 會拒絕採用沒有既有設定的非空資料夾。</div>
+</section><section id="files"><div class="section-title"><span>04</span><h2>認識資料夾與保存位置</h2></div>
+<div class="codebox"><pre><code>D:\Self-developed_Apps\G3\Live-A-Better-Life-Data  config.json       路徑、Node 位置、連接埠；不含登入密碼
+  owner.sqlite      日誌、手冊、密碼雜湊、登入與版本
+  owner.sqlite-wal  執行中可能出現的 SQLite WAL 檔
+  owner.sqlite-shm  執行中可能出現的 SQLite 共用記憶檔
+  Backups\          排程匯出的 JSON，含私密日誌
+  Logs\             server.stdout.log / server.stderr.log
+  gemini.dpapi      選用：Windows 使用者加密的 Gemini 金鑰</code></pre></div>
+<p><code>config.json</code> 指向你的 Node 執行檔與程式目錄。換 Node 安裝位置或搬動程式時，先停止服務，再確認設定；不要直接搬移或覆寫資料庫。</p>
+<div class="notice important">執行中的 SQLite 可能同時使用 <code>.sqlite</code>、<code>-wal</code> 與 <code>-shm</code>。不要只複製主檔、刪除 WAL，或將執行中的原始檔當成完整備份；請使用備份指令匯出一致的 JSON。</div>
+</section><section id="start"><div class="section-title"><span>05</span><h2>啟動與第一輪驗證</h2></div>
+<h3>方式一：啟動後自動開啟瀏覽器（建議）</h3><p>完成 Setup 後，使用以下指令。服務若尚未啟動會另開 PowerShell 視窗，確認就緒後才開啟預設瀏覽器；不會自動建立密碼。此操作需在你的 Windows 電腦執行。</p><div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Open-LifeOS.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;</code></pre></div><h3>方式二：手動啟動與驗證</h3><h3>視窗 A：啟動服務</h3>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Start-LifeOS.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;</code></pre></div>
+<p>此視窗會持續執行，不會立刻回到提示字元；日誌寫入私有資料夾的 <code>Logs</code>。需要手動停止時按 <kbd>Ctrl</kbd>＋<kbd>C</kbd>，並確認連接埠已釋放。</p>
+<h3>視窗 B：執行驗證</h3>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Verify.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;</code></pre></div>
+<p><strong>預期：</strong>顯示 <code>PASS: personal service is ready and bound to loopback</code>。此腳本實際檢查：</p>
+<ul><li><code>/healthz</code>：程序能回應。</li><li><code>/readyz</code>：資料庫及擁有者帳號已就緒。</li><li><code>/api/auth/session</code>：是 personal 模式且帳號已設定。</li><li>匿名存取私密資料端點回 <code>401</code>，監聽位址只有 <code>127.0.0.1</code>。</li></ul>
+<p>在同一台電腦的瀏覽器網址列輸入 <code>http://127.0.0.1:3000</code>，一鍵啟用會自動登入；只有手動設定密碼的使用者才需要輸入密碼。維持使用此位址，不要與 <code>localhost</code> 交替。</p>
+<div class="notice info">這一階段僅供這台電腦使用；其他電腦或手機無法用此位址連入。若要開放其他裝置，需另做 HTTPS 與網路驗收，不要自行把監聽位址改成所有介面。</div>
+</section><section id="daily"><div class="section-title"><span>06</span><h2>日常記錄與資料同步</h2></div>
+<ol><li>第一次使用新分頁，按「下載伺服器資料」取回已保存日誌與手冊。新資料庫尚無日誌時，可「匯入原本機工作區」或使用 JSON 備份匯入。</li><li>填寫日誌、選擇狀態，按「儲存今日日誌」。確認沒有儲存失敗訊息。</li><li>按「上傳已歸檔資料」，確認「已上傳至伺服器」。這裡的「伺服器」是你本機的 Node 程序。</li><li>關閉分頁後重新登入、下載，確認內容與日期一致。</li></ol>
+<h3>遇到版本衝突怎麼辦</h3>
+<p>兩個分頁若讀取同一版本，其中一個已上傳更新，另一個直接上傳會回 <code>409</code> 並拒絕覆蓋。先把目前分頁資料匯出 JSON，再下載最新伺服器版本比較。系統沒有自動合併；重新整理版本後再上傳，代表你明確選擇取代伺服器內容。</p>
+<h3>登出與草稿</h3>
+<p>登出會撤銷該次登入並清除目前分頁的個人模式暫存。未歸檔草稿不會同步；關閉分頁、登出或清除瀏覽器資料前，先完成儲存／上傳，或下載備份。</p>
+<div class="notice info">Obsidian 功能是手動 Markdown 匯出，沒有雙向同步。既有舊版可能混入的示範日誌不會被自動刪除；先備份，再人工整理。</div>
+</section><section id="tasks"><div class="section-title"><span>07</span><h2>設定登入啟動與每日備份</h2></div>
+<p><strong>先確認手動啟動與 Verify 都成功。</strong>按 Ctrl+C 停止手動服務後，再執行以下指令，避免兩個程序搶同一連接埠。</p>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Install-Tasks.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;
+Start-ScheduledTask -TaskName &#x27;LifeOS-Server&#x27;
+.\deploy\windows\Verify.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;
+Get-ScheduledTask -TaskName &#x27;LifeOS-Server&#x27;,&#x27;LifeOS-Backup&#x27; | Get-ScheduledTaskInfo</code></pre></div>
+<table><thead><tr><th>任務</th><th>執行方式</th><th>完成判斷</th></tr></thead><tbody>
+<tr><td>LifeOS-Server</td><td>目前使用者登入後啟動；有限次失敗重啟，不重複啟動。</td><td>Verify 通過，瀏覽器可以登入；不能只看任務存在。</td></tr>
+<tr><td>LifeOS-Backup</td><td>每天 03:15 UTC+08:00；錯過時在條件恢復後執行。</td><td>確認執行結果及 Backups 中的新檔案。</td></tr></tbody></table>
+<p>任務以目前使用者的互動登入運行，不保存 Windows 登入密碼。<strong>登出、關機或休眠時，不保證服務與備份持續運行。</strong>電腦回到可用且已登入狀態後，確認任務執行結果。若任務登記被拒絕，依主機政策處理，不要直接改成管理員或放寬執行政策。</p>
+<h3>停止與重新啟動</h3>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Stop-ScheduledTask -TaskName &#x27;LifeOS-Server&#x27;
+Start-ScheduledTask -TaskName &#x27;LifeOS-Server&#x27;</code></pre></div>
+<p>先確認舊程序已停止才重新啟動；如果仍有埠占用，先查明程序，不要直接終止所有 Node 程序。</p>
+</section><section id="backup"><div class="section-title"><span>08</span><h2>立即備份與保留策略</h2></div>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+.\deploy\windows\Backup.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27;
+Get-ChildItem &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\Backups&#x27; | Sort-Object LastWriteTime -Descending | Select-Object -First 5</code></pre></div>
+<p><strong>成功條件：</strong>命令顯示 <code>Scheduled backup completed.</code>，且能看到新的 <code>life-os-日期-識別碼.json</code>。備份包含日誌與手冊，不包含密碼雜湊或登入 session。</p>
+<ul><li>每日 JSON：成功匯出後才清理超過 30 天的本工具備份檔；不刪其他檔案與符號連結。</li><li>資料庫內歷史版本：另保存最近 30 次寫入前版本，可在同步區還原；這與每日 JSON 不同。</li><li>瀏覽器「匯出備份」：匯出的是該分頁當下已保存資料，未必等於服務端最新版本；「下載伺服器備份」才讀取服務端。</li></ul>
+<div class="notice important">資料庫和預設 Backups 都在同一個 D: 磁碟，不能抵抗磁碟故障。請另外將完成的 JSON 複製到受保護的外接磁碟或備份服務。檔案含私密日誌，不要公開分享。</div>
+</section><section id="restore"><div class="section-title"><span>09</span><h2>備份還原與密碼管理</h2></div>
+<h3>A. 只想找回先前日誌</h3>
+<p>在同步區展開「伺服器歷史備份」，選定版本並確認還原。還原會建立新版本並保留還原前內容；完成後按「下載伺服器資料」更新目前分頁。JSON 檔也可經匯出頁的「匯入備份」載入，確認後再上傳。</p>
+<h3>B. 離線演練：還原到新的資料庫</h3>
+<p>先從 Backups 選一份實際存在的 JSON，替換下方第一行。<code>restored.sqlite</code> 必須尚不存在；此操作不會自動切換正在使用的資料庫。</p>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Set-Location &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life&#x27;
+$backup = &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\Backups\請替換為實際備份檔名.json&#x27;
+$restorePath = &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\restored.sqlite&#x27;
+$previousDb = [Environment]::GetEnvironmentVariable(&#x27;LIFE_OS_DB_PATH&#x27;, &#x27;Process&#x27;)
+try {
+    $env:LIFE_OS_DB_PATH = $restorePath
+    npm run backup -- restore $backup
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Restore failed&#x27; }
+} finally {
+    if ($null -eq $previousDb) { Remove-Item Env:LIFE_OS_DB_PATH -ErrorAction SilentlyContinue }
+    else { $env:LIFE_OS_DB_PATH = $previousDb }
+}</code></pre></div>
+<p>工具先驗證 JSON，再寫入新 DB，拒絕覆蓋既有檔案。新庫不含舊密碼與 session，需要重新設定擁有者密碼。若要正式切換到還原資料，先停止服務、保留原始資料目錄，再依專案設定處理切換並重新驗收；不要把演練檔直接覆蓋 <code>owner.sqlite</code>。</p>
+<h3>C. 設定中斷或忘記密碼</h3>
+<p>尚未完成首次密碼設定時，省略 <code>-Reset</code>；要重設既有密碼時才加上此旗標：</p>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>.\deploy\windows\Set-OwnerPassword.ps1 -ConfigPath &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\config.json&#x27; -Reset</code></pre></div>
+<p>重設會保留日誌，但撤銷全部登入。不要把登入密碼、金鑰或資料庫檔貼到聊天。</p>
+</section><section id="gemini"><div class="section-title"><span>10</span><h2>啟用 Gemini（選用）</h2></div>
+<p>未設定金鑰時，日誌仍可保存並使用明確標示的規則備援。需要真實 Gemini 時，以啟動任務的同一 Windows 使用者執行：</p>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Read-Host &#x27;Gemini API key&#x27; -AsSecureString | ConvertFrom-SecureString | Set-Content -Encoding ASCII &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\gemini.dpapi&#x27;</code></pre></div>
+<p>隱藏輸入金鑰後，停止並重新啟動服務。DPAPI 加密檔綁定 Windows 使用者／電腦；不能當成明文金鑰搬到另一台電腦，也不要使用雲端代理的憑證占位符。</p>
+<p>在系統檢查畫面發送測試握手，只有顯示 <code>gemini-api</code> 且教練卡片標示 Gemini 生成，才代表遠端鏈路已驗證。預設 <code>gemini-3.8-flash</code> 尚未經真實金鑰驗證；若帳號不支援，須在實際啟動程序的服務環境設定 <code>GEMINI_MODEL</code>，並重新測試。</p>
+<table><thead><tr><th>限制</th><th>目前設定</th></tr></thead><tbody><tr><td>同時模型請求</td><td>1 個</td></tr><tr><td>請求配額</td><td>每小時 20 次、每 24 小時 100 次；自檢與失敗嘗試也計入</td></tr><tr><td>單次大小</td><td>輸入 32 KiB，輸出最多 2000 tokens</td></tr><tr><td>超限 / 失敗</td><td>429 表示配額或並行限制；503 自檢表示遠端未就緒；卡片會區分 Gemini 與備援</td></tr></tbody></table>
+<p>請求數限制不等於帳單金額保證。此手冊交付時，真實 Gemini 呼叫仍未驗證。</p>
+</section><section id="maintenance"><div class="section-title"><span>11</span><h2>更新程式與故障排除</h2></div>
+<h3>安全更新順序</h3>
+<ol><li>先把分頁中的日誌儲存並上傳，再立即執行一次備份。</li><li>若用排程啟動，停止 <code>LifeOS-Server</code>；若是手動視窗，按 Ctrl+C 並確認舊程序已結束。</li><li>保留本機程式修改與 <code>.env</code>，同步程式檔；不搬動私有資料目錄。</li><li>重跑 Setup 重新安裝／建置，再啟動、Verify、登入下載並核對資料。</li></ol>
+<h3>先取得診斷資訊</h3>
+<div class="codebox"><div class="codebar"><span>PowerShell</span><button class="copy" type="button">複製指令</button></div><pre><code>Get-Content &#x27;D:\Self-developed_Apps\G3\Live-A-Better-Life-Data\Logs\server.stderr.log&#x27; -Tail 60
+Get-ScheduledTask -TaskName &#x27;LifeOS-Server&#x27;,&#x27;LifeOS-Backup&#x27; | Get-ScheduledTaskInfo
+Get-NetTCPConnection -State Listen -LocalPort 3000</code></pre></div>
+<table><thead><tr><th>現象</th><th>處理方式</th></tr></thead><tbody>
+<tr><td>找不到 node / bun</td><td>確認工具版本、重開 PowerShell，再執行 Setup。Node 安裝路徑變更後重新產生 config。</td></tr>
+<tr><td>腳本被執行政策擋下</td><td>依組織政策核准或簽署腳本；不要直接設定 Bypass 或停用驗證。</td></tr>
+<tr><td>Refusing to adopt a nonempty directory</td><td>該資料夾未被辨識為本工作區；保留檔案，改選新的專用目錄，不要刪檔強行繼續。</td></tr>
+<tr><td>Port / EADDRINUSE</td><td>可能手動程序與排程同時運行，或另一個程式占用。查明擁有程序後再停止；不要批次終止所有 Node。</td></tr>
+<tr><td>Verify 顯示未就緒 / 503</td><td>查看 stderr 日誌、確認密碼設定完成、DB 路徑及存取權限。不要把「程序存在」當成就緒。</td></tr>
+<tr><td>登入失敗 / 429</td><td>確認使用 127.0.0.1、密碼及 Cookie；登入 15 分鐘最多 5 次嘗試，超限先等待，必要時依密碼重設流程處理。</td></tr>
+<tr><td>看不到舊日誌</td><td>先確認是否已下載伺服器資料、以前是否使用不同瀏覽器來源。從舊版 JSON 匯入，先備份再操作。</td></tr>
+<tr><td>備份沒有新檔案</td><td>手動執行 Backup.ps1，查任務執行結果；確認電腦可用且該使用者已登入。</td></tr>
+<tr><td>DPAPI 金鑰讀取失敗</td><td>確認由原本加密金鑰的 Windows 使用者啟動；換電腦或使用者需重新安全輸入。</td></tr>
+<tr><td>AI 顯示備援</td><td>日誌功能可繼續使用；確認真實金鑰、模型可用性、網路與配額，不以備援成功代替 Gemini 驗收。</td></tr>
+</tbody></table>
+<p>分享錯誤紀錄前先移除私密內容。不要分享 <code>owner.sqlite</code>、備份 JSON、<code>gemini.dpapi</code> 或登入 Cookie。</p>
+</section><section id="acceptance"><div class="section-title"><span>12</span><h2>安裝完成檢核表</h2></div><p>勾選只用於閱讀進度，不會執行任何安裝或變更系統。清單嘗試保存在此瀏覽器；若離線檔案儲存不受支援，仍可列印使用。選用項目未啟用時可保留未勾。</p><div class="checklist"><label><input type="checkbox" data-check="check-0"><span>Node 是 24.x，Bun 是 1.4.4，Setup 完成且沒有錯誤。</span></label><label><input type="checkbox" data-check="check-1"><span>私有資料目錄在專案外，擁有者密碼已設定。</span></label><label><input type="checkbox" data-check="check-2"><span>Verify 通過，只有 127.0.0.1 監聽，匿名私密 API 回 401。</span></label><label><input type="checkbox" data-check="check-3"><span>新增日誌 → 儲存 → 上傳 → 關閉重開 → 下載，日期與內容相同。</span></label><label><input type="checkbox" data-check="check-4"><span>兩個分頁的舊版本上傳被拒絕，沒有覆蓋新資料。</span></label><label><input type="checkbox" data-check="check-5"><span>服務停止並重新啟動後，資料仍可下載；登出後不可讀取私密 API。</span></label><label><input type="checkbox" data-check="check-6"><span>立即備份出現新 JSON，已在新資料庫路徑演練還原。</span></label><label><input type="checkbox" data-check="check-7"><span>若啟用排程，已實測登入觸發及備份任務，確認實際執行結果。</span></label><label><input type="checkbox" data-check="check-8"><span>已安排把完成的備份複製到不同受保護磁碟或備份服務。</span></label><label><input type="checkbox" data-check="check-9"><span>若啟用 Gemini，已確認真實遠端回應，不把備援視為模型成功。</span></label></div><p id="check-summary" aria-live="polite">已勾選 0 / 10 項</p><button type="button" id="reset-checks" class="secondary">重設檢核勾選</button></section><footer class="endnote">把日子過好 · Windows 本機安裝操作手冊<br>不載入外部字型、圖片或程式；可離線閱讀與列印。複製按鈕不會執行指令。</footer></main><div id="copy-status" class="copy-status" role="status" aria-live="polite"></div><script>
+const announce=document.getElementById('copy-status');let toastTimer;
+function say(text){announce.textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>announce.textContent='',4000)}
+document.querySelectorAll('.copy').forEach(button=>button.addEventListener('click',async()=>{
+ const value=button.closest('.codebox').querySelector('code').textContent;
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(value)}else{throw new Error('unavailable')}say('指令已複製；請先確認路徑再執行。')}
+ catch{const code=button.closest('.codebox').querySelector('code');const range=document.createRange();range.selectNodeContents(code);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);say('此環境限制自動複製，已選取指令，請按 Ctrl+C。')}
+}));
+const boxes=[...document.querySelectorAll('[data-check]')];const storageKey='life-os-install-manual-checks-20261101';
+try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');boxes.forEach(b=>b.checked=saved[b.dataset.check]===true)}catch{}
+function progress(){document.getElementById('check-summary').textContent=`已勾選 ${boxes.filter(b=>b.checked).length} / ${boxes.length} 項`}
+boxes.forEach(b=>b.addEventListener('change',()=>{progress();try{localStorage.setItem(storageKey,JSON.stringify(Object.fromEntries(boxes.map(box=>[box.dataset.check,box.checked]))))}catch{}}));progress();
+document.getElementById('reset-checks').addEventListener('click',()=>{boxes.forEach(b=>b.checked=false);progress();try{localStorage.removeItem(storageKey)}catch{}});
+document.getElementById('print').addEventListener('click',()=>window.print());
+const menu=document.getElementById('menu'),nav=document.getElementById('contents');menu.addEventListener('click',()=>{const opened=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(opened))});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=700){nav.classList.remove('open');menu.setAttribute('aria-expanded','false')}}));
+</script></body></html>

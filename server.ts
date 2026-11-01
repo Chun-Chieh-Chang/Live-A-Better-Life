@@ -1,6 +1,11 @@
 import express from 'express';
+import { PersonalStore, QuotaError } from './server/personal-store.ts';
+import { mountPersonal, type PersonalConfig } from './server/personal-routes.ts';
+import { createServer as createHttpServer } from 'node:http';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { accessSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { isCoachRequest, isCoachResult } from './src/utils/validation.ts';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 
@@ -11,64 +16,83 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export function createApp(options: {client?: Pick<GoogleGenAI, 'models'> | null; timeoutMs?: number; personal?: PersonalConfig; model?: string} = {}) {
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+app.disable('x-powered-by');
+app.use(express.json({limit:'10mb'}));
+app.get('/healthz',(_req,res)=>res.json({status:'ok'}));
+app.get('/readyz',(_req,res)=>{
+  try {
+    if(options.personal) {options.personal.store.read();if(!options.personal.store.configured())return res.status(503).json({status:'not-ready'});}
+    return res.json({status:'ready'});
+  }catch{return res.status(503).json({status:'not-ready'});}
+});
+const reserveAI = options.personal ? mountPersonal(app,options.personal) : () => {};
+if (!options.personal) {
+  app.use('/api',(req,res,next)=>{
+    const loopback=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress || '');
+    const host=req.get('host') || '';
+    if (!loopback || !/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) || (req.get('origin') && req.get('origin') !== `http://${host}`)) return res.status(403).json({success:false,error:'Local mode only accepts loopback access'});
+    next();
+  });
+  app.get('/api/auth/session',(_req,res)=>res.json({mode:'local',authenticated:false}));
+}
+let activeAI = false;
 
-app.use(express.json());
-
-// Initialize Google Gen AI client
 const apiKey = process.env.GEMINI_API_KEY || '';
-let aiClient: GoogleGenAI | null = null;
-if (apiKey) {
-  aiClient = new GoogleGenAI({ apiKey });
+const aiClient = options.client !== undefined ? options.client : apiKey && apiKey !== 'MY_GEMINI_API_KEY' ? new GoogleGenAI({apiKey}) : null;
+async function generate(contents: string, json = false) {
+  if (activeAI) throw new QuotaError('AI request already running');
+  reserveAI();
+  activeAI=true;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      aiClient!.models.generateContent({model:options.model || process.env.GEMINI_MODEL || 'gemini-3.8-flash', contents,
+        config:{maxOutputTokens:2000,httpOptions:{timeout:options.timeoutMs ?? 10000, retryOptions:{attempts:1}}, ...(json ? {responseMimeType:'application/json', temperature:0.7} : {})}}),
+      new Promise<never>((_,reject)=> {timer=setTimeout(()=>reject(new Error('AI timeout')), options.timeoutMs ?? 10000);})
+    ]);
+  } finally {clearTimeout(timer); activeAI=false;}
 }
 
-// Automatic system check and scaffolding on launch
-const initialReport = runSystemCheckAndSetup(true);
-console.log('⚡ [Life OS 啟動自檢]', initialReport.env.message, '|', initialReport.vault.message);
-
+const systemReport = (autoFix=false) => {
+  const report=runSystemCheckAndSetup(options.personal ? false : autoFix);
+  if(options.personal) {
+    report.isReady=report.dependencies.status==='ok' && options.personal.store.configured();
+    report.env.status='ok';
+    report.env.message='個人模式由服務環境變數配置；Gemini 未設定時使用規則備援。';
+    report.vault={status:'ok',message:'個人模式以 SQLite 保存資料；Markdown 由瀏覽器匯出，不需伺服器 Vault。',directories:[],files:[]};
+  }
+  return report;
+};
 // API: System Status Check
 app.get('/api/system/status', (_req, res) => {
-  const report = runSystemCheckAndSetup(false);
+  const report = systemReport();
   return res.json({ success: true, report });
 });
 
 // API: Trigger Auto Setup & Repair
 app.post('/api/system/setup', (_req, res) => {
-  const report = runSystemCheckAndSetup(true);
+  const report = systemReport(true);
   return res.json({ success: true, report });
 });
 
 // API: Test AI Co-processor
 app.post('/api/system/test-ai', async (_req, res) => {
+  if (!aiClient) return res.status(503).json({success:false, text:'未設定 Gemini；日誌教練仍可使用規則備援。', mode:'unconfigured'});
   try {
-    if (aiClient && apiKey) {
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [
-          { role: 'user', parts: [{ text: '請用一句溫暖的話問候今天的我，並說「AI 認知副處理器已就緒」。' }] }
-        ]
-      });
-      return res.json({ success: true, text: response.text || 'AI 認知副處理器已就緒！', mode: 'gemini-api' });
-    } else {
-      return res.json({
-        success: true,
-        text: '今天辛苦了！AI 認知副處理器已進入待命狀態，隨時準備分擔你的思緒。',
-        mode: 'heuristic-coprocessor'
-      });
-    }
-  } catch (err: any) {
-    return res.json({
-      success: true,
-      text: '今天辛苦了！AI 啟發式副處理器已就緒（遠端連線忙碌中，已無縫啟用本地行為備援）。',
-      mode: 'heuristic-coprocessor',
-      error: err.message
-    });
+    const response = await generate('請用一句溫暖的話問候今天的我。');
+    if (!response.text?.trim()) throw new Error('Empty AI response');
+    return res.json({success:true, text:response.text, mode:'gemini-api'});
+  } catch (error) {
+    if (error instanceof QuotaError) return res.status(429).json({success:false,text:'AI 使用量已達上限或尚有請求執行中，請稍後重試。',mode:'limited'});
+    return res.status(503).json({success:false, text:'Gemini 測試失敗或逾時；日誌教練仍可使用規則備援。', mode:'unavailable'});
   }
 });
 
 // API: AI Coach Cognitive Co-processor endpoint
 app.post('/api/coach', async (req, res) => {
+  if (!isCoachRequest(req.body) || Buffer.byteLength(JSON.stringify(req.body)) > 32768) return res.status(400).json({success:false, error:'Invalid coach request'});
   try {
     const { state, data, personalOS, customPrompt } = req.body;
 
@@ -110,45 +134,21 @@ ${customPrompt ? `額外提問/需求：${customPrompt}` : ''}
 }
 `;
 
-    if (aiClient && apiKey) {
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [
-          { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.7,
-        }
-      });
-
-      const responseText = response.text || '{}';
-      try {
-        const parsed = JSON.parse(responseText);
-        return res.json({ success: true, result: parsed });
-      } catch (parseError) {
-        return res.json({
-          success: true,
-          result: {
-            strategies: [
-              `If 遇到類似狀況， Then 先深呼吸 3 秒並喝一口溫水。`,
-              `If 感到疲憊， Then 給自己 10 分鐘完全不看螢幕的空白時間。`
-            ],
-            psychologicalInsight: responseText.slice(0, 200),
-            suggestedTag: `[[日常覺察]]`,
-            encouragement: '把今天當作一筆寶貴的數據，你已經在掌控自己的生活了。'
-          }
-        });
-      }
+    if (aiClient) {
+      const response = await generate(`${systemPrompt}\n\n${userPrompt}`, true);
+      const parsed = JSON.parse(response.text || '{}');
+      if (!isCoachResult(parsed)) throw new Error('Invalid model response');
+      return res.json({success:true, result:parsed, isFallback:false});
     } else {
       // Intelligent fallback when GEMINI_API_KEY is not configured yet
       const fallbackResult = generateFallbackCoachAdvice(state, data);
       return res.json({ success: true, result: fallbackResult, isFallback: true });
     }
   } catch (err: any) {
-    console.error('Error in /api/coach:', err);
+    if (err instanceof QuotaError) return res.status(429).json({success:false,error:'AI 使用量已達上限或尚有請求執行中。'});
+    console.warn('Remote coach unavailable; using rule fallback.');
     const fallback = generateFallbackCoachAdvice(req.body.state, req.body.data);
-    return res.json({ success: true, result: fallback, isFallback: true, error: err.message });
+    return res.json({ success: true, result: fallback, isFallback: true, reason: 'remote_unavailable' });
   }
 });
 
@@ -191,16 +191,39 @@ function generateFallbackCoachAdvice(state: string, data: any) {
   }
 }
 
+app.use('/api',(_req,res)=>res.status(404).json({success:false,error:'Unknown endpoint'}));
+app.use((error:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
+  res.status(error?.type === 'entity.too.large' ? 413 : error instanceof SyntaxError ? 400 : 500).json({success:false,error:'Request could not be completed'});
+});
+return app;
+}
+
 // Dev vs Prod Vite setup
 async function startServer() {
+  const mode=process.env.LIFE_OS_MODE || 'local';
+  if (!['local','personal'].includes(mode)) throw new Error('Unsupported LIFE_OS_MODE');
+  if(mode==='local'){const report=runSystemCheckAndSetup(true);console.log('Life OS local readiness:',report.isReady);}
+  let personal: PersonalConfig | undefined;
+  if (mode === 'personal') {
+    if (!process.env.LIFE_OS_DB_PATH || !process.env.LIFE_OS_ORIGIN) throw new Error('Personal mode requires LIFE_OS_DB_PATH and LIFE_OS_ORIGIN');
+    personal={store:new PersonalStore(process.env.LIFE_OS_DB_PATH),origin:process.env.LIFE_OS_ORIGIN, desktop:process.env.LIFE_OS_DESKTOP==='1'};
+  }
+  const app = createApp({personal});
+  const httpServer = createHttpServer(app);
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const isProd = process.env.NODE_ENV === 'production';
+  const bind=process.env.LIFE_OS_BIND || '127.0.0.1';
+  if(personal?.desktop && bind!=='127.0.0.1')throw new Error('Desktop mode must bind to 127.0.0.1');
+  let viteServer: {close:()=>Promise<void>} | undefined;
+  if(isProd)accessSync(path.resolve(__dirname,'dist/index.html'));
 
   if (!isProd) {
     const { createServer } = await import('vite');
     const vite = await createServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: process.env.DISABLE_HMR === 'true' ? false : {server:httpServer} },
       appType: 'spa',
     });
+    viteServer=vite;
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(__dirname, 'dist');
@@ -210,9 +233,20 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Life OS Server running on http://0.0.0.0:${PORT}`);
-  });
+  let draining=false;
+  const shutdown=()=>{
+    if(draining)return;draining=true;
+    const forced=setTimeout(()=>{httpServer.closeAllConnections();process.exit(1);},15000);forced.unref();
+    httpServer.close(async()=>{
+      try{await viteServer?.close();personal?.store.close();process.exitCode=0;}
+      catch{process.exitCode=1;}
+      finally{clearTimeout(forced);}
+    });
+  };
+  process.once('SIGTERM',shutdown);process.once('SIGINT',shutdown);
+  httpServer.listen(PORT,bind,()=>console.log(`Life OS server listening on ${bind}:${PORT}`));
 }
 
-startServer();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  startServer().catch(error => {console.error(error); process.exitCode=1;});
+}

@@ -130,3 +130,41 @@ npm run start
 
 ## 📄 授權說明
 Apache-2.0 License.
+
+## 個人使用版本的可靠性與驗證
+
+開發計畫、驗收門檻及公開部署前置條件見 [可靠性計畫](docs/RELIABILITY_PLAN.md)。
+
+- 新使用者從空白日誌與手冊開始；不再自動加入示範紀錄。舊版資料保留，無法自動判斷的示範日誌需先備份再人工整理。
+- 資料僅存於目前瀏覽器；按日期自動保存草稿，按「儲存今日日誌」才計入統計。清除網站資料前請匯出 JSON 備份。
+- 匯入會先驗證格式、詢問覆蓋，再保存一份覆蓋前備份；可在匯出頁下載並重新匯入。失敗不替換目前已保存資料。還原後使用新的草稿空間，舊草稿保留於瀏覽器但不自動套用到還原資料。
+- 舊版保存鍵保留供復原；成功寫入新版後，以 `life_os_data_v2` 為準。其他分頁若已保存變更，當前分頁會拒絕覆蓋，請先下載尚未保存內容並重載。
+- AI 卡片區分 Gemini、伺服器規則備援及本地備援。未設定金鑰或遠端失敗時，備援可繼續使用；這不表示 Gemini 已驗證。Obsidian 提供手動 Markdown 匯出，沒有雙向同步。
+
+專案使用 `bun.lock`，可用 Bun 1.4.4 執行 `bun install --frozen-lockfile`。Node 24 已驗證。
+
+```bash
+npm test                 # 資料保存、備份、API/AI 契約與故障測試
+npm run lint             # TypeScript 檢查
+npm run test:browser     # 建置後啟動獨立正式模式伺服器，跑 Chromium 流程
+```
+
+瀏覽器測試需要 Chromium：可執行 `npx playwright install chromium` 安裝，或以 `CHROMIUM_PATH` 指定既有執行檔；Linux 預設會優先使用 `/usr/bin/chromium`。必要時先安裝 Chromium 所需的系統套件。測試使用獨立瀏覽器 context，結束會停止自己啟動的服務。
+
+`TEST_SERVER_MODE=development node tests/browser.mjs` 可驗證開發模式；`TEST_BASE_URL` 可指定已啟動的測試服務（必須確保沒有真實 Gemini 費用與敏感資料）。預設測試服務使用 3100 埠並關閉遠端金鑰。
+
+目前仍是本機個人使用架構。登入、伺服器持久化、跨使用者隔離、限流/配額及真實 Gemini/部署驗收完成前，不應直接開放為公開付費 AI 服務。
+
+## 個人多裝置（單一擁有者）
+
+已加入登入保護、SQLite 版本化保存、手動跨裝置同步、最近 30 次歷史備份與離線復原工具。完整設定、密碼配置、持久磁碟要求及驗收步驟見 [個人多裝置部署](docs/PERSONAL_DEPLOYMENT.md)。個人模式的瀏覽器編輯暫存使用 sessionStorage；必須明確上傳才會保存至服務端。
+
+本機模式仍為預設，API 僅接受 loopback。個人模式需要擁有者先設定密碼，沒有預設密碼。SQLite 版本只支援單實例、持久磁碟主機，不能直接依賴 Cloud Run 的暫存容器磁碟。尚未部署正式服務，也尚未以真實金鑰驗證 Gemini。
+
+## Windows 本機運行（目前選定）
+
+使用者選擇先在 Windows 電腦供自己使用。請依 [Windows 啟動與排程](docs/WINDOWS_LOCAL.md) 操作；腳本只啟動 loopback 個人服務，資料放在專案外，不會開防火牆或對外發布。雲端無法直接操作 D: 路徑，Windows 排程與 ACL 須在實機驗收。
+
+## 一鍵啟用（最新入口）
+
+在 Windows 雙擊根目錄 `Start-LifeOS.cmd`，會自動準備使用者私有工具、安裝建置、初始化帳號、登記排程、啟動、就緒驗證、備份並開啟前端。無須手動貼 PowerShell 指令或輸入登入密碼。啟用採信任目前 Windows 使用者的一次性本機登入連結，僅限 127.0.0.1；不適用公開服務。詳見 [Windows 手冊](docs/WINDOWS_LOCAL.md)。Windows 實機排程／ACL／工具下載仍待驗收，不會繞過系統執行政策。

@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/api';
 import React, { useState } from 'react';
 import { 
   ShieldCheck, 
@@ -65,7 +66,7 @@ export const SystemHealthModal: React.FC<SystemHealthModalProps> = ({
       setFixSuccess('✅ 系統已完成自動檢查與全目錄配置！');
       setTimeout(() => setFixSuccess(null), 3000);
     } catch (e: any) {
-      console.error(e);
+      setFixSuccess('❌ 初始化失敗或尚未就緒，請重試並檢查系統狀態。');
     } finally {
       setIsFixing(false);
     }
@@ -75,13 +76,13 @@ export const SystemHealthModal: React.FC<SystemHealthModalProps> = ({
     setIsAiTesting(true);
     setAiTestResult(null);
     try {
-      const res = await fetch('/api/system/test-ai', { method: 'POST' });
+      const res = await apiFetch('/api/system/test-ai', { method: 'POST' });
       const data = await res.json();
       setAiTestResult({ text: data.text, mode: data.mode });
     } catch (err: any) {
       setAiTestResult({
-        text: 'AI 啟發式副處理器待命就緒（使用本地行為設計模型）。',
-        mode: 'heuristic'
+        text: '無法連線至 AI 測試端點，尚未確認遠端狀態。',
+        mode: 'unavailable'
       });
     } finally {
       setIsAiTesting(false);
@@ -104,7 +105,7 @@ export const SystemHealthModal: React.FC<SystemHealthModalProps> = ({
               <h3 className="font-extrabold text-base text-[#222d25] flex items-center gap-2">
                 <span>系統啟動自檢與自動配置</span>
                 <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#eff7ee] text-[#2c5832] border border-[#b8dab3] font-bold">
-                  自動化就緒
+                  本機啟動檢查
                 </span>
               </h3>
               <p className="text-xs text-[#616c62]">
@@ -251,7 +252,7 @@ export const SystemHealthModal: React.FC<SystemHealthModalProps> = ({
             {aiTestResult && (
               <div className="p-3 bg-[#121c15] rounded-lg border border-[#28382c] space-y-1">
                 <div className="flex items-center justify-between text-[10px] text-[#a8ccaf] font-semibold">
-                  <span>回應狀態：成功 ({aiTestResult.mode})</span>
+                  <span>回應狀態：{aiTestResult.mode === 'gemini-api' ? '遠端驗證成功' : '遠端未就緒'} ({aiTestResult.mode})</span>
                   <span className="text-[#8fa894] font-mono">{new Date().toLocaleTimeString()}</span>
                 </div>
                 <p className="text-[#dbe5dd] italic">“{aiTestResult.text}”</p>

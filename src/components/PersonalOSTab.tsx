@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { todayString } from '../utils/validation';
 import { PersonalOS, IfThenStrategy, HabitQuestion, EmergencyRecipe, AvoidanceGuide } from '../types';
 import { generatePersonalOSMarkdown, downloadFile } from '../utils/markdownExporter';
 import { 
@@ -16,7 +17,7 @@ import {
 
 interface PersonalOSTabProps {
   personalOS: PersonalOS;
-  onUpdatePersonalOS: (updated: PersonalOS) => void;
+  onUpdatePersonalOS: (updated: PersonalOS) => boolean;
 }
 
 export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpdatePersonalOS }) => {
@@ -57,12 +58,12 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       thenText: newThen.trim(),
       active: true,
       category: 'life',
-      sourceDate: new Date().toISOString().split('T')[0]
+      sourceDate: todayString()
     };
-    onUpdatePersonalOS({
+    if (!onUpdatePersonalOS({
       ...personalOS,
       ifThenStrategies: [newStrategy, ...personalOS.ifThenStrategies]
-    });
+    })) return;
     setNewIf('');
     setNewThen('');
   };
@@ -88,10 +89,10 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       text: newHabit.trim(),
       active: true
     };
-    onUpdatePersonalOS({
+    if (!onUpdatePersonalOS({
       ...personalOS,
       habitQuestions: [...personalOS.habitQuestions, newH]
-    });
+    })) return;
     setNewHabit('');
   };
 
@@ -105,10 +106,10 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       description: newRecipeDesc.trim(),
       tag: newRecipeTag.trim() || '#快樂配方'
     };
-    onUpdatePersonalOS({
+    if (!onUpdatePersonalOS({
       ...personalOS,
       emergencyRecipes: [r, ...personalOS.emergencyRecipes]
-    });
+    })) return;
     setNewRecipeTitle('');
     setNewRecipeDesc('');
   };
@@ -128,10 +129,10 @@ export const PersonalOSTab: React.FC<PersonalOSTabProps> = ({ personalOS, onUpda
       lesson: newAvoidLesson.trim(),
       tag: newAvoidTag.trim() || '#避坑指南'
     };
-    onUpdatePersonalOS({
+    if (!onUpdatePersonalOS({
       ...personalOS,
       avoidanceGuides: [a, ...personalOS.avoidanceGuides]
-    });
+    })) return;
     setNewAvoidTitle('');
     setNewAvoidLesson('');
   };

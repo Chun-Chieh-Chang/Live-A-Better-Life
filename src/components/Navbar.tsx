@@ -12,13 +12,14 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
+  systemReady?: boolean;
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   entries: DailyEntry[];
   onOpenSystemHealth?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries, onOpenSystemHealth }) => {
+export const Navbar: React.FC<NavbarProps> = ({ systemReady, activeTab, onTabChange, entries, onOpenSystemHealth }) => {
   const goodCount = entries.filter(e => e.state === 'good').length;
   const goodRatio = entries.length > 0 ? Math.round((goodCount / entries.length) * 100) : 0;
 
@@ -66,7 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, entries,
                 title="點擊查看系統啟動自檢與自動配置狀態"
               >
                 <span className="w-2 h-2 rounded-full bg-[#4d6b53] animate-pulse" />
-                <span>系統自檢: 健全</span>
+                <span>系統自檢: {systemReady === undefined ? '待確認' : systemReady ? '本機就緒' : '需檢查'}</span>
               </button>
             )}
 
