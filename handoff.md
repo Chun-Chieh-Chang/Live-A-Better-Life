@@ -49,6 +49,12 @@
    - 非備份頁面（今天、我的小改變、生活回顧）縮減為極簡單行微型狀態條（約 36px），消除視覺干擾。
    - 完整管理面板（路徑變更、手動同步、衝突仲裁、版本還原、登出）收斂至「備份」頁面一站式管理。
 
+6. **GitHub Pages 自動化確效部署**：
+   - 設定 `vite.config.ts` 使用相對基底路徑 (`base: './'`)，預防 404 資源載入失敗。
+   - 建立 `.github/workflows/deploy.yml` 自動化工作流（CI 必須通過 `lint`、`test` 與 `build` 確效才進行 Pages 部署）。
+   - 線上站點：`https://chun-chieh-chang.github.io/Live-A-Better-Life/`。
+
+
 
 ---
 

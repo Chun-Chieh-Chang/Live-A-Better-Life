@@ -10,6 +10,7 @@
 | server/、server.ts | 後端資料、登入、AI、筆記輸出 | 執行中的服務 |
 | scripts/ | 檢查、帳號與備份工具 | 目前支援的操作入口 |
 | deploy/windows/ | Windows 安裝、啟用與排程 | Windows 啟用唯一入口由 Activate.ps1 統一 |
+| .github/workflows/ | GitHub Actions 自動化部署與確效 | 支援 GitHub Pages 確效發布流水線 |
 | tests/ | 控制測試與 tests/fixtures 示範資料 | 範例僅供測試，不當成使用者資料 |
 | docs/ | 分工明確的目前需求、規範與操作說明 | README 是唯一文件入口，各主題不維護第二份內容 |
 | dist/ | 最新正式建置 | 本機正式服務啟動所需，可重建、Git 忽略 |

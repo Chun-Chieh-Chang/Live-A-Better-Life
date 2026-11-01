@@ -94,3 +94,18 @@
 - 56 項單元測試全過。
 - `test:obsidian-browser` (1/1) 全過。
 - `test:personal-browser` (2/2) 全過。
+
+## 2026-11-01 GitHub Pages 自動化確效與部署設定
+
+需求：部署到 GitHub Pages 並確保成功無異常。
+
+### 做法與防禦
+- **資源路徑防禦**：`vite.config.ts` 設定 `base: './'` 相對路徑，徹底防止 GitHub Pages 子目錄託管時產生的 `/assets/` 404 白屏問題。
+- **配置警告修復**：修復 `vite.config.ts` 中的 `__dirname` 警告，改用標準 `import.meta.dirname`。
+- **零樣板偏誤 (Zero Assumption Bias)**：專案依賴 `bun.lock` / `package.json`，在 GitHub Actions 工作流中明確避免無效的 `cache: 'npm'` 樣板。
+- **部署前強制確效**：在 GitHub Actions 流水線中，必須先依序通過 `npm run lint`、`npm test` 與 `npm run build`，全部綠燈才觸發 `deploy-pages`。
+- **目錄治理 (MECE)**：將 `.github/workflows/` 正式登記至 `PROJECT_STRUCTURE.md`。
+
+### 狀態
+- 本地打包 (`npm run build`) 驗證產出之 HTML 資源路徑正確無誤。
+- 本地 56 項測試與型別檢查全數通過。
