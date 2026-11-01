@@ -109,3 +109,8 @@
 ### 狀態
 - 本地打包 (`npm run build`) 驗證產出之 HTML 資源路徑正確無誤。
 - 本地 56 項測試與型別檢查全數通過。
+
+### CI 安裝失敗 RCA 與修復（2026-11-01）
+- **現象**：GitHub Actions 在 `Install dependencies` 步驟失敗（npm error ERESOLVE）。
+- **根因**：`package.json` 中手動鎖定過時的 `"esbuild": "^0.25.0"`，與頂層 `"vite": "^8.3.0"` 期望的 `esbuild@"^0.27.0 || ^0.28.0"` peer dependency 衝突。
+- **矯正措施**：將 `package.json` 的 `esbuild` 依賴版本對齊提升至 `"^0.28.0"`；本地 `npm install --dry-run`、`npm run lint`、`npm test` 確效通過。
