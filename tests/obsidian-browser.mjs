@@ -82,6 +82,7 @@ test(
 
       const chosen = path.join(root, "chosen-日記");
       fs.mkdirSync(chosen);
+      await one.getByRole("button", { name: "備份", exact: true }).click();
       await one.getByText("變更筆記位置", { exact: true }).click();
       let pickerCalls = 0;
       // Real Windows dialog is verified on the interactive desktop; browser checks selected/cancelled results.

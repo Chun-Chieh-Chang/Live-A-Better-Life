@@ -122,13 +122,50 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
         systemReady={systemStatus?.isReady}
       />
 
-      <div className="max-w-6xl mx-auto px-4 py-2 text-sm">
-        <p>{personal ? '儲存後會自動存到個人空間；請留意下方的保存結果。' : '記錄保存在這個瀏覽器，記得定期備份。'}</p>
-        {storageError && <div role="alert" className="text-red-700">{storageError}
-          <button onClick={() => {try {downloadFile('life-os-raw-recovery.json', JSON.stringify({v2:storage.getItem('life_os_data_v2'),entries:storage.getItem('life_os_daily_entries_v1'),personalOS:storage.getItem('life_os_personal_manual_v1')}, null, 2), 'application/json');} catch {setStorageError('瀏覽器禁止讀取，請保留目前頁面並檢查瀏覽器儲存權限。');}}}>下載原始資料</button>
-        </div>}
-      </div>
-      {personal && <CloudSyncPanel data={data} onReplace={next=>handleImportData(next.entries,next.personalOS)} onLogout={personal.onLogout}/>}
+      {!personal && (
+        <div className="max-w-6xl mx-auto px-4 py-2 text-sm text-[#717a72]">
+          <p>記錄保存在這個瀏覽器，記得定期備份。</p>
+        </div>
+      )}
+      {storageError && (
+        <div className="max-w-6xl mx-auto px-4 py-2 text-sm">
+          <div role="alert" className="text-red-700">
+            {storageError}
+            <button
+              onClick={() => {
+                try {
+                  downloadFile(
+                    'life-os-raw-recovery.json',
+                    JSON.stringify(
+                      {
+                        v2: storage.getItem('life_os_data_v2'),
+                        entries: storage.getItem('life_os_daily_entries_v1'),
+                        personalOS: storage.getItem('life_os_personal_manual_v1'),
+                      },
+                      null,
+                      2
+                    ),
+                    'application/json'
+                  );
+                } catch {
+                  setStorageError('瀏覽器禁止讀取，請保留目前頁面並檢查瀏覽器儲存權限。');
+                }
+              }}
+            >
+              下載原始資料
+            </button>
+          </div>
+        </div>
+      )}
+      {personal && (
+        <CloudSyncPanel
+          data={data}
+          activeTab={activeTab}
+          onNavigateToTab={setActiveTab}
+          onReplace={next => handleImportData(next.entries, next.personalOS)}
+          onLogout={personal.onLogout}
+        />
+      )}
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-6">
         <div hidden={activeTab !== 'daily'}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import type { ActiveTab } from "../types";
 import { apiFetch } from "../utils/api";
 import { isLifeData, type LifeData } from "../utils/validation";
 import { loadData } from "../utils/storage";
@@ -12,10 +13,14 @@ export function CloudSyncPanel({
   data,
   onReplace,
   onLogout,
+  activeTab = "obsidian",
+  onNavigateToTab,
 }: {
   data: LifeData;
   onReplace: (data: LifeData) => boolean;
   onLogout: () => Promise<void>;
+  activeTab?: ActiveTab;
+  onNavigateToTab?: (tab: ActiveTab) => void;
 }) {
   const [blocked, setBlocked] = useState(false);
   const [notes, setNotes] = useState<any>(null);
@@ -167,6 +172,95 @@ export function CloudSyncPanel({
       acceptRemote(latest);
       setMessage("已下載個人空間版本至此裝置。");
     });
+  if (activeTab !== "obsidian") {
+    return (
+      <aside
+        className="max-w-6xl w-full mx-auto px-4 py-2 text-xs sm:text-sm text-[#444d45] flex flex-wrap items-center justify-between gap-3 border-b border-[#e8e5d8]/70 bg-[#fbf9f1]/70"
+        aria-label="個人多裝置同步"
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${
+              blocked
+                ? "bg-red-500"
+                : pendingSave || busy
+                ? "bg-amber-400 animate-pulse"
+                : "bg-emerald-500"
+            }`}
+            aria-hidden="true"
+          />
+          <span className="font-medium">
+            {blocked
+              ? "有內容尚未保存到個人空間。"
+              : pendingSave
+              ? "正在自動保存到個人空間…"
+              : remote
+              ? JSON.stringify(snapshot(data)) === JSON.stringify(snapshot(remote.data))
+                ? "已保存到個人空間"
+                : "這裡和個人空間的內容不同，請選擇保存或取回"
+              : "正在讀取個人空間…"}
+          </span>
+          {notes?.status === "saved" && (
+            <span className="text-[#717a72]">
+              · 筆記資料夾已更新。
+              {notes.openUrl && (
+                <a
+                  className="inline-flex items-center min-h-[32px] px-1 underline hover:text-[#2c332d]"
+                  href={notes.openUrl}
+                >
+                  在 Obsidian 開啟
+                </a>
+              )}
+            </span>
+          )}
+          {notes?.status === "pending" && (
+            <span className="text-amber-800 text-xs inline-flex items-center gap-1">
+              · 筆記資料夾尚未更新。
+              <button
+                type="button"
+                className="underline hover:text-amber-950 ml-1 font-medium"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    const result = await request("/api/obsidian/retry", {
+                      method: "POST",
+                    });
+                    setNotes(result);
+                  })
+                }
+              >
+                重試更新筆記
+              </button>
+            </span>
+          )}
+          {noteChanges.length > 0 && (
+            <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-medium text-xs">
+              筆記有 {noteChanges.length} 份新修改
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {onNavigateToTab && (
+            <button
+              type="button"
+              className="text-xs text-[#4d6b53] hover:underline font-medium min-h-[36px] px-2"
+              onClick={() => onNavigateToTab("obsidian")}
+            >
+              {noteChanges.length > 0 || blocked ? "前往備份處理 →" : "備份與同步管理 →"}
+            </button>
+          )}
+          <button
+            type="button"
+            className="text-xs text-[#717a72] hover:text-[#2c332d] underline min-h-[36px] px-1"
+            onClick={() => void onLogout()}
+          >
+            登出
+          </button>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <section
       className="max-w-6xl w-full mx-auto p-4 space-y-3 border border-[#e8e5d8] rounded-xl text-sm [&_button]:min-h-11 [&_button]:px-3 [&_button]:border [&_button]:rounded-lg"

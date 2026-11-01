@@ -57,6 +57,7 @@ test(
       await start();
       browser = await chromium.launch({
         headless: true,
+        channel: process.env.CHROMIUM_PATH ? undefined : "chrome",
         executablePath:
           process.env.CHROMIUM_PATH ||
           (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
@@ -75,6 +76,7 @@ test(
         await p.goto(base);
         await p.getByLabel("登入密碼").fill(password);
         await p.getByRole("button", { name: "登入", exact: true }).click();
+        await p.getByRole("button", { name: "備份", exact: true }).click();
         await p
           .getByRole("button", { name: "存到個人空間", exact: true })
           .waitFor();
@@ -93,18 +95,19 @@ test(
       await one
         .getByRole("button", { name: "儲存今天的記錄", exact: true })
         .click();
+      await one.getByRole("button", { name: "備份", exact: true }).click();
       await one
         .getByRole("button", { name: "存到個人空間", exact: true })
         .click();
       await one.getByText("已上傳至個人空間。", { exact: true }).waitFor();
       await login(two);
-      assert.equal(await two.locator("textarea").first().inputValue(), "");
       await two
         .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await two
         .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
+      await two.getByRole("button", { name: "今天", exact: true }).click();
       await two.locator("input[type=date]").fill("2026-10-12");
       assert.equal(
         await two.locator("textarea").first().inputValue(),
@@ -114,6 +117,7 @@ test(
       await two
         .getByRole("button", { name: "儲存今天的記錄", exact: true })
         .click();
+      await two.getByRole("button", { name: "備份", exact: true }).click();
       await two
         .getByRole("button", { name: "存到個人空間", exact: true })
         .click();
@@ -133,10 +137,12 @@ test(
       await one
         .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
+      await one.getByRole("button", { name: "今天", exact: true }).click();
       assert.equal(
         await one.locator("textarea").first().inputValue(),
         "device-two-edit",
       );
+      await one.getByRole("button", { name: "備份", exact: true }).click();
       await one.getByText("備份與其他選項", { exact: true }).click();
       await one
         .getByRole("button", { name: "檢查最新記錄", exact: true })
@@ -158,6 +164,7 @@ test(
       await one
         .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
+      await one.getByRole("button", { name: "今天", exact: true }).click();
       assert.equal(
         await one.locator("textarea").first().inputValue(),
         "device-one-entry",
@@ -170,12 +177,14 @@ test(
       await one
         .getByText(/已保存到個人空間|這裡和個人空間的內容不同/)
         .waitFor();
+      await one.getByRole("button", { name: "備份", exact: true }).click();
       await one
         .getByRole("button", { name: "取回個人空間的記錄", exact: true })
         .click();
       await one
         .getByText("已下載個人空間版本至此裝置。", { exact: true })
         .waitFor();
+      await one.getByRole("button", { name: "今天", exact: true }).click();
       await one.locator("input[type=date]").fill("2026-10-12");
       assert.equal(
         await one.locator("textarea").first().inputValue(),
@@ -254,6 +263,7 @@ test(
       assert.ok(ready);
       browser = await chromium.launch({
         headless: true,
+        channel: process.env.CHROMIUM_PATH ? undefined : "chrome",
         executablePath:
           process.env.CHROMIUM_PATH ||
           (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
