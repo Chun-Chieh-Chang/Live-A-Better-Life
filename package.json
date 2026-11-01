@@ -18,6 +18,7 @@
     "test:personal-browser": "npm run build && node tests/personal-browser.mjs",
     "backup:scheduled": "node --import tsx scripts/scheduled-backup.ts",
     "test:windows-scripts": "powershell.exe -NoProfile -File tests/windows-scripts.ps1",
+    "test:folder-dialog": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/folder-dialog-foreground.ps1",
     "test:activation-repair": "powershell.exe -NoProfile -File tests/activation-repair.ps1",
     "test:obsidian-browser": "npm run build && node tests/obsidian-browser.mjs"
   },

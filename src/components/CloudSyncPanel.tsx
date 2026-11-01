@@ -20,6 +20,17 @@ export function CloudSyncPanel({
   const [blocked, setBlocked] = useState(false);
   const [notes, setNotes] = useState<any>(null);
   const [notesPath, setNotesPath] = useState("");
+  const [noteChanges, setNoteChanges] = useState<any[]>([]);
+  const [choices, setChoices] = useState<Record<string, "notes" | "app">>({});
+  const loadNoteChanges = async () => {
+    const response = await apiFetch("/api/obsidian/changes");
+    if (response.ok) setNoteChanges((await response.json()).changes ?? []);
+  };
+  useEffect(() => {
+    const onFocus = () => void loadNoteChanges().catch(() => undefined);
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
   useEffect(() => {
     if (notes?.directory) setNotesPath(notes.directory);
   }, [notes?.directory]);
@@ -79,6 +90,7 @@ export function CloudSyncPanel({
     setRemote(saved);
     const noteResponse = await apiFetch("/api/obsidian");
     if (noteResponse.ok) setNotes(await noteResponse.json());
+    await loadNoteChanges();
     const j = await request("/api/backups");
     setBackups(j.backups);
   };
@@ -192,6 +204,61 @@ export function CloudSyncPanel({
             </a>
           )}
         </p>
+      )}
+      {noteChanges.length > 0 && (
+        <div className="space-y-3 border border-[#e8e5d8] rounded-xl p-4" role="region" aria-label="筆記裡的修改">
+          <p className="font-bold">你在筆記裡修改了 {noteChanges.length} 天的內容，還沒有帶回這個工具。</p>
+          <p>帶回前會先保留目前的版本，可以在「找回之前的記錄」還原。</p>
+          {noteChanges.map((change) => {
+            const conflict = change.fields.some((f: any) => f.conflict);
+            return (
+              <div key={change.date} className="space-y-2 border-t border-[#e8e5d8] pt-3">
+                <p className="font-medium">{change.date}</p>
+                {change.fields.map((f: any) => (
+                  <p key={f.key} className="break-words">
+                    {f.label}：<del>{f.conflict ? f.app || "（空白）" : f.base || "（空白）"}</del> → <strong>{f.notes || "（空白）"}</strong>
+                  </p>
+                ))}
+                {conflict && (
+                  <fieldset className="space-y-1">
+                    <legend>這天在工具裡也改過同一處，請選擇保留哪一邊：</legend>
+                    {(["notes", "app"] as const).map((v) => (
+                      <label key={v} className="flex items-center gap-2 min-h-11">
+                        <input
+                          type="radio"
+                          name={"choice-" + change.date}
+                          checked={choices[change.date] === v}
+                          onChange={() => setChoices({ ...choices, [change.date]: v })}
+                        />
+                        {v === "notes" ? "用筆記裡的內容" : "保留工具裡的內容"}
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
+              </div>
+            );
+          })}
+          <button
+            disabled={busy || !remote || noteChanges.some((c) => c.fields.some((f: any) => f.conflict) && !choices[c.date])}
+            onClick={() =>
+              void run(async () => {
+                if (!remote) return;
+                const result = await request("/api/obsidian/import", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ expectedRevision: remote.revision, choices }),
+                });
+                if (!onReplace(result.data)) throw new Error("本機保存失敗，請重新檢查最新記錄。");
+                acceptRemote(result);
+                setChoices({});
+                await loadNoteChanges();
+                setMessage(`已帶回 ${result.imported} 天的修改` + (result.kept ? `，保留工具內容 ${result.kept} 天（筆記版本已另存）。` : "。"));
+              })
+            }
+          >
+            帶回筆記裡的修改
+          </button>
+        </div>
       )}
       {notes?.directory && (
         <div className="space-y-2">

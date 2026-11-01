@@ -11,6 +11,7 @@ npm run build
 npm run test:windows-scripts
 powershell.exe -NoProfile -File tests/local-folders.ps1
 npm run test:activation-repair
+npm run test:folder-dialog   # real folder dialog; needs an unlocked desktop
 ```
 
 單元測試涵蓋資料驗證、舊資料移轉、保存失敗、備份還原、認證、衝突、AI 降級、策略自動評估、筆記輸出、私人目錄禁止 HTTP 存取，以及啟動不再建立舊筆記目錄。示範資料只放在 tests/fixtures，不進入正式前端。

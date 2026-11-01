@@ -1,5 +1,49 @@
 import type { DailyEntry, PersonalOS } from '../types';
 
+export type EditableKey =
+  | 'goodWhere' | 'goodKeep'
+  | 'badFact' | 'badEmotion' | 'badReason' | 'badImprove'
+  | 'normalMoment' | 'normalAmplify';
+
+const AI_PLACEHOLDER = '[ ] 待 AI 教練建議...';
+const AI_FIELDS = new Set<EditableKey>(['goodKeep', 'badImprove', 'normalAmplify']);
+
+// Single source of truth for the editable part of a daily note: even indexes are fixed text, odd indexes are entry fields.
+const DAILY_LAYOUT: Record<DailyEntry['state'], { segments: string[] }> = {
+  good: { segments: ['#### 🟢 狀態：好\n- **好在哪裡？**\n  - ', 'goodWhere', '\n- **如何保持 / 成功配方？**\n  - ', 'goodKeep'] },
+  bad: { segments: ['#### 🔴 狀態：不好\n- **不好在哪裡？**\n  - 客觀事實：', 'badFact', '\n  - 主觀情緒：', 'badEmotion', '\n- **什麼原因？**\n  - ', 'badReason', '\n- **明天有什麼辦法改善？**\n  - ', 'badImprove'] },
+  normal: { segments: ['#### 🟡 狀態：普通\n- **今天有哪個微小瞬間讓我感覺平靜或順利？**\n  - ', 'normalMoment', '\n- **如何放大這個瞬間？**\n  - ', 'normalAmplify'] },
+};
+
+export const FIELD_LABELS: Record<EditableKey, string> = {
+  goodWhere: '好在哪裡', goodKeep: '如何保持', badFact: '客觀事實', badEmotion: '主觀情緒',
+  badReason: '什麼原因', badImprove: '明天的改善辦法', normalMoment: '平靜或順利的瞬間', normalAmplify: '如何放大',
+};
+
+export function editableKeys(state: DailyEntry['state']): EditableKey[] {
+  return (DAILY_LAYOUT[state] ?? DAILY_LAYOUT.normal).segments.filter((_, n) => n % 2 === 1) as EditableKey[];
+}
+
+/** Reads the editable fields back from a note written by generateDailyNoteMarkdown; returns null if the structure was changed. */
+export function parseDailyNoteFields(markdown: string, state: DailyEntry['state']): Partial<Record<EditableKey, string>> | null {
+  const text = markdown.replace(/\r\n/g, '\n');
+  const segments = (DAILY_LAYOUT[state] ?? DAILY_LAYOUT.normal).segments;
+  let cursor = text.indexOf('### 狀態檢核：我今天過得好嗎？\n');
+  if (cursor < 0) return null;
+  const result: Partial<Record<EditableKey, string>> = {};
+  for (let n = 0; n < segments.length; n += 2) {
+    const start = text.indexOf(segments[n], cursor);
+    if (start < 0) return null;
+    const valueStart = start + segments[n].length;
+    const key = segments[n + 1] as EditableKey;
+    const next = n + 2 < segments.length ? text.indexOf(segments[n + 2], valueStart) : Math.min(...['\n\n> [!tip]', '\n\n---\n### 🏷️'].map((m) => { const k = text.indexOf(m, valueStart); return k < 0 ? Infinity : k; }));
+    if (next < 0 || next === Infinity) return null;
+    const value = text.slice(valueStart, next).trim();
+    result[key] = value === AI_PLACEHOLDER ? '' : value;
+    cursor = next;
+  }
+  return result;
+}
 export function generateDailyNoteMarkdown(entry: DailyEntry, personalOS: PersonalOS): string {
   // Filter active strategies and habits to transclude
   const activeStrategies = personalOS.ifThenStrategies.filter(s => s.active);
@@ -13,30 +57,12 @@ export function generateDailyNoteMarkdown(entry: DailyEntry, personalOS: Persona
     ? activeHabits.map(h => `- [ ] ${h.text}`).join('\n')
     : '- [ ] 尚未設定短期外掛提問';
 
-  let statusContent = '';
-
-  if (entry.state === 'good') {
-    statusContent = `#### 🟢 狀態：好
-- **好在哪裡？**
-  - ${entry.goodWhere || ''}
-- **如何保持 / 成功配方？**
-  - ${entry.goodKeep || '[ ] 待 AI 教練建議...'}`;
-  } else if (entry.state === 'bad') {
-    statusContent = `#### 🔴 狀態：不好
-- **不好在哪裡？**
-  - 客觀事實：${entry.badFact || ''}
-  - 主觀情緒：${entry.badEmotion || ''}
-- **什麼原因？**
-  - ${entry.badReason || ''}
-- **明天有什麼辦法改善？**
-  - ${entry.badImprove || '[ ] 待 AI 教練建議...'}`;
-  } else {
-    statusContent = `#### 🟡 狀態：普通
-- **今天有哪個微小瞬間讓我感覺平靜或順利？**
-  - ${entry.normalMoment || ''}
-- **如何放大這個瞬間？**
-  - ${entry.normalAmplify || '[ ] 待 AI 教練建議...'}`;
-  }
+  const layout = DAILY_LAYOUT[entry.state] ?? DAILY_LAYOUT.normal;
+  const statusContent = layout.segments.map((seg, n) => {
+    if (n % 2 === 0) return seg;
+    const value = entry[seg as EditableKey] || '';
+    return value || (AI_FIELDS.has(seg as EditableKey) ? AI_PLACEHOLDER : '');
+  }).join('');
 
   const aiAdviceBlock = entry.aiAdvice ? `
 > [!tip] 🤖 AI 認知副處理器建議 (解法提煉)

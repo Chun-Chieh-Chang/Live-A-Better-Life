@@ -160,6 +160,41 @@ export function mountPersonal(app: Express, config: PersonalConfig) {
     catch{return res.status(400).json({error:'無法變更資料夾。請確認位置可寫入；若 Obsidian 正在執行，請先關閉後重試。'});}
     finally{changingFolder=false;}
   });
+  app.get('/api/obsidian/changes',(_req,res)=>{
+    if(!config.obsidian)return res.json({changes:[],revision:store.read().revision});
+    try{const saved=store.read();return res.json({changes:config.obsidian.changes(saved.data),revision:saved.revision});}
+    catch{return res.status(503).json({error:'暫時無法讀取筆記資料夾，請稍後重試。'});}
+  });
+  app.post('/api/obsidian/import',(req,res)=>{
+    if(!config.obsidian)return res.status(400).json({error:'此服務目前不支援筆記修改匯入。'});
+    const expected=req.body?.expectedRevision,choices=req.body?.choices??{};
+    if(!Number.isSafeInteger(expected)||expected<0||typeof choices!=='object'||choices===null||Array.isArray(choices))return res.status(400).json({error:'要求內容不正確。'});
+    try{
+      const saved=store.read();
+      if(saved.revision!==expected)return res.status(409).json({error:'記錄已更新，請重新查看筆記修改後再匯入。'});
+      const changes=config.obsidian.changes(saved.data);
+      const data=structuredClone(saved.data);
+      const keep:string[]=[];
+      for(const change of changes){
+        const choice=choices[change.date];
+        const conflicted=change.fields.some(f=>f.conflict);
+        if(choice!==undefined&&choice!=='notes'&&choice!=='app')return res.status(400).json({error:'選項不正確。'});
+        if(conflicted&&choice===undefined)return res.status(409).json({error:'有修改與 App 內的內容衝突，請先選擇要保留哪一邊。'});
+        if(choice==='app'){keep.push(change.date);continue;}
+        const entry=data.entries.find(e=>e.id===change.id);
+        if(!entry)continue;
+        for(const f of change.fields){if(f.notes)(entry as any)[f.key]=f.notes;else delete (entry as any)[f.key];}
+        entry.updatedAt=new Date().toISOString();
+      }
+      if(!isLifeData(data))return res.status(400).json({error:'筆記內容無法使用，未更動任何記錄。'});
+      const result=changes.length&&keep.length<changes.length?store.write(data,expected):saved;
+      for(const date of keep)config.obsidian.discard(date);
+      return res.json({...result,imported:changes.length-keep.length,kept:keep.length,obsidian:syncNotes()});
+    }catch(error){
+      if(error instanceof ConflictError)return res.status(409).json({error:'記錄已更新，請重新查看筆記修改後再匯入。'});
+      return res.status(503).json({error:'匯入未完成，原有記錄沒有改變。'});
+    }
+  });
   app.get('/api/obsidian',(_req,res)=>res.json(notesStatus));
   app.post('/api/obsidian/retry',(_req,res)=>{const status=syncNotes();return res.status(status.status==='pending'?503:200).json(status);});
   app.get("/api/data", (_req, res) => res.json(store.read()));
