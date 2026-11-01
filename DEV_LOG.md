@@ -47,10 +47,25 @@
   - 避免 React 重繪與全域事件污染，同時在頂部工具列提供「重新整理」與「在新分頁獨立全螢幕開啟」按鈕。
   - 在「使用說明」（`ArchifyDiagramTab.tsx`）頂部亦提供一鍵跳轉「查看系統全景知識圖譜」，雙向暢通。
 
-### 2. 確效與測試結果 (Verification)
+---
+
+## 2026-11-01 - 幾何運算優化：分項流程 (Active整體) 避障與允許空間精確居中
+
+### 1. 缺陷根本原因 (RCA)
+- **包圍盒計算盲點**：點選分類（如「系統總覽」）時，原演算法僅計算了 root 節點本身的 Bounding Box，遺漏了其相連的高亮下游節點（阿德勒心理學、安全工作區）與連接線，導致延伸至右側的元素被推至視窗邊界。
+- **允許空間盲點**：相機置中公式未預先扣除右側 400px 的抽屜面板寬度，抽屜滑出後直接遮蔽了畫面右半邊的 active 節點。
+
+### 2. 矯正與預防措施 (CAPA)
+- **全要素 Active 拓撲包圍盒 (`getActiveBounds`)**：
+  - 自動偵測所有處於 active 狀態的節點（包含目標分類所有節點 + 與其直接相連的高亮下游節點），動態計算最小外接矩形。
+- **允許空間幾何居中演算法 (`fitCameraToActive`)**：
+  - 明確定義右側 400px 抽屜為不可用遮蔽區，安全邊距為各 40px。
+  - 計算出「允許安全視野寬度」`availW = clientWidth - 400 - 80`，並將鏡頭中心錨定在 `safeCenterX = 40 + availW / 2`。
+  - 動態計算 `targetScale`，保證所有 active 模組和箭頭線條 100% 完整容納於允許空間中，杜絕遮擋。
+
+### 3. 確效與測試結果 (Verification)
 - `npm run lint` (`tsc --noEmit`)：零錯誤。
 - `npm test`：57/57 單元測試全數通過。
-- `npm run test:windows-scripts`：PowerShell 確效通過。
-- `npm run build`：Vite 打包成功，自動將 `public/knowledge-graph.html` 發佈至 `dist/knowledge-graph.html`。
+- `npm run build`：Vite 打包成功。
 
 ---

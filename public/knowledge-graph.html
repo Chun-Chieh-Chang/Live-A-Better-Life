@@ -1583,6 +1583,7 @@
         }
 
         detailPanel.classList.add('open');
+        fitCameraToActive(null, id);
       }
 
       // 8. 真正的「領域聚焦與隔離模式 (Category Focus & Isolation Mode)」
@@ -1640,7 +1641,7 @@
         });
 
         // 5. Smooth Camera Fit to Category Bounding Box
-        fitCameraToCategory(categoryName);
+        fitCameraToActive(categoryName);
 
         // 6. Open Category Overview in Drawer
         openCategoryDrawer(categoryName);
@@ -1665,38 +1666,91 @@
         fitAll();
       }
 
-      function fitCameraToCategory(categoryName) {
-        let b;
-        if (categoryName === "系統總覽") {
-          const rootNode = nodeMap.get('root');
-          b = {
-            minX: rootNode.bounds.x,
-            minY: rootNode.bounds.y,
-            maxX: rootNode.bounds.x + rootNode.bounds.w,
-            maxY: rootNode.bounds.y + rootNode.bounds.h
-          };
-        } else {
-          const g = groupMap.get(categoryName);
-          if (!g) return;
-          b = g;
+      // 計算「active 整體流程」的最小外接矩形 (包含該領域所有模組與相鄰連動的高亮節點)
+      function getActiveBounds(categoryName, selectedId = null) {
+        const activeNodesMap = new Map();
+
+        if (selectedId) {
+          const n = nodeMap.get(selectedId);
+          if (n) {
+            activeNodesMap.set(n.id, n);
+            edgeList.forEach(e => {
+              if (e.from === selectedId) {
+                const target = nodeMap.get(e.to);
+                if (target) activeNodesMap.set(target.id, target);
+              } else if (e.to === selectedId) {
+                const source = nodeMap.get(e.from);
+                if (source) activeNodesMap.set(source.id, source);
+              }
+            });
+          }
+        } else if (categoryName) {
+          const catNodeIds = new Set();
+          nodeMap.forEach(n => {
+            if (n.category === categoryName) {
+              catNodeIds.add(n.id);
+              activeNodesMap.set(n.id, n);
+            }
+          });
+
+          // 將該領域直接連線的外部下游節點一併納入整體視野包圍，避免出界被抽屜遮擋
+          edgeList.forEach(e => {
+            if (catNodeIds.has(e.from)) {
+              const target = nodeMap.get(e.to);
+              if (target) activeNodesMap.set(target.id, target);
+            }
+          });
         }
 
-        const boxW = (b.maxX - b.minX) + 120;
-        const boxH = (b.maxY - b.minY) + 120;
+        if (activeNodesMap.size === 0) return null;
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        activeNodesMap.forEach(n => {
+          minX = Math.min(minX, n.bounds.x);
+          minY = Math.min(minY, n.bounds.y);
+          maxX = Math.max(maxX, n.bounds.x + n.bounds.w);
+          maxY = Math.max(maxY, n.bounds.y + n.bounds.h);
+        });
+
+        return { minX, minY, maxX, maxY };
+      }
+
+      // 將 active 的整體精確平移置中於「允許空間 (Safe Viewport Area)」
+      function fitCameraToActive(categoryName, selectedId = null) {
+        const b = getActiveBounds(categoryName, selectedId);
+        if (!b) return;
+
+        const padding = 70; // 呼吸留白
+        const boxW = (b.maxX - b.minX) + padding * 2;
+        const boxH = (b.maxY - b.minY) + padding * 2;
         const centerBoxX = (b.minX + b.maxX) / 2;
         const centerBoxY = (b.minY + b.maxY) / 2;
 
-        const cw = container.clientWidth - (detailPanel.classList.contains('open') ? 380 : 0);
-        const ch = container.clientHeight;
+        // 右側抽屜寬度固定為 400px，左側預留 40px，避免遮擋
+        const drawerW = 400;
+        const leftMargin = 40;
+        const rightMargin = 40;
+        const topMargin = 40;
+        const bottomMargin = 40;
 
-        const scaleX = cw / boxW;
-        const scaleY = ch / boxH;
-        let targetScale = Math.min(scaleX, scaleY, 1.25);
-        targetScale = Math.max(targetScale, 0.65);
+        // 計算排除抽屜後的可用安全空間
+        const availW = Math.max(container.clientWidth - drawerW - leftMargin - rightMargin, 240);
+        const availH = Math.max(container.clientHeight - topMargin - bottomMargin, 240);
 
+        // 允許空間的幾何中心點 (Safe Center)
+        const safeCenterX = leftMargin + (availW / 2);
+        const safeCenterY = topMargin + (availH / 2);
+
+        // 縮放比例計算
+        const scaleX = availW / boxW;
+        const scaleY = availH / boxH;
+        let targetScale = Math.min(scaleX, scaleY, 1.15);
+        targetScale = Math.max(targetScale, 0.45);
+
+        // 精準居中於允許空間
         transform.scale = targetScale;
-        transform.x = (cw / 2) - centerBoxX * targetScale;
-        transform.y = (ch / 2) - centerBoxY * targetScale;
+        transform.x = safeCenterX - (centerBoxX * targetScale);
+        transform.y = safeCenterY - (centerBoxY * targetScale);
 
         updateTransform(true);
       }
