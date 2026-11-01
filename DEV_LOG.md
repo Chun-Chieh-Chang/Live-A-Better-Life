@@ -36,3 +36,21 @@
 - `npm run build`：Vite 生產構建成功。
 
 ---
+
+## 2026-11-01 - 實作「將互動式知識圖譜 / 流程圖無縫嵌入系統 UI」
+
+### 1. 需求背景 (Requirement)
+- **使用者需求**：將先前生成的互動式全景知識圖譜（`Live-A-Better-Life.html`）設法嵌入系統 UI 中。
+- **架構與 UX 考量**：
+  - 遵循專案規範：主要導航路徑（今天 / 我的小改變 / 生活回顧 / 備份）維持極簡；次要功能收納於「更多」選單中。
+  - 採用無縫嵌入架構：將單檔案知識圖譜置於 `public/knowledge-graph.html`，以專用組件 `KnowledgeGraphTab.tsx` 透過自適應高度之 iframe 嵌入。
+  - 避免 React 重繪與全域事件污染，同時在頂部工具列提供「重新整理」與「在新分頁獨立全螢幕開啟」按鈕。
+  - 在「使用說明」（`ArchifyDiagramTab.tsx`）頂部亦提供一鍵跳轉「查看系統全景知識圖譜」，雙向暢通。
+
+### 2. 確效與測試結果 (Verification)
+- `npm run lint` (`tsc --noEmit`)：零錯誤。
+- `npm test`：57/57 單元測試全數通過。
+- `npm run test:windows-scripts`：PowerShell 確效通過。
+- `npm run build`：Vite 打包成功，自動將 `public/knowledge-graph.html` 發佈至 `dist/knowledge-graph.html`。
+
+---

@@ -93,7 +93,8 @@ export type ActiveTab =
   | "insights"
   | "zen3d"
   | "architecture"
-  | "obsidian";
+  | "obsidian"
+  | "knowledge-graph";
 
 export interface SystemCheckReport {
   timestamp: string;

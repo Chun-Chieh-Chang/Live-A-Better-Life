@@ -70,8 +70,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         {more && (
           <div
             id="more-navigation"
-            className={`grid grid-cols-1 ${
-              isDesktop && onOpenShutdown ? "sm:grid-cols-4" : "sm:grid-cols-3"
+            className={`grid grid-cols-2 ${
+              isDesktop && onOpenShutdown ? "sm:grid-cols-5" : "sm:grid-cols-4"
             } gap-2 border-t border-[#e8e5d8] py-3 text-sm`}
           >
             <button
@@ -85,6 +85,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => choose("architecture")}
             >
               使用說明
+            </button>
+            <button
+              className="min-h-11 rounded-xl hover:bg-[#eff4ec]"
+              onClick={() => choose("knowledge-graph")}
+            >
+              系統全景圖
             </button>
             <button
               className="min-h-11 rounded-xl hover:bg-[#eff4ec]"

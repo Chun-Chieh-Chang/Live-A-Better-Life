@@ -1,12 +1,30 @@
 import React from "react";
-export function ArchifyDiagramTab() {
+import { Network } from "lucide-react";
+
+interface ArchifyDiagramTabProps {
+  onNavigateToGraph?: () => void;
+}
+
+export function ArchifyDiagramTab({ onNavigateToGraph }: ArchifyDiagramTabProps) {
   return (
-    <section className="space-y-6 pb-10">
-      <header>
-        <h1 className="text-2xl font-bold">從今天開始</h1>
-        <p className="mt-2 text-[#616c62]">
-          不用寫得完整，留下一點感受就很好。
-        </p>
+    <section className="space-y-6 pb-10 animate-in fade-in duration-300">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">從今天開始</h1>
+          <p className="mt-2 text-[#616c62]">
+            不用寫得完整，留下一點感受就很好。
+          </p>
+        </div>
+        {onNavigateToGraph && (
+          <button
+            type="button"
+            onClick={onNavigateToGraph}
+            className="min-h-11 px-4 py-2.5 bg-white hover:bg-gray-50 border border-[#e8e5d8] rounded-xl text-sm font-medium text-[#444d45] flex items-center gap-2 self-start sm:self-auto transition-colors cursor-pointer shadow-xs"
+          >
+            <Network className="w-4 h-4 text-[#4d6b53]" />
+            <span>查看系統全景知識圖譜</span>
+          </button>
+        )}
       </header>
       <ol className="space-y-4">
         {[

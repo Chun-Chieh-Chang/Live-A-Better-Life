@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live-A-Better-Life 互動式全景知識圖譜</title>
+  <style>
+    /* CSS Custom Properties for Theming */
+    :root[data-theme="dark"] {
+      --bg-base: #0a0a0d;
+      --bg-surface: #141419;
+      --bg-surface-hover: #1f1f26;
+      --bg-panel: rgba(18, 18, 24, 0.96);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #27272a;
+      --border-highlight: #3b82f6;
+      --accent: #3b82f6;
+      --line-color: rgba(255, 255, 255, 0.16);
+      --line-active: #60a5fa;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.88);
+      --grid-pattern: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    }
+
+    :root[data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-hover: #f1f5f9;
+      --bg-panel: rgba(255, 255, 255, 0.96);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --border-highlight: #2563eb;
+      --accent: #2563eb;
+      --line-color: rgba(15, 23, 42, 0.16);
+      --line-active: #2563eb;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      --grid-pattern: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Toolbar */
+    header {
+      height: 56px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Active filter pill in header */
+    #filter-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 9999px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    #filter-indicator.active {
+      display: inline-flex;
+    }
+
+    .filter-clear-btn {
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .filter-clear-btn:hover {
+      opacity: 1;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 13px;
+      padding: 6px 12px 6px 32px;
+      border-radius: 8px;
+      outline: none;
+      width: 220px;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      width: 280px;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .btn {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--border);
+      border-color: var(--text-muted);
+    }
+
+    /* Main Canvas Area */
+    #canvas-container {
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 56px);
+      position: relative;
+      background-image: var(--grid-pattern);
+      background-size: 24px 24px;
+      cursor: grab;
+      overflow: hidden;
+    }
+
+    #canvas-container.grabbing {
+      cursor: grabbing;
+    }
+
+    svg#canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      transform-origin: center center;
+    }
+
+    /* SVG Layer Stylings */
+    .group-rect {
+      fill: var(--bg-surface);
+      fill-opacity: 0.4;
+      stroke: var(--border);
+      stroke-width: 1.5;
+      stroke-dasharray: 6 6;
+      rx: 18;
+      transition: all 0.25s ease;
+    }
+
+    .group-rect.focused {
+      fill-opacity: 0.65 !important;
+      stroke-width: 2.5 !important;
+      stroke-dasharray: none !important;
+      filter: drop-shadow(0 0 16px rgba(59, 130, 246, 0.25));
+    }
+
+    .group-rect.faded {
+      opacity: 0.15;
+    }
+
+    .group-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: opacity 0.25s ease;
+    }
+
+    .group-label.faded {
+      opacity: 0.2;
+    }
+
+    .edge-path {
+      fill: none;
+      stroke: var(--line-color);
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease;
+    }
+
+    .edge-path.highlighted {
+      stroke: var(--line-active) !important;
+      stroke-width: 2.8 !important;
+      opacity: 1 !important;
+    }
+
+    .edge-path.faded {
+      opacity: 0.06 !important;
+    }
+
+    .node-group {
+      cursor: pointer;
+      transition: opacity 0.25s ease, filter 0.25s ease;
+    }
+
+    .node-rect {
+      fill: var(--bg-surface);
+      stroke: var(--border);
+      stroke-width: 1.5;
+      transition: all 0.2s ease;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.15));
+    }
+
+    .node-group:hover .node-rect {
+      stroke-width: 2.2;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));
+    }
+
+    .node-group.selected .node-rect {
+      stroke: var(--border-highlight) !important;
+      stroke-width: 2.6 !important;
+      filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.5));
+    }
+
+    .node-group.faded {
+      opacity: 0.12 !important;
+      filter: grayscale(0.8);
+      pointer-events: none;
+    }
+
+    .node-title {
+      font-size: 13px;
+      font-weight: 600;
+      fill: var(--text-primary);
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .node-subtitle {
+      font-size: 11px;
+      font-weight: 400;
+      fill: var(--text-muted);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    /* Right Sliding Details Drawer */
+    #detail-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100%;
+      background: var(--bg-panel);
+      backdrop-filter: blur(18px);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    #detail-panel.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .drawer-title-group h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .drawer-category-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      color: #fff;
+    }
+
+    .drawer-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+
+    .drawer-close:hover {
+      color: var(--text-primary);
+      background: var(--border);
+    }
+
+    .drawer-section {
+      margin-bottom: 20px;
+    }
+
+    .drawer-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .drawer-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .field-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .field-key {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .field-val {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    .connections-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .conn-tag {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .conn-tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--bg-surface-hover);
+    }
+
+    /* Submodule Card in Category Mode */
+    .submodule-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+    }
+
+    .submodule-card:hover {
+      border-color: var(--accent);
+      transform: translateX(3px);
+      background: var(--bg-surface-hover);
+    }
+
+    .submodule-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .submodule-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Bottom Left Legend */
+    #legend-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      z-index: 10;
+      max-width: 300px;
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .legend-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .legend-reset-btn {
+      font-size: 11px;
+      color: var(--accent);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .legend-reset-btn:hover {
+      text-decoration: underline;
+    }
+
+    .legend-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .legend-item:hover {
+      background: var(--border);
+    }
+
+    .legend-item.active {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: var(--accent);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .legend-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-base);
+      padding: 1px 6px;
+      border-radius: 9999px;
+    }
+
+    /* Floating Zoom Controls */
+    #zoom-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      transition: all 0.2s ease;
+    }
+
+    .zoom-btn:hover {
+      background: var(--border);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-title">
+        <span>🌱 Live-A-Better-Life</span>
+        <span class="brand-badge">領域架構全景圖譜</span>
+      </div>
+      <div id="filter-indicator">
+        <span id="filter-text">聚焦分類：前端使用者體驗</span>
+        <span class="filter-clear-btn" id="filter-clear-btn" title="取消分類過濾">✕</span>
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" class="search-input" placeholder="搜尋模組、行為模型、路由…" />
+      </div>
+
+      <button id="btn-theme" class="btn" title="切換深淺模式">
+        <span id="theme-icon">☀️</span>
+        <span id="theme-text">主題</span>
+      </button>
+
+      <button id="btn-reset" class="btn" title="重設視圖中心">
+        <span>⟲</span>
+        <span>重設全景</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SVG Interactive Canvas Container -->
+  <div id="canvas-container">
+    <svg id="canvas">
+      <defs>
+        <!-- Dynamic Arrow Marker for Edges: 內縮 2px 預留箭頭空間 -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--line-color)" id="arrow-path"></path>
+        </marker>
+        <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--line-active)"></path>
+        </marker>
+      </defs>
+
+      <g id="viewport">
+        <g id="layer-groups"></g>
+        <g id="layer-edges"></g>
+        <g id="layer-nodes"></g>
+      </g>
+    </svg>
+
+    <!-- Bottom Left Category Legend -->
+    <div id="legend-panel">
+      <div class="legend-header">
+        <div class="legend-title">領域架構分類</div>
+        <button id="legend-show-all" class="legend-reset-btn" title="顯示全部分類">顯示全部</button>
+      </div>
+      <div id="legend-items" class="legend-items"></div>
+    </div>
+
+    <!-- Floating Zoom Tools -->
+    <div id="zoom-controls">
+      <button class="zoom-btn" id="btn-zoom-in" title="放大視角">+</button>
+      <button class="zoom-btn" id="btn-zoom-out" title="縮小視角">−</button>
+      <button class="zoom-btn" id="btn-zoom-fit" title="最適大小">⊡</button>
+    </div>
+
+    <!-- Right Drawer Details Panel -->
+    <div id="detail-panel">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <h2 id="drawer-title">節點名稱</h2>
+          <span id="drawer-category" class="drawer-category-badge">分類標籤</span>
+        </div>
+        <button id="drawer-close-btn" class="drawer-close" title="關閉面板">✕</button>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-title">核心定位與職責</div>
+        <div id="drawer-description" class="drawer-desc"></div>
+      </div>
+
+      <div class="drawer-section" id="drawer-section-fields">
+        <div class="drawer-section-title">架構規格欄位</div>
+        <div id="drawer-fields" class="field-grid"></div>
+      </div>
+
+      <div class="drawer-section" id="drawer-section-connections">
+        <div class="drawer-section-title">相依與關聯模組 (Connections)</div>
+        <div id="drawer-connections" class="connections-list"></div>
+      </div>
+
+      <!-- Category Overview Submodule List (In Category Mode) -->
+      <div class="drawer-section" id="drawer-section-submodules" style="display:none;">
+        <div class="drawer-section-title" id="drawer-submodules-title">領域收錄核心模組</div>
+        <div id="drawer-submodules-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Metadata for Category Isolation Overview -->
+  <script id="data-categories" type="application/json">
+  {
+    "系統總覽": {
+      "description": "Live-A-Better-Life 的中樞起點，銜接心智模型原則與前端安全工作區，為整個個人復盤系統提供權威入口。",
+      "layer": "系統總覽 (System Core)",
+      "principle": "以終為始，將認知科學轉化為日常極低摩擦力的可持續復盤體驗。"
+    },
+    "認知心理引擎": {
+      "description": "整個系統的理論基石與心理護城河。整合阿德勒課題分離、福格微習慣（If-Then）與自我損耗緩解，驅動 AI 認知副處理器產生具備同理心且阻力接近零的行動解法。",
+      "layer": "理論架構層 (Psychological Foundations)",
+      "principle": "拒絕宏大目標損耗意志力，將挫折視為產品測試數據而非個人失敗。"
+    },
+    "前端使用者體驗": {
+      "description": "針對下班或睡前極度認知疲憊的使用者設計。包含今天復盤、我的小改變（個人手冊）、趨勢回顧、筆記備份管理、3D 禪境放鬆空間與安全停機 Modal。",
+      "layer": "展示層 (Presentation & Interaction)",
+      "principle": "最短操作路徑（選情緒、寫幾句、存檔），介面絕不暴露底層工程術語。"
+    },
+    "後端服務與中繼": {
+      "description": "本機私密伺服器與中繼排程層。綁定本機 127.0.0.1 隔離公網，集成 Express、Vite 中間件、Agnes/Gemini 多模型智慧路由、Obsidian 雙向鏡像引擎與優雅關閉管道。",
+      "layer": "後端應用層 (Backend Services & Middleware)",
+      "principle": "嚴格同源防禦、CSRF 標頭保護、配額限流與平穩進程管理。"
+    },
+    "本機儲存與安全": {
+      "description": "使用者的權威真相來源 (SSOT)。包含單一擁有者 SQLite (WAL 模式)、開放格式 Obsidian Markdown 筆記庫、Windows DPAPI 硬體級金鑰隔離與滾動備份復原引擎。",
+      "layer": "資料持久化 (Persistence & OS Security)",
+      "principle": "本地優先 (Local-First)，資料永遠屬於使用者，離線可讀、永不受限於雲端。"
+    },
+    "Windows 原生運維": {
+      "description": "Windows 桌面無感常駐與自動化部署管線。透過工作排程器實現開機自啟與每日定時備份，註冊 lifeos:// 自定義協議免密喚醒，並由 GitHub Actions 保障 100% 軟體確效。",
+      "layer": "運維自動化 (DevOps & Windows Automation)",
+      "principle": "無黑視窗背景安靜常駐，具備 3 次失敗自我修復與平穩退出機制。"
+    }
+  }
+  </script>
+
+  <!-- Raw Knowledge Data Embedded Inline -->
+  <script id="data-nodes" type="application/json">
+  [
+    {
+      "id": "root",
+      "name": "Live-A-Better-Life 核心總攬",
+      "type": "root",
+      "category": "系統總覽",
+      "description": "以第一性原理設計的生活復盤系統，整合微習慣行為設計、阿德勒心理學與本地優先隱私架構。",
+      "layer": "全系統 (Full System)",
+      "tech_stack": "React 19 / TypeScript 7 / Vite 8 / Express 4 / SQLite / Windows DPAPI",
+      "role": "中樞核心",
+      "doc_path": "README.md",
+      "col": 0,
+      "row": 3,
+      "connections": ["ent_workspace", "ent_adler"]
+    },
+    {
+      "id": "ent_adler",
+      "name": "阿德勒心理學（課題分離）",
+      "type": "entity",
+      "category": "認知心理引擎",
+      "description": "區分「別人的課題」與「自己的課題」，將挫折視為產品測試數據而非個人失敗，停止自我批判。",
+      "layer": "心智模型 (Mindset)",
+      "tech_stack": "阿德勒心理學 / 認知行為療法 (CBT)",
+      "role": "心智護城河",
+      "doc_path": "server.ts",
+      "col": 1,
+      "row": 0,
+      "connections": ["ent_daily", "ent_coprocessor"]
+    },
+    {
+      "id": "ent_fogg",
+      "name": "福格行為模型（If-Then）",
+      "type": "entity",
+      "category": "認知心理引擎",
+      "description": "打造接近零意志力阻力的微小行為設計（Tiny Habits），以清晰的觸發情境驅動自動化反應。",
+      "layer": "行為工程 (Behavior)",
+      "tech_stack": "福格行為模型 / If-Then 執行意向",
+      "role": "微習慣引擎",
+      "doc_path": "src/utils/validation.ts",
+      "col": 1,
+      "row": 1,
+      "connections": ["ent_personal_os", "ent_coprocessor"]
+    },
+    {
+      "id": "ent_depletion",
+      "name": "自我損耗緩解機制",
+      "type": "entity",
+      "category": "認知心理引擎",
+      "description": "針對睡前或下班極度疲憊狀態，簡化填寫流程至 3 步驟（心情選擇、幾句話、安全儲存）。",
+      "layer": "UX 心理學 (Psychology)",
+      "tech_stack": "低認知負荷設計 / 情感化設計",
+      "role": "抗疲勞屏障",
+      "doc_path": "AGENTS.md",
+      "col": 1,
+      "row": 2,
+      "connections": ["ent_daily", "ent_zen3d"]
+    },
+    {
+      "id": "ent_coprocessor",
+      "name": "AI 認知副處理器",
+      "type": "entity",
+      "category": "認知心理引擎",
+      "description": "作為大腦外掛，智慧剖析每日數據並提供溫暖且可落地的 If-Then 行動方案與心理拆解。",
+      "layer": "智慧代理 (AI Co-processor)",
+      "tech_stack": "Gemini 2.5 Flash / Agnes Bearer API / 本地規則 Fallback",
+      "role": "生活教練",
+      "doc_path": "server/ai-provider.ts",
+      "col": 1,
+      "row": 3,
+      "connections": ["ent_ai_service"]
+    },
+    {
+      "id": "ent_workspace",
+      "name": "安全工作區（PersonalWorkspace）",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "前端整體容器，管理個人 Session、桌面 Token 喚醒兌換與無痕 sessionStorage 隔離快取。",
+      "layer": "前端中樞 (App Container)",
+      "tech_stack": "React 19 / SessionStorage / Auth Context",
+      "role": "工作區總管",
+      "doc_path": "src/components/PersonalWorkspace.tsx",
+      "col": 2,
+      "row": 0,
+      "connections": ["ent_daily", "ent_personal_os", "ent_insights", "ent_obsidian_tab", "ent_zen3d", "ent_shutdown_modal"]
+    },
+    {
+      "id": "ent_daily",
+      "name": "今天（復盤紀錄 Tab）",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "每日情感反省入口，提供好在哪、不好原因、微小平靜瞬間三路徑引導與 AI 教練分析。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "React 19 / Tailwind CSS 4 / Motion",
+      "role": "每日核心交互",
+      "doc_path": "src/components/DailyReflectionTab.tsx",
+      "col": 2,
+      "row": 1,
+      "connections": ["ent_coprocessor", "ent_personal_routes"]
+    },
+    {
+      "id": "ent_personal_os",
+      "name": "我的小改變（個人手冊）",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "匯聚本週 If-Then 策略、快樂與急救配方、避坑指南，打造專屬於個人的防禦操作系統。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "React 19 / TypeScript 7",
+      "role": "個人生活 OS",
+      "doc_path": "src/components/PersonalOSTab.tsx",
+      "col": 2,
+      "row": 2,
+      "connections": ["ent_personal_routes"]
+    },
+    {
+      "id": "ent_insights",
+      "name": "生活回顧（趨勢圖表）",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "視覺化呈現情緒趨勢、高頻因子統計與歷史熱力圖，輔助使用者從宏觀維度洞察生活脈絡。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "Recharts 3 / SVG Visualization",
+      "role": "資料洞察儀表板",
+      "doc_path": "src/components/InsightsTab.tsx",
+      "col": 2,
+      "row": 3,
+      "connections": ["ent_personal_routes"]
+    },
+    {
+      "id": "ent_obsidian_tab",
+      "name": "備份與筆記匯入 Tab",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "提供手動與自動雙向筆記衝突解決器、快照備份下載、本地復原及資料庫狀態檢視。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "React 19 / Markdown Exporter",
+      "role": "資料樞紐入口",
+      "doc_path": "src/components/ObsidianExportTab.tsx",
+      "col": 2,
+      "row": 4,
+      "connections": ["ent_obsidian_mirror"]
+    },
+    {
+      "id": "ent_zen3d",
+      "name": "放鬆一下 3D 禪境空間",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "基於 Three.js 打造的沉浸式星空與水面 3D 空間，結合環境音效協助使用者睡前平穩情緒。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "Three.js 0.187 / WebGL Shader",
+      "role": "正念舒壓儀式",
+      "doc_path": "src/components/ZenSanctuary3D.tsx",
+      "col": 2,
+      "row": 5,
+      "connections": []
+    },
+    {
+      "id": "ent_shutdown_modal",
+      "name": "一鍵關閉系統與服務 Modal",
+      "type": "entity",
+      "category": "前端使用者體驗",
+      "description": "日常繁體中文二次防誤觸確認，平穩關閉背景服務、排程守護並提示 Obsidian 自動存檔機制。",
+      "layer": "展示層 (Presentation)",
+      "tech_stack": "React 19 / Lucide Icons",
+      "role": "退出防護閘門",
+      "doc_path": "src/components/ShutdownModal.tsx",
+      "col": 2,
+      "row": 6,
+      "connections": ["ent_shutdown_svc"]
+    },
+    {
+      "id": "ent_express",
+      "name": "Express 核心應用伺服器",
+      "type": "entity",
+      "category": "後端服務與中繼",
+      "description": "綁定本機 Loopback 127.0.0.1，隔離公網存取，集成 Vite 中間件並負責請求路由分發。",
+      "layer": "後端應用層 (Backend Server)",
+      "tech_stack": "Express 4 / Node.js 24 / Vite 8",
+      "role": "API 核心守門員",
+      "doc_path": "server.ts",
+      "col": 3,
+      "row": 0,
+      "connections": ["ent_personal_routes", "ent_ai_service"]
+    },
+    {
+      "id": "ent_personal_routes",
+      "name": "個人專屬路由（Personal Routes）",
+      "type": "entity",
+      "category": "後端服務與中繼",
+      "description": "保護日記資料讀寫、SQLite 版本比對、Origin 與 CSRF 防護標頭檢驗、登入配額限制。",
+      "layer": "後端路由 (API Endpoint)",
+      "tech_stack": "Express Router / Custom Auth Guard",
+      "role": "安全認證代理",
+      "doc_path": "server/personal-routes.ts",
+      "col": 3,
+      "row": 1,
+      "connections": ["ent_sqlite", "ent_obsidian_mirror", "ent_backup_engine"]
+    },
+    {
+      "id": "ent_ai_service",
+      "name": "AI 智慧代理選配路由",
+      "type": "entity",
+      "category": "後端服務與中繼",
+      "description": "優先選用企業級 Agnes Bearer 認證，無設定時平滑切換至 Gemini 2.5 或離線 Fallback 認知規則。",
+      "layer": "智慧中繼 (AI Gateway)",
+      "tech_stack": "@google/genai / Agnes Bearer Client",
+      "role": "模型適配器",
+      "doc_path": "server/ai-provider.ts",
+      "col": 3,
+      "row": 2,
+      "connections": ["ent_dpapi"]
+    },
+    {
+      "id": "ent_obsidian_mirror",
+      "name": "ObsidianMirror 雙向鏡像引擎",
+      "type": "entity",
+      "category": "後端服務與中繼",
+      "description": "即時將 SQLite 資料對稱鏡像為 Markdown 筆記，檢測外部檔案修改並計算 AST 差異以供匯入。",
+      "layer": "資料同步 (Data Sync)",
+      "tech_stack": "Node.js fs / SHA-256 Digest / AST Parser",
+      "role": "筆記雙向鏡像",
+      "doc_path": "server/obsidian.ts",
+      "col": 3,
+      "row": 3,
+      "connections": ["ent_obsidian_vault"]
+    },
+    {
+      "id": "ent_shutdown_svc",
+      "name": "系統優雅停機引擎（Shutdown Pipeline）",
+      "type": "entity",
+      "category": "後端服務與中繼",
+      "description": "非同步停止排程任務、平穩關閉 Obsidian 視窗、flush WAL 資料庫、終止進程並切換前端全螢幕卡片。",
+      "layer": "系統控制 (System Control)",
+      "tech_stack": "Node.js child_process / PowerShell / SQLite Checkpoint",
+      "role": "資源安全釋放",
+      "doc_path": "deploy/windows/Stop-LifeOS.ps1",
+      "col": 3,
+      "row": 4,
+      "connections": ["ent_task_server", "ent_sqlite"]
+    },
+    {
+      "id": "ent_sqlite",
+      "name": "SQLite 核心本機資料庫 (WAL)",
+      "type": "entity",
+      "category": "本機儲存與安全",
+      "description": "單一擁有者架構，儲存全部日記、歷史修訂版本與密碼雜湊，啟用 WAL 模式保障極致併發完整性。",
+      "layer": "資料持久化 (Persistence)",
+      "tech_stack": "better-sqlite3 / SQLite WAL Mode",
+      "role": "權威真相來源 (SSOT)",
+      "doc_path": "server/personal-store.ts",
+      "col": 4,
+      "row": 0,
+      "connections": []
+    },
+    {
+      "id": "ent_obsidian_vault",
+      "name": "Obsidian 本地筆記庫 (Vault)",
+      "type": "entity",
+      "category": "本機儲存與安全",
+      "description": "以純文字 Markdown 格式存放於本機硬碟，支援雙向連結、標籤語意、離線永久掌握。",
+      "layer": "開放檔案 (Open Format)",
+      "tech_stack": "Markdown / Frontmatter / WikiLinks",
+      "role": "知識本體儲存",
+      "doc_path": "server/obsidian-settings.ts",
+      "col": 4,
+      "row": 1,
+      "connections": []
+    },
+    {
+      "id": "ent_dpapi",
+      "name": "Windows DPAPI 金鑰隔離層",
+      "type": "entity",
+      "category": "本機儲存與安全",
+      "description": "利用 Windows 使用者憑證加密保護 Gemini / Agnes API 金鑰，記憶體解密後立即抹除 byte 陣列。",
+      "layer": "硬體安全 (OS Security)",
+      "tech_stack": "System.Security.Cryptography.ProtectedData",
+      "role": "憑證保險庫",
+      "doc_path": "deploy/windows/Start-LifeOS.ps1",
+      "col": 4,
+      "row": 2,
+      "connections": []
+    },
+    {
+      "id": "ent_backup_engine",
+      "name": "滾動備份與復原引擎",
+      "type": "entity",
+      "category": "本機儲存與安全",
+      "description": "每次資料變更前建立歷史版本快照，支援還原點時光回溯、修訂號樂觀鎖與孤立備份清理。",
+      "layer": "容災防禦 (Disaster Recovery)",
+      "tech_stack": "PersonalStore / Rolling Snapshot",
+      "role": "資料保險防線",
+      "doc_path": "scripts/backup.ts",
+      "col": 4,
+      "row": 3,
+      "connections": []
+    },
+    {
+      "id": "ent_task_server",
+      "name": "Windows 排程器：LifeOS-Server",
+      "type": "entity",
+      "category": "Windows 原生運維",
+      "description": "登入時自動啟動本地守護程序，無黑視窗背景常駐，失敗時具備 3 次自動修復機制。",
+      "layer": "操作系統排程 (OS Daemon)",
+      "tech_stack": "Windows Task Scheduler / PowerShell",
+      "role": "守護進程管理器",
+      "doc_path": "deploy/windows/Install-Tasks.ps1",
+      "col": 5,
+      "row": 0,
+      "connections": ["ent_express"]
+    },
+    {
+      "id": "ent_task_backup",
+      "name": "Windows 排程器：LifeOS-Backup",
+      "type": "entity",
+      "category": "Windows 原生運維",
+      "description": "每日凌晨 03:15 自動喚醒執行完整資料庫快照與冷備份，定期釋放過期檔案。",
+      "layer": "操作系統排程 (OS Daemon)",
+      "tech_stack": "Windows Task Scheduler / PowerShell",
+      "role": "自動無感備份",
+      "doc_path": "deploy/windows/Install-Tasks.ps1",
+      "col": 5,
+      "row": 1,
+      "connections": ["ent_backup_engine"]
+    },
+    {
+      "id": "ent_protocol",
+      "name": "自定義協議喚醒 (lifeos://)",
+      "type": "entity",
+      "category": "Windows 原生運維",
+      "description": "註冊 Windows 原生 protocol handler，點擊網頁一鍵免密喚醒本機環境並自動登入日記。",
+      "layer": "原生協議 (OS Protocol)",
+      "tech_stack": "Windows Registry / URI Scheme",
+      "role": "流暢喚醒橋樑",
+      "doc_path": "deploy/windows/Register-Protocol.ps1",
+      "col": 5,
+      "row": 2,
+      "connections": ["ent_workspace"]
+    },
+    {
+      "id": "ent_ps_scripts",
+      "name": "PowerShell 自動化運維套裝",
+      "type": "entity",
+      "category": "Windows 原生運維",
+      "description": "包含 Activate、Setup、Stop、Verify、Runtime 等腳本，私有 Node/Bun 執行時自動隔離。",
+      "layer": "維維自動化 (DevOps Automation)",
+      "tech_stack": "PowerShell 5.1+ / Windows ACL",
+      "role": "環境準備管線",
+      "doc_path": "deploy/windows/Common.ps1",
+      "col": 5,
+      "row": 3,
+      "connections": ["ent_task_server", "ent_task_backup", "ent_protocol"]
+    },
+    {
+      "id": "ent_github_ci",
+      "name": "GitHub Actions 軟體確效 CI/CD",
+      "type": "entity",
+      "category": "Windows 原生運維",
+      "description": "每次推送前執行 57+ 項單元測試、PowerShell AST 檢查、瀏覽器端對端確效與 Pages 自動部署。",
+      "layer": "持續整合 (CI/CD Pipeline)",
+      "tech_stack": "GitHub Actions / Playwright / Node Test Runner",
+      "role": "品質防禦網",
+      "doc_path": ".github/workflows/deploy.yml",
+      "col": 5,
+      "row": 4,
+      "connections": ["ent_ps_scripts"]
+    }
+  ]
+  </script>
+
+  <!-- Application Logic & SVG Pipeline -->
+  <script>
+    (function() {
+      // 1. Data Loading & Category HSL Calculation
+      const nodesData = JSON.parse(document.getElementById('data-nodes').textContent);
+      const categoryMetadata = JSON.parse(document.getElementById('data-categories').textContent);
+      
+      const categories = Array.from(new Set(nodesData.map(n => n.category)));
+      const categoryColors = {};
+      
+      const categoryOverrides = {
+        "系統總覽": "#0284c7",
+        "認知心理引擎": "#8b5cf6",
+        "前端使用者體驗": "#10b981",
+        "後端服務與中繼": "#3b82f6",
+        "本機儲存與安全": "#f59e0b",
+        "Windows 原生運維": "#ef4444"
+      };
+
+      categories.forEach((cat, idx) => {
+        if (categoryOverrides[cat]) {
+          categoryColors[cat] = categoryOverrides[cat];
+        } else {
+          const hue = Math.floor((idx * 360) / Math.max(1, categories.length));
+          categoryColors[cat] = `hsl(${hue}, 65%, 48%)`;
+        }
+      });
+
+      // 2. Geometry & Layout Constants (204px 寬度避免文字截斷)
+      const padX = 70;
+      const padY = 70;
+      const colGap = 110;
+      const rowGap = 56;
+      const nodeWidth = 204;
+      const nodeHeight = 56;
+
+      const nodeMap = new Map();
+      const edgeList = [];
+
+      // Calculate coordinates & anchors
+      nodesData.forEach(n => {
+        const cx = padX + n.col * (nodeWidth + colGap) + nodeWidth / 2;
+        const cy = padY + n.row * (nodeHeight + rowGap) + nodeHeight / 2;
+        const w = n.type === 'root' ? 220 : nodeWidth;
+        const h = n.type === 'root' ? 62 : nodeHeight;
+
+        const bounds = {
+          x: cx - w / 2,
+          y: cy - h / 2,
+          w,
+          h,
+          cx,
+          cy,
+          anchors: {
+            top: { x: cx, y: cy - h / 2 },
+            bottom: { x: cx, y: cy + h / 2 },
+            left: { x: cx - w / 2, y: cy },
+            right: { x: cx + w / 2, y: cy }
+          }
+        };
+
+        nodeMap.set(n.id, { ...n, bounds, color: categoryColors[n.category] || '#3b82f6' });
+      });
+
+      // Generate Edges from connections
+      nodesData.forEach(n => {
+        if (Array.isArray(n.connections)) {
+          n.connections.forEach(targetId => {
+            if (nodeMap.has(targetId)) {
+              edgeList.push({
+                from: n.id,
+                to: targetId,
+                id: `edge_${n.id}_${targetId}`
+              });
+            }
+          });
+        }
+      });
+
+      // 3. Compute Group Bounds (by Category)
+      const groupMap = new Map();
+      nodeMap.forEach(n => {
+        if (n.type === 'root') return;
+        if (!groupMap.has(n.category)) {
+          groupMap.set(n.category, {
+            category: n.category,
+            minX: Infinity, minY: Infinity,
+            maxX: -Infinity, maxY: -Infinity,
+            color: n.color
+          });
+        }
+        const g = groupMap.get(n.category);
+        g.minX = Math.min(g.minX, n.bounds.x);
+        g.minY = Math.min(g.minY, n.bounds.y);
+        g.maxX = Math.max(g.maxX, n.bounds.x + n.bounds.w);
+        g.maxY = Math.max(g.maxY, n.bounds.y + n.bounds.h);
+      });
+
+      // 4. SVG Rendering Pipeline
+      const layerGroups = document.getElementById('layer-groups');
+      const layerEdges = document.getElementById('layer-edges');
+      const layerNodes = document.getElementById('layer-nodes');
+
+      // 4.1 Render Groups
+      const groupPadding = 24;
+      groupMap.forEach(g => {
+        const x = g.minX - groupPadding;
+        const y = g.minY - groupPadding - 26;
+        const w = (g.maxX - g.minX) + groupPadding * 2;
+        const h = (g.maxY - g.minY) + groupPadding * 2 + 26;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('class', 'group-rect');
+        rect.setAttribute('id', `group_${g.category}`);
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('style', `stroke: ${g.color}; stroke-opacity: 0.35;`);
+        layerGroups.appendChild(rect);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('class', 'group-label');
+        text.setAttribute('id', `group_label_${g.category}`);
+        text.setAttribute('x', x + 18);
+        text.setAttribute('y', y + 18);
+        text.setAttribute('style', `fill: ${g.color};`);
+        text.textContent = g.category;
+        layerGroups.appendChild(text);
+      });
+
+      // 4.2 正交走廊路由算法 (Orthogonal Corridor Routing)
+      edgeList.forEach(edge => {
+        const fromNode = nodeMap.get(edge.from);
+        const toNode = nodeMap.get(edge.to);
+        if (!fromNode || !toNode) return;
+
+        let d = '';
+        const r = 8; // 圓角折線半徑
+
+        // 情況 A：同欄位垂直連接
+        if (fromNode.col === toNode.col) {
+          if (fromNode.bounds.cy < toNode.bounds.cy) {
+            const start = fromNode.bounds.anchors.bottom;
+            const end = toNode.bounds.anchors.top;
+            d = `M ${start.x} ${start.y} L ${end.x} ${end.y - 2}`;
+          } else {
+            const start = fromNode.bounds.anchors.right;
+            const end = toNode.bounds.anchors.right;
+            const corridorX = fromNode.bounds.x + fromNode.bounds.w + 24;
+            d = `M ${start.x} ${start.y} H ${corridorX - r} Q ${corridorX} ${start.y} ${corridorX} ${start.y - r} V ${end.y + r} Q ${corridorX} ${end.y} ${corridorX - r} ${end.y} H ${end.x + 2}`;
+          }
+        }
+        // 情況 B：同高度水平連接
+        else if (fromNode.row === toNode.row && fromNode.col < toNode.col) {
+          const start = fromNode.bounds.anchors.right;
+          const end = toNode.bounds.anchors.left;
+          d = `M ${start.x} ${start.y} L ${end.x - 2} ${end.y}`;
+        }
+        // 情況 C：由左至右跨行連接（嚴格走走廊中線）
+        else if (fromNode.col < toNode.col) {
+          const start = fromNode.bounds.anchors.right;
+          const end = toNode.bounds.anchors.left;
+          const corridorX = fromNode.bounds.x + fromNode.bounds.w + (toNode.bounds.x - (fromNode.bounds.x + fromNode.bounds.w)) / 2;
+          
+          if (start.y < end.y) {
+            d = `M ${start.x} ${start.y} H ${corridorX - r} Q ${corridorX} ${start.y} ${corridorX} ${start.y + r} V ${end.y - r} Q ${corridorX} ${end.y} ${corridorX + r} ${end.y} H ${end.x - 2}`;
+          } else {
+            d = `M ${start.x} ${start.y} H ${corridorX - r} Q ${corridorX} ${start.y} ${corridorX} ${start.y - r} V ${end.y + r} Q ${corridorX} ${end.y} ${corridorX + r} ${end.y} H ${end.x - 2}`;
+          }
+        }
+        // 情況 D：由右至左反向連接
+        else {
+          const start = fromNode.bounds.anchors.left;
+          const end = toNode.bounds.anchors.right;
+          const corridorX = toNode.bounds.x + toNode.bounds.w + (fromNode.bounds.x - (toNode.bounds.x + toNode.bounds.w)) / 2;
+          
+          if (start.y < end.y) {
+            d = `M ${start.x} ${start.y} H ${corridorX + r} Q ${corridorX} ${start.y} ${corridorX} ${start.y + r} V ${end.y - r} Q ${corridorX} ${end.y} ${corridorX - r} ${end.y} H ${end.x + 2}`;
+          } else {
+            d = `M ${start.x} ${start.y} H ${corridorX + r} Q ${corridorX} ${start.y} ${corridorX} ${start.y - r} V ${end.y + r} Q ${corridorX} ${end.y} ${corridorX - r} ${end.y} H ${end.x + 2}`;
+          }
+        }
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', 'edge-path');
+        path.setAttribute('id', edge.id);
+        path.setAttribute('d', d);
+        path.setAttribute('marker-end', 'url(#arrow)');
+        path.dataset.from = edge.from;
+        path.dataset.to = edge.to;
+        layerEdges.appendChild(path);
+      });
+
+      // 4.3 Render Nodes
+      nodeMap.forEach(n => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-group');
+        g.setAttribute('id', `node_${n.id}`);
+        g.setAttribute('transform', `translate(${n.bounds.x}, ${n.bounds.y})`);
+        g.dataset.id = n.id;
+        g.dataset.category = n.category;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('class', 'node-rect');
+        rect.setAttribute('width', n.bounds.w);
+        rect.setAttribute('height', n.bounds.h);
+        rect.setAttribute('rx', n.type === 'root' ? 31 : 12);
+
+        // Decorative color strip on left
+        const strip = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        strip.setAttribute('x', 0);
+        strip.setAttribute('y', 0);
+        strip.setAttribute('width', 5);
+        strip.setAttribute('height', n.bounds.h);
+        strip.setAttribute('rx', 2);
+        strip.setAttribute('fill', n.color);
+
+        // Title Text
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        title.setAttribute('class', 'node-title');
+        title.setAttribute('x', n.bounds.w / 2 + 2);
+        title.setAttribute('y', n.bounds.h / 2 - (n.type === 'root' ? 0 : 7));
+        title.textContent = n.name;
+
+        // Tooltip
+        const tip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        tip.textContent = `${n.name}\n分類：${n.category}\n說明：${n.description}`;
+        g.appendChild(tip);
+
+        g.appendChild(rect);
+        g.appendChild(strip);
+        g.appendChild(title);
+
+        if (n.type !== 'root') {
+          const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          sub.setAttribute('class', 'node-subtitle');
+          sub.setAttribute('x', n.bounds.w / 2 + 2);
+          sub.setAttribute('y', n.bounds.h / 2 + 11);
+          sub.textContent = n.layer;
+          g.appendChild(sub);
+        }
+
+        // Click Handler
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectNode(n.id);
+        });
+
+        // Hover linkages
+        g.addEventListener('mouseenter', () => highlightConnections(n.id));
+        g.addEventListener('mouseleave', () => resetHighlights());
+
+        layerNodes.appendChild(g);
+      });
+
+      // 5. Interactive Pan & Zoom
+      const container = document.getElementById('canvas-container');
+      const viewport = document.getElementById('viewport');
+      let transform = { x: 30, y: 25, scale: 0.85 };
+      let isPanning = false;
+      let startPoint = { x: 0, y: 0 };
+
+      function updateTransform(smooth = false) {
+        if (smooth) {
+          viewport.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+          setTimeout(() => { viewport.style.transition = ''; }, 400);
+        }
+        viewport.setAttribute('transform', `translate(${transform.x}, ${transform.y}) scale(${transform.scale})`);
+      }
+      updateTransform();
+
+      container.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.node-group')) return;
+        isPanning = true;
+        startPoint = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+        container.classList.add('grabbing');
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        transform.x = e.clientX - startPoint.x;
+        transform.y = e.clientY - startPoint.y;
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isPanning = false;
+        container.classList.remove('grabbing');
+      });
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = 1.08;
+        const direction = e.deltaY < 0 ? 1 : -1;
+        const rect = container.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const newScale = direction > 0 
+          ? Math.min(transform.scale * zoomFactor, 2.8) 
+          : Math.max(transform.scale / zoomFactor, 0.35);
+
+        transform.x = mouseX - (mouseX - transform.x) * (newScale / transform.scale);
+        transform.y = mouseY - (mouseY - transform.y) * (newScale / transform.scale);
+        transform.scale = newScale;
+        updateTransform();
+      }, { passive: false });
+
+      // Zoom Buttons
+      document.getElementById('btn-zoom-in').addEventListener('click', () => {
+        transform.scale = Math.min(transform.scale * 1.2, 2.8);
+        updateTransform(true);
+      });
+
+      document.getElementById('btn-zoom-out').addEventListener('click', () => {
+        transform.scale = Math.max(transform.scale / 1.2, 0.35);
+        updateTransform(true);
+      });
+
+      document.getElementById('btn-zoom-fit').addEventListener('click', () => {
+        fitAll();
+      });
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        clearFocusMode();
+      });
+
+      function fitAll() {
+        transform = { x: 30, y: 25, scale: 0.82 };
+        updateTransform(true);
+      }
+
+      // 6. Highlight Connections on Hover
+      function highlightConnections(nodeId) {
+        if (selectedNodeId || activeCategoryFilter) return;
+        const connectedNodes = new Set([nodeId]);
+        
+        document.querySelectorAll('.edge-path').forEach(p => {
+          if (p.dataset.from === nodeId || p.dataset.to === nodeId) {
+            p.classList.add('highlighted');
+            p.setAttribute('marker-end', 'url(#arrow-active)');
+            connectedNodes.add(p.dataset.from);
+            connectedNodes.add(p.dataset.to);
+          } else {
+            p.classList.add('faded');
+          }
+        });
+
+        document.querySelectorAll('.node-group').forEach(ng => {
+          if (!connectedNodes.has(ng.dataset.id)) {
+            ng.classList.add('faded');
+          }
+        });
+      }
+
+      function resetHighlights() {
+        if (selectedNodeId || activeCategoryFilter) return;
+        document.querySelectorAll('.edge-path').forEach(p => {
+          p.classList.remove('highlighted', 'faded');
+          p.setAttribute('marker-end', 'url(#arrow)');
+        });
+        document.querySelectorAll('.node-group').forEach(ng => {
+          ng.classList.remove('faded');
+        });
+      }
+
+      // 7. Node Selection & Detail Panel Drawer
+      let selectedNodeId = null;
+      let activeCategoryFilter = null;
+      const detailPanel = document.getElementById('detail-panel');
+
+      function selectNode(id) {
+        selectedNodeId = id;
+        document.querySelectorAll('.node-group').forEach(ng => {
+          ng.classList.toggle('selected', ng.dataset.id === id);
+          if (!activeCategoryFilter) ng.classList.remove('faded');
+        });
+
+        document.querySelectorAll('.edge-path').forEach(p => {
+          p.classList.remove('highlighted');
+          p.setAttribute('marker-end', 'url(#arrow)');
+        });
+
+        if (!id) {
+          if (!activeCategoryFilter) {
+            detailPanel.classList.remove('open');
+            document.querySelectorAll('.edge-path').forEach(p => p.classList.remove('faded'));
+          } else {
+            // Keep category drawer
+            openCategoryDrawer(activeCategoryFilter);
+          }
+          return;
+        }
+
+        const node = nodeMap.get(id);
+        if (!node) return;
+
+        // Highlight connected edges & nodes
+        const connectedNodes = new Set([id]);
+        document.querySelectorAll('.edge-path').forEach(p => {
+          if (p.dataset.from === id || p.dataset.to === id) {
+            p.classList.add('highlighted');
+            p.classList.remove('faded');
+            p.setAttribute('marker-end', 'url(#arrow-active)');
+            connectedNodes.add(p.dataset.from);
+            connectedNodes.add(p.dataset.to);
+          } else {
+            p.classList.add('faded');
+          }
+        });
+
+        document.querySelectorAll('.node-group').forEach(ng => {
+          if (!connectedNodes.has(ng.dataset.id)) {
+            ng.classList.add('faded');
+          } else {
+            ng.classList.remove('faded');
+          }
+        });
+
+        // Show node view in drawer
+        document.getElementById('drawer-section-fields').style.display = 'block';
+        document.getElementById('drawer-section-connections').style.display = 'block';
+        document.getElementById('drawer-section-submodules').style.display = 'none';
+
+        document.getElementById('drawer-title').textContent = node.name;
+        const catBadge = document.getElementById('drawer-category');
+        catBadge.textContent = node.category;
+        catBadge.style.backgroundColor = node.color;
+        document.getElementById('drawer-description').textContent = node.description;
+
+        const fieldsContainer = document.getElementById('drawer-fields');
+        fieldsContainer.innerHTML = '';
+        const fields = [
+          { key: '架構層次', val: node.layer },
+          { key: '技術棧 / 規範', val: node.tech_stack },
+          { key: '系統職責', val: node.role },
+          { key: '程式碼 / 文件位置', val: node.doc_path }
+        ];
+
+        fields.forEach(f => {
+          if (f.val) {
+            const item = document.createElement('div');
+            item.className = 'field-item';
+            item.innerHTML = `<div class="field-key">${f.key}</div><div class="field-val">${f.val}</div>`;
+            fieldsContainer.appendChild(item);
+          }
+        });
+
+        // Populate Connections
+        const connContainer = document.getElementById('drawer-connections');
+        connContainer.innerHTML = '';
+        if (Array.isArray(node.connections) && node.connections.length > 0) {
+          node.connections.forEach(targetId => {
+            const targetNode = nodeMap.get(targetId);
+            if (targetNode) {
+              const tag = document.createElement('div');
+              tag.className = 'conn-tag';
+              tag.innerHTML = `<span>→</span> <span>${targetNode.name}</span>`;
+              tag.addEventListener('click', () => selectNode(targetId));
+              connContainer.appendChild(tag);
+            }
+          });
+        } else {
+          connContainer.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">無直接下游相依節點</span>';
+        }
+
+        detailPanel.classList.add('open');
+      }
+
+      // 8. 真正的「領域聚焦與隔離模式 (Category Focus & Isolation Mode)」
+      function focusCategory(categoryName) {
+        if (activeCategoryFilter === categoryName) {
+          clearFocusMode();
+          return;
+        }
+
+        activeCategoryFilter = categoryName;
+        selectedNodeId = null;
+
+        // Update Header Indicator
+        const indicator = document.getElementById('filter-indicator');
+        const filterText = document.getElementById('filter-text');
+        indicator.classList.add('active');
+        filterText.textContent = `聚焦領域：${categoryName}`;
+
+        // Update Legend active states
+        document.querySelectorAll('.legend-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.category === categoryName);
+        });
+
+        // 1. Highlight / Dim Groups
+        document.querySelectorAll('.group-rect').forEach(gr => {
+          const isTarget = gr.id === `group_${categoryName}`;
+          gr.classList.toggle('focused', isTarget);
+          gr.classList.toggle('faded', !isTarget);
+        });
+
+        document.querySelectorAll('.group-label').forEach(gl => {
+          const isTarget = gl.id === `group_label_${categoryName}`;
+          gl.classList.toggle('faded', !isTarget);
+        });
+
+        // 2. Identify Category Nodes and Directly Connected Edges
+        const categoryNodes = new Set();
+        nodeMap.forEach(n => {
+          if (n.category === categoryName) categoryNodes.add(n.id);
+        });
+
+        // 3. Highlight relevant nodes, fade others
+        document.querySelectorAll('.node-group').forEach(ng => {
+          const isBelong = categoryNodes.has(ng.dataset.id);
+          ng.classList.toggle('faded', !isBelong);
+          ng.classList.remove('selected');
+        });
+
+        // 4. Highlight edges connecting within or from/to this category, dim all others
+        document.querySelectorAll('.edge-path').forEach(p => {
+          const isRelated = categoryNodes.has(p.dataset.from) || categoryNodes.has(p.dataset.to);
+          p.classList.toggle('highlighted', isRelated);
+          p.classList.toggle('faded', !isRelated);
+          p.setAttribute('marker-end', isRelated ? 'url(#arrow-active)' : 'url(#arrow)');
+        });
+
+        // 5. Smooth Camera Fit to Category Bounding Box
+        fitCameraToCategory(categoryName);
+
+        // 6. Open Category Overview in Drawer
+        openCategoryDrawer(categoryName);
+      }
+
+      function clearFocusMode() {
+        activeCategoryFilter = null;
+        selectedNodeId = null;
+
+        document.getElementById('filter-indicator').classList.remove('active');
+        document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
+
+        document.querySelectorAll('.group-rect').forEach(gr => gr.classList.remove('focused', 'faded'));
+        document.querySelectorAll('.group-label').forEach(gl => gl.classList.remove('faded'));
+        document.querySelectorAll('.node-group').forEach(ng => ng.classList.remove('faded', 'selected'));
+        document.querySelectorAll('.edge-path').forEach(p => {
+          p.classList.remove('highlighted', 'faded');
+          p.setAttribute('marker-end', 'url(#arrow)');
+        });
+
+        detailPanel.classList.remove('open');
+        fitAll();
+      }
+
+      function fitCameraToCategory(categoryName) {
+        let b;
+        if (categoryName === "系統總覽") {
+          const rootNode = nodeMap.get('root');
+          b = {
+            minX: rootNode.bounds.x,
+            minY: rootNode.bounds.y,
+            maxX: rootNode.bounds.x + rootNode.bounds.w,
+            maxY: rootNode.bounds.y + rootNode.bounds.h
+          };
+        } else {
+          const g = groupMap.get(categoryName);
+          if (!g) return;
+          b = g;
+        }
+
+        const boxW = (b.maxX - b.minX) + 120;
+        const boxH = (b.maxY - b.minY) + 120;
+        const centerBoxX = (b.minX + b.maxX) / 2;
+        const centerBoxY = (b.minY + b.maxY) / 2;
+
+        const cw = container.clientWidth - (detailPanel.classList.contains('open') ? 380 : 0);
+        const ch = container.clientHeight;
+
+        const scaleX = cw / boxW;
+        const scaleY = ch / boxH;
+        let targetScale = Math.min(scaleX, scaleY, 1.25);
+        targetScale = Math.max(targetScale, 0.65);
+
+        transform.scale = targetScale;
+        transform.x = (cw / 2) - centerBoxX * targetScale;
+        transform.y = (ch / 2) - centerBoxY * targetScale;
+
+        updateTransform(true);
+      }
+
+      function openCategoryDrawer(categoryName) {
+        const meta = categoryMetadata[categoryName] || {
+          description: "領域架構核心組件集合。",
+          layer: "系統層級",
+          principle: "關注點分離與模組化設計。"
+        };
+
+        const subnodes = [];
+        nodeMap.forEach(n => {
+          if (n.category === categoryName) subnodes.push(n);
+        });
+
+        document.getElementById('drawer-title').textContent = categoryName;
+        const catBadge = document.getElementById('drawer-category');
+        catBadge.textContent = `${subnodes.length} 個核心模組`;
+        catBadge.style.backgroundColor = categoryColors[categoryName] || '#3b82f6';
+
+        document.getElementById('drawer-description').innerHTML = `
+          <p style="margin-bottom:8px;">${meta.description}</p>
+          <div style="padding:10px;background:rgba(59,130,246,0.08);border-left:3px solid ${categoryColors[categoryName] || '#3b82f6'};border-radius:4px;font-size:12px;color:var(--text-primary);margin-top:8px;">
+            <strong>設計原則：</strong>${meta.principle}
+          </div>
+        `;
+
+        document.getElementById('drawer-section-fields').style.display = 'none';
+        document.getElementById('drawer-section-connections').style.display = 'none';
+        
+        // Show submodules list
+        const subSec = document.getElementById('drawer-section-submodules');
+        const subTitle = document.getElementById('drawer-submodules-title');
+        const subList = document.getElementById('drawer-submodules-list');
+        subSec.style.display = 'block';
+        subTitle.textContent = `${categoryName} 收錄模組（點選快速聚焦）`;
+        subList.innerHTML = '';
+
+        subnodes.forEach(sn => {
+          const card = document.createElement('div');
+          card.className = 'submodule-card';
+          card.innerHTML = `
+            <div class="submodule-title">${sn.name}</div>
+            <div class="submodule-desc">${sn.description}</div>
+          `;
+          card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectNode(sn.id);
+          });
+          subList.appendChild(card);
+        });
+
+        detailPanel.classList.add('open');
+      }
+
+      document.getElementById('drawer-close-btn').addEventListener('click', () => {
+        if (selectedNodeId && activeCategoryFilter) {
+          // If in category mode and viewing a node, go back to category view
+          selectNode(null);
+        } else {
+          detailPanel.classList.remove('open');
+        }
+      });
+
+      document.getElementById('filter-clear-btn').addEventListener('click', () => {
+        clearFocusMode();
+      });
+
+      document.getElementById('legend-show-all').addEventListener('click', () => {
+        clearFocusMode();
+      });
+
+      container.addEventListener('click', () => {
+        if (!activeCategoryFilter) {
+          selectNode(null);
+        }
+      });
+
+      // 9. Search Input Filter (關鍵字檢索)
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        if (!query) {
+          if (!activeCategoryFilter) {
+            document.querySelectorAll('.node-group').forEach(ng => ng.classList.remove('faded', 'selected'));
+            document.querySelectorAll('.edge-path').forEach(p => p.classList.remove('faded', 'highlighted'));
+          } else {
+            focusCategory(activeCategoryFilter);
+          }
+          return;
+        }
+
+        let firstMatch = null;
+        nodeMap.forEach(n => {
+          const match = n.name.toLowerCase().includes(query) ||
+                        n.description.toLowerCase().includes(query) ||
+                        n.category.toLowerCase().includes(query) ||
+                        (n.tech_stack && n.tech_stack.toLowerCase().includes(query));
+
+          const el = document.getElementById(`node_${n.id}`);
+          if (el) {
+            el.classList.toggle('faded', !match);
+            if (match && !firstMatch) firstMatch = n;
+          }
+        });
+
+        if (firstMatch) {
+          transform.x = (container.clientWidth / 2) - firstMatch.bounds.cx * transform.scale;
+          transform.y = (container.clientHeight / 2) - firstMatch.bounds.cy * transform.scale;
+          updateTransform(true);
+        }
+      });
+
+      // 10. Build Legend with Item Counts & Click to Focus
+      const legendContainer = document.getElementById('legend-items');
+      categories.forEach(cat => {
+        const count = nodesData.filter(n => n.category === cat).length;
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.dataset.category = cat;
+        item.innerHTML = `
+          <div class="legend-item-left">
+            <div class="legend-color-dot" style="background:${categoryColors[cat]}"></div>
+            <span>${cat}</span>
+          </div>
+          <span class="legend-count">${count}</span>
+        `;
+        item.addEventListener('click', () => {
+          focusCategory(cat);
+        });
+        legendContainer.appendChild(item);
+      });
+
+      // 11. Dark / Light Theme Toggle
+      const themeBtn = document.getElementById('btn-theme');
+      const themeIcon = document.getElementById('theme-icon');
+      const htmlEl = document.documentElement;
+
+      themeBtn.addEventListener('click', () => {
+        const currentTheme = htmlEl.getAttribute('data-theme');
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        htmlEl.setAttribute('data-theme', nextTheme);
+        themeIcon.textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+      });
+
+    })();
+  </script>
+</body>
+</html>

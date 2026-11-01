@@ -17,6 +17,7 @@ import { InsightsTab } from './components/InsightsTab';
 import { ZenSanctuary3D } from './components/ZenSanctuary3D';
 import { StrategyFeedback } from './components/StrategyFeedback';
 import { ArchifyDiagramTab } from './components/ArchifyDiagramTab';
+import { KnowledgeGraphTab } from './components/KnowledgeGraphTab';
 import { ObsidianExportTab } from './components/ObsidianExportTab';
 import { SystemHealthModal, SystemStatusData } from './components/SystemHealthModal';
 import { ShutdownModal } from './components/ShutdownModal';
@@ -256,7 +257,11 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
         )}
 
         {activeTab === 'architecture' && (
-          <ArchifyDiagramTab />
+          <ArchifyDiagramTab onNavigateToGraph={() => setActiveTab('knowledge-graph')} />
+        )}
+
+        {activeTab === 'knowledge-graph' && (
+          <KnowledgeGraphTab />
         )}
 
         {activeTab === 'obsidian' && (
