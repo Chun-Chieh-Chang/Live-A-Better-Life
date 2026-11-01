@@ -14,7 +14,6 @@ import { Navbar } from './components/Navbar';
 import { DailyReflectionTab } from './components/DailyReflectionTab';
 import { PersonalOSTab } from './components/PersonalOSTab';
 import { InsightsTab } from './components/InsightsTab';
-import { ZenSanctuary3D } from './components/ZenSanctuary3D';
 import { StrategyFeedback } from './components/StrategyFeedback';
 import { ArchifyDiagramTab } from './components/ArchifyDiagramTab';
 import { KnowledgeGraphTab } from './components/KnowledgeGraphTab';
@@ -249,12 +248,6 @@ export default function App({storage=localStorage, personal}: {storage?:Storage;
           />
         )}
 
-        {activeTab === 'zen3d' && (
-          <ZenSanctuary3D
-            entries={entries}
-            onSelectDate={handleSelectDateFromHistory}
-          />
-        )}
 
         {activeTab === 'architecture' && (
           <ArchifyDiagramTab onNavigateToGraph={() => setActiveTab('knowledge-graph')} />

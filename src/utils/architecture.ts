@@ -72,17 +72,6 @@ export const ARCHIFY_SPEC = {
       ],
     },
     {
-      id: "ui_3d",
-      label: "3D 心靈空間生態島",
-      sublabel: "ZenSanctuary3D",
-      layer: "presentation",
-      icon: "Sparkles",
-      tags: ["Three.js", "PBR Studio", "Web Audio"],
-      description:
-        "Three.js 打造的生命樹浮島、30 顆星軌光球射線互動與 Web Audio 頌缽音效。",
-      files: ["src/components/ZenSanctuary3D.tsx"],
-    },
-    {
       id: "ui_export",
       label: "Obsidian 整合匯出",
       sublabel: "ObsidianExportTab",
@@ -229,13 +218,6 @@ export const ARCHIFY_SPEC = {
       source: "db_local",
       target: "ui_insights",
       label: "提供 30 天數據",
-      type: "data",
-    },
-    {
-      id: "e8",
-      source: "db_local",
-      target: "ui_3d",
-      label: "同步 30 天光球狀態",
       type: "data",
     },
     {

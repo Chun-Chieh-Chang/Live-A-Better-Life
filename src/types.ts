@@ -91,7 +91,6 @@ export type ActiveTab =
   | "daily"
   | "personalOS"
   | "insights"
-  | "zen3d"
   | "architecture"
   | "obsidian"
   | "knowledge-graph";
