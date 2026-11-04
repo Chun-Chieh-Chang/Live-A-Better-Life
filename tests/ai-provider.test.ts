@@ -101,8 +101,10 @@ test("Agnes coaching retains validation and accurate source on success and fallb
         }),
       });
       const result = await response.json();
-      assert.equal(result.isFallback, !good);
-      assert.equal(result.source, good ? "agnes" : "server-fallback");
+      assert.equal(response.status, good ? 200 : 503);
+      assert.equal(result.success, good);
+      if (good) assert.equal(result.source, "agnes");
+      else assert.equal(result.result, undefined);
     } finally {
       server.closeAllConnections();
       await new Promise<void>((r) => server.close(() => r()));

@@ -102,6 +102,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
   const [dirty, setDirty] = useState(!!loaded.isDraft);
   const requestRef = useRef<AbortController | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
   const [copied, setCopied] = useState(false);
   const [strategyAdded, setStrategyAdded] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -191,6 +192,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
     const controller = new AbortController();
     requestRef.current = controller;
     const snapshot = draftRef.current;
+    setAiError("");
     setIsAiLoading(true);
     try {
       const response = await askAICoach(
@@ -224,7 +226,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
         ],
       });
     } catch (e) {
-      if (!controller.signal.aborted) setSaveError("教練請求未完成，請重試。");
+      if (!controller.signal.aborted) setAiError("AI 目前無法提供建議，請稍後再試。你仍可保存今天的記錄。");
     } finally {
       if (requestRef.current === controller) setIsAiLoading(false);
     }
@@ -702,7 +704,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                   rows={2}
                   value={goodKeep}
                   onChange={(e) => setGoodKeep(e.target.value)}
-                  placeholder="例如：昨晚睡滿 7.5 小時，且早上先吃了蛋白質豐富的早餐。➡️ 知識庫提煉：睡眠+蛋白質=高效率"
+                  placeholder="下次遇到類似情況，想沿用今天哪個做法？也可以先留空。"
                   className="w-full bg-white border border-[#ded9c8] rounded-xl p-3 text-sm text-[#2c332d] placeholder-slate-400 focus:outline-none focus:border-[#4d6b53] focus:ring-2 focus:ring-[#eff4ec] transition"
                 />
               </div>
@@ -848,8 +850,14 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
             </div>
           )}
 
+          {(isAiLoading || aiError) && (
+            <p role={aiError ? "alert" : "status"} className="text-sm text-[#4d6b53] break-words" aria-live="polite">
+              {isAiLoading ? "正在請 AI 閱讀你的記錄並整理建議，請稍候；完成後會顯示在下方。" : aiError}
+            </p>
+          )}
+
           {/* 🤖 AI 認知副處理器建議結果卡片 (Signature Forest Green Sanctuary) */}
-          {aiAdvice && (
+          {aiAdvice && (draft.aiSource === "agnes" || draft.aiSource === "gemini") && (
             <div className="bg-[#1a251e] border border-[#344839]/80 rounded-2xl p-6 shadow-xl text-white relative overflow-hidden">
               <div className="flex items-center justify-between mb-3.5 border-b border-[#28382c] pb-3">
                 <div className="flex items-center gap-2.5">
@@ -857,9 +865,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <h4 className="font-bold text-white text-sm sm:text-base">
-                    {(draft.aiSource === "gemini" || draft.aiSource === "agnes")
-                      ? "給你的一點建議"
-                      : "給你的一點建議（預設建議，非 AI 產生）"}
+                    給你的一點建議（AI 產生）
                   </h4>
                 </div>
                 <span className="text-sm text-[#a8ccaf] bg-[#121c15] px-2.5 py-0.5 rounded-full border border-[#344839] font-medium">
@@ -870,7 +876,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
               {/* Psychological Insight */}
               <div className="bg-[#121c15] border border-[#28382c] rounded-xl p-3.5 text-sm text-[#dbe5dd] mb-4 leading-relaxed">
                 <span className="text-[#a8ccaf] font-bold block mb-1">
-                  💡 心理學與思維拆解：
+                  💡 從今天的記錄看到：
                 </span>
                 {aiAdvice.psychologicalInsight}
               </div>
@@ -878,7 +884,7 @@ export const DailyReflectionTab: React.FC<DailyReflectionTabProps> = ({
               {/* Strategies */}
               <div className="space-y-2.5 mb-4">
                 <div className="text-sm font-bold text-[#a8ccaf] flex items-center justify-between">
-                  <span>可以試試的小步驟：</span>
+                  <span>下次可以試試：</span>
                   <span className="text-sm text-[#8fa894] font-normal">
                     點擊「採用」填入筆記，或「加入手冊」啟用後顯示於日誌
                   </span>

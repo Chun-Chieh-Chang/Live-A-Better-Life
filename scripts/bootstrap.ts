@@ -29,7 +29,7 @@ export function runSystemCheckAndSetup(autoFix = true, projectRoot = rootDir): S
       status: hasGeminiKey || hasAgnesKey ? 'ok' : 'warning',
       message: hasGeminiKey || hasAgnesKey
         ? 'AI 服務已設定；連線結果以實際請求為準。'
-        : '尚未設定 AI 服務，目前可使用預設建議。',
+        : '尚未設定 AI 服務，目前不提供建議，仍可保存記錄。',
       hasEnvFile, hasGeminiKey, hasAgnesKey,
     },
     dependencies: {

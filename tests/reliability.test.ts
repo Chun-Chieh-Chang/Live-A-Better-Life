@@ -150,9 +150,9 @@ test("API rejects malformed requests and distinguishes no-key readiness", async 
     for (const state of ["good", "bad", "normal"]) {
       const res = await post(base, "/api/coach", { ...request, state });
       const j = await res.json();
-      assert.equal(res.status, 200);
-      assert.equal(j.isFallback, true);
-      assert.ok(isCoachResult(j.result));
+      assert.equal(res.status, 503);
+      assert.equal(j.success, false);
+      assert.equal(j.result, undefined);
     }
     const probe = await post(base, "/api/system/test-ai", {});
     assert.equal(probe.status, 503);
@@ -183,7 +183,15 @@ test("model success validates structured response and forwards user/manual conte
     },
   );
 });
-test("remote failures, malformed JSON, wrong schema, and timeout fall back without leaking errors", async () => {
+test('coach rejects multiple generated tasks instead of showing a three-step checklist', async () => {
+  await withApp({models:{generateContent:async () => ({text:JSON.stringify({strategies:['one','two','three'],psychologicalInsight:'test'})})}}, async base => {
+    const response = await post(base,'/api/coach',request);
+    assert.equal(response.status,503);
+    assert.equal((await response.json()).result,undefined);
+  });
+});
+
+test("remote failures, malformed JSON, wrong schema, and timeout return no advice without leaking errors", async () => {
   for (const generateContent of [
     async () => {
       throw new Error("private-diagnostic");
@@ -198,8 +206,9 @@ test("remote failures, malformed JSON, wrong schema, and timeout fall back witho
         const r = await post(base, "/api/coach", request);
         const raw = await r.text();
         const j = JSON.parse(raw);
-        assert.equal(j.isFallback, true);
-        assert.ok(isCoachResult(j.result));
+        assert.equal(r.status, 503);
+        assert.equal(j.success, false);
+        assert.equal(j.result, undefined);
         assert.ok(!raw.includes("private-diagnostic"));
         const probe = await post(base, "/api/system/test-ai", {});
         if (
@@ -212,24 +221,18 @@ test("remote failures, malformed JSON, wrong schema, and timeout fall back witho
     );
   }
 });
-test("browser service validates remote results and labels local fallback", async () => {
+test("browser service validates remote results and rejects unavailable advice", async () => {
   const original = globalThis.fetch;
   try {
     globalThis.fetch = async () =>
       new Response(JSON.stringify({ success: true, result: {} }), {
         status: 200,
       });
-    assert.equal(
-      (await askAICoach("good", {}, fixture().personalOS)).source,
-      "local-fallback",
-    );
+    await assert.rejects(askAICoach("good", {}, fixture().personalOS));
     globalThis.fetch = async () => {
       throw new Error("offline");
     };
-    assert.equal(
-      (await askAICoach("bad", {}, fixture().personalOS)).source,
-      "local-fallback",
-    );
+    await assert.rejects(askAICoach("bad", {}, fixture().personalOS));
     const cancelled = new AbortController();
     cancelled.abort();
     await assert.rejects(
@@ -241,7 +244,7 @@ test("browser service validates remote results and labels local fallback", async
   }
 });
 
-test('browser request timeout returns explicit local fallback', async (t) => {
+test('browser request timeout rejects without advice', async (t) => {
   const originalFetch = globalThis.fetch;
   t.mock.timers.enable({apis:['setTimeout']});
   try {
@@ -250,9 +253,23 @@ test('browser request timeout returns explicit local fallback', async (t) => {
     });
     let complete = false;
     const pending = askAICoach('normal', {}, fixture().personalOS).then(result => {complete = true; return result;});
-    t.mock.timers.tick(11999); await Promise.resolve(); assert.equal(complete, false);
+    t.mock.timers.tick(64999); await Promise.resolve(); assert.equal(complete, false);
     t.mock.timers.tick(1);
-    const response = await pending;
-    assert.equal(response.source, 'local-fallback'); assert.ok(isCoachResult(response.result));
+    await assert.rejects(pending, /AI/);
   } finally {globalThis.fetch = originalFetch; t.mock.timers.reset();}
+});
+
+
+test('AI results arriving after the former deadline are still accepted', async t => {
+  const originalFetch = globalThis.fetch;
+  t.mock.timers.enable({apis:['setTimeout']});
+  try {
+    globalThis.fetch = async (_url, init) => new Promise((resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {once:true});
+      setTimeout(() => resolve(new Response(JSON.stringify({success:true,isFallback:false,source:'agnes',result:{strategies:['If 工作卡住，Then 整理一項待確認資訊。'],psychologicalInsight:'工作取得進展。'}}))),28000);
+    });
+    const pending = askAICoach('good', {goodWhere:'工作取得進展'}, fixture().personalOS);
+    t.mock.timers.tick(28000);
+    assert.equal((await pending).source,'agnes');
+  } finally {globalThis.fetch=originalFetch;t.mock.timers.reset();}
 });

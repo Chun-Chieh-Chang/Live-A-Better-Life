@@ -49,7 +49,7 @@ export const SystemHealthModal: React.FC<SystemHealthModalProps> = ({
               ? "目前需要檢查，請稍後重試。"
               : "暫時無法確認連線，請重新檢查。"}
         </p>
-        <p>教練連線未設定或暫時無法使用時，仍會提供清楚標示的預設建議。</p>
+        <p>AI 未連接或暫時無法回應時，不提供建議；你仍可保存記錄。</p>
         <div className="flex flex-wrap gap-3">
           <button
             className="min-h-11 px-4 border rounded-xl"

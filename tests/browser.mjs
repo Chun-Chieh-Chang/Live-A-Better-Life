@@ -100,22 +100,15 @@ const empty = {
   },
 };
 
-test("empty startup → AI fallback → adopt → manual → save → reload → history", () =>
+test("empty startup → unavailable AI → save → reload → history", () =>
   fresh(async (p) => {
     assert.equal(await getData(p), undefined);
     assert.match(await p.locator("header").innerText(), /0 天/);
     await p.locator("input[type=date]").fill("2026-10-01");
     await p.locator("textarea").first().fill("real-entry");
     await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
-    await waitText(p, "預設建議，非 AI 產生");
-    await p
-      .getByRole("button", { name: "採用填入", exact: true })
-      .first()
-      .click();
-    await p
-      .getByRole("button", { name: "加入手冊", exact: true })
-      .first()
-      .click();
+    await waitText(p, "AI 目前無法提供建議");
+    assert.equal(await p.getByRole('button', {name:'採用填入', exact:true}).count(), 0);
     assert.equal(
       await p.locator("textarea").first().inputValue(),
       "real-entry",
@@ -124,9 +117,8 @@ test("empty startup → AI fallback → adopt → manual → save → reload →
     await waitText(p, "已儲存");
     const saved = await getData(p);
     assert.equal(saved.entries.length, 1);
-    assert.equal(saved.personalOS.ifThenStrategies.length, 1);
-    assert.ok(saved.entries[0].goodKeep);
-    assert.equal(saved.entries[0].aiSource, "server-fallback");
+    assert.equal(saved.personalOS.ifThenStrategies.length, 0);
+    assert.equal(saved.entries[0].aiAdvice, undefined);
     await p.reload();
     await p.locator("textarea").first().waitFor();
     assert.deepEqual(await getData(p), saved);
@@ -263,16 +255,16 @@ test("delayed AI cannot write into a different date or mood", () =>
     assert.equal(await p.getByText("stale-marker", { exact: true }).count(), 0);
   }));
 
-test("malformed/offline AI responses show local fallback instead of crashing", () =>
+test("malformed AI responses show no advice instead of crashing", () =>
   fresh(async (p) => {
     await p.route("**/api/coach", (r) =>
       r.fulfill({ json: { success: true, result: {} } }),
     );
     await p.getByRole("button", { name: "幫我想想怎麼延續" }).click();
-    await waitText(p, "預設建議，非 AI 產生");
+    await waitText(p, "AI 目前無法提供建議");
     assert.equal(
       await p.getByRole("button", { name: "採用填入", exact: true }).count(),
-      3,
+      0,
     );
   }));
 
@@ -353,4 +345,24 @@ test('unavailable service status stays honest and repair failure is visible',()=
  await p.route('**/api/system/setup',r=>r.fulfill({status:503,json:{success:false}}));
  await p.getByRole('button',{name:'嘗試修復',exact:true}).click();await waitText(p,'還沒準備好');
  assert.equal(await p.getByText('已完成檢查。',{exact:true}).count(),0);
+}));
+
+test('unavailable AI stays usable without horizontal overflow at supported widths', () =>
+  fresh(async p => {
+    for (const width of [375,390,768,1440]) {
+      await p.setViewportSize({width,height:900});
+      await p.getByRole('button',{name:'幫我想想怎麼延續'}).click();
+      await waitText(p,'AI 目前無法提供建議');
+      assert.equal(await p.getByRole('button',{name:'採用填入',exact:true}).count(),0);
+      assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    }
+  }));
+
+test('successful AI response is visible and can be adopted', () => fresh(async p => {
+  await p.route('**/api/coach', route => route.fulfill({json:{success:true,isFallback:false,source:'agnes',result:{strategies:['If 下次找供應商，Then 先列出一項待查證的資格。'],psychologicalInsight:'你用工具推進了工作。'}}}));
+  await p.locator('textarea').first().fill('用工具找到供應商');
+  await p.getByRole('button',{name:'幫我想想怎麼延續'}).click();
+  await waitText(p,'你用工具推進了工作。');
+  await p.getByRole('button',{name:'採用填入',exact:true}).click();
+  assert.match(await p.locator('textarea').nth(1).inputValue(),/供應商/);
 }));
